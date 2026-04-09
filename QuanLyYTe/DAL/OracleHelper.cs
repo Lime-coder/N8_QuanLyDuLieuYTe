@@ -41,6 +41,33 @@ namespace QuanLyYTe.DAL
             return dt;
         }
 
+        // Query từ SQL raw command
+        public static DataTable ExecuteQuery(string sql, OracleParameter[] parameters = null)
+        {
+            DataTable dt = new DataTable();
+            using (OracleConnection conn = new OracleConnection(_connStr))
+            {
+                using (OracleCommand cmd = new OracleCommand(sql, conn))
+                {
+                    cmd.CommandType = CommandType.Text;
+                    if (parameters != null) cmd.Parameters.AddRange(parameters);
+
+                    using (OracleDataAdapter da = new OracleDataAdapter(cmd))
+                    {
+                        try
+                        {
+                            da.Fill(dt);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"Lỗi thực thi query: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            return dt;
+        }
+
         // SP trả về những tham số - Truyền vào mảng 
         // SP không trả về tham số
         public static void ExecuteNonQuerySP(string spName, OracleParameter[] parameters = null)
@@ -61,6 +88,29 @@ namespace QuanLyYTe.DAL
                     catch (Exception ex)
                     {
                         throw new Exception($"Lỗi Action SP {spName}: {ex.Message}");
+                    }
+                }
+            }
+        }
+
+        // Execute raw SQL command (không trả về data)
+        public static void ExecuteNonQuery(string sql, OracleParameter[] parameters = null)
+        {
+            using (OracleConnection conn = new OracleConnection(_connStr))
+            {
+                using (OracleCommand cmd = new OracleCommand(sql, conn))
+                {
+                    cmd.CommandType = CommandType.Text;
+                    if (parameters != null) cmd.Parameters.AddRange(parameters);
+
+                    try
+                    {
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Lỗi thực thi command: {ex.Message}");
                     }
                 }
             }
