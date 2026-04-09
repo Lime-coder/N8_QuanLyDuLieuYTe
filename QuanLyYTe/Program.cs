@@ -1,3 +1,5 @@
+using QuanLyYTe.Forms;
+
 namespace QuanLyYTe
 {
     internal static class Program
@@ -11,7 +13,7 @@ namespace QuanLyYTe
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new Forms.Test_ExecuteNonQuerySP());
+            Application.Run(new Forms.FrmPrivilege());
         }
     }
 }
