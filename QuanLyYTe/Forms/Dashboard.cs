@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using QuanLyYTe.DAL;
 
 namespace QuanLyYTe.Forms
 {
@@ -9,58 +9,97 @@ namespace QuanLyYTe.Forms
     {
         // ── Theme ─────────────────────────────────────────────────────
         private static readonly Color Orange = Color.FromArgb(255, 140, 40);
-        private static readonly Color OrangeHover = Color.FromArgb(255, 165, 80);
+        private static readonly Color OrangeHov = Color.FromArgb(255, 165, 80);
         private static readonly Color ActiveBg = Color.FromArgb(45, 255, 140, 40);
 
         private Button _activeNavBtn = null;
+        private readonly string _username;
+        private readonly AuthRepository _authRepo = new AuthRepository();
 
         // ── Feature definitions ───────────────────────────────────────
-        private readonly (string Label, string Title, string Desc, Func<Form> Factory)[] _features;
+        private (string Badge, string Title, string Desc, Func<Form> Factory)[] _features;
 
-        public Dashboard()
+        public Dashboard(string username)
         {
             InitializeComponent();
+            _username = username;
 
-            _features = new (string, string, string, Func<Form>)[]
+            _features = new (string Badge, string Title, string Desc, Func<Form> Factory)[]
             {
-                ("USR", "Quản lý User",  "Tạo, sửa, xóa tài khoản người dùng Oracle",    () => new frmUserMangement()),
-                ("ROL", "Quản lý Role",  "Tạo, sửa, xóa role trong hệ thống Oracle",     () => new frmRoleManagement()),
-                ("GRT", "Cấp Quyền",     "Cấp quyền cho user / role, WITH GRANT OPTION",  () => new frmGrantPermission()),
-                ("REV", "Thu Hồi Quyền", "Thu hồi quyền đã cấp từ user hoặc role",        () => new frmRevokePermission()),
-                ("VIW", "Xem Quyền",     "Xem chi tiết quyền của mỗi user / role",        () => new frmViewPermissions()),
+                ("USR", "Quản lý User",  "Tạo, sửa, xóa tài khoản người dùng Oracle", () => new frmUserMangement()),
+                ("ROL", "Quản lý Role",  "Tạo, sửa, xóa role trong hệ thống Oracle",  () => new frmRoleManagement()),
+                ("GRT", "Cấp Quyền",     "Cấp quyền cho user / role",                  () => new frmGrantPermission()),
+                ("REV", "Thu Hồi Quyền", "Thu hồi quyền đã cấp",                       () => new frmRevokePermission()),
+                ("VIW", "Xem Quyền",     "Xem chi tiết quyền của mỗi user / role",     () => new frmViewPermissions()),
             };
 
-            BuildCards();
             WireNavButtons();
         }
 
-        // ── Build quick-launch cards ──────────────────────────────────
+        // ── Load ──────────────────────────────────────────────────────
+        private void Dashboard_Load(object sender, EventArgs e)
+        {
+            PositionUserInfo();
+            pnlTopbar.Resize += (s, _) => PositionUserInfo();
+            LoadUserInfo();
+            BuildCards();
+        }
+
+        private void PositionUserInfo()
+        {
+            lblUserInfo.Location = new Point(
+                pnlTopbar.Width - lblUserInfo.Width - 24,
+                (pnlTopbar.Height - lblUserInfo.Height) / 2);
+        }
+
+        // ── User info ─────────────────────────────────────────────────
+        private void LoadUserInfo()
+        {
+            string role = GetUserRole(_username);
+            lblUserInfo.Text = $"{_username.ToUpper()}  ·  {role}";
+        }
+
+        private string GetUserRole(string username)
+        {
+            try
+            {
+                string role = _authRepo.GetGrantedRole(username);
+                if (role != null) return role;
+                return _authRepo.GetSessionRole() ?? "User";
+            }
+            catch
+            {
+                try { return _authRepo.GetSessionRole() ?? "User"; }
+                catch { return "User"; }
+            }
+        }
+
+        // ── Cards ─────────────────────────────────────────────────────
         private void BuildCards()
         {
             pnlCards.Controls.Clear();
-
-            foreach (var (label, title, desc, factory) in _features)
+            foreach (var f in _features)
             {
-                var capturedTitle = title;
-                var capturedFactory = factory; 
-                var card = CreateCard(label, title, desc,
-                    () => OpenFeature(capturedTitle, "Dashboard / " + capturedTitle, capturedFactory));
+                var captured = f;
+                var card = CreateCard(
+                    captured.Badge,
+                    captured.Title,
+                    captured.Desc,
+                    () => OpenFeature(captured.Title, "Dashboard / " + captured.Title, captured.Factory));
                 pnlCards.Controls.Add(card);
             }
         }
 
-        private Panel CreateCard(string shortLabel, string title, string desc, Action onClick)
+        private Panel CreateCard(string badge, string title, string desc, Action onClick)
         {
             var card = new Panel
             {
                 Size = new Size(195, 128),
                 BackColor = Color.White,
-                // FlowLayoutPanel uses Margin for spacing between cards
                 Margin = new Padding(0, 0, 14, 14),
                 Cursor = Cursors.Hand,
             };
 
-            // Orange top accent bar
             var accent = new Panel
             {
                 Dock = DockStyle.Top,
@@ -68,10 +107,9 @@ namespace QuanLyYTe.Forms
                 BackColor = Orange,
             };
 
-            // Short text badge instead of emoji (reliable across all systems)
             var lblBadge = new Label
             {
-                Text = shortLabel,
+                Text = badge,
                 Font = new Font("Segoe UI", 8f, FontStyle.Bold),
                 ForeColor = Color.White,
                 BackColor = Orange,
@@ -103,19 +141,27 @@ namespace QuanLyYTe.Forms
 
             card.Controls.AddRange(new Control[] { accent, lblBadge, lblTitle, lblDesc });
 
-            // Hover/click wiring on every child so the whole card responds
-            void OnEnter(object s, EventArgs e) { card.BackColor = Color.FromArgb(255, 252, 248); accent.BackColor = OrangeHover; lblBadge.BackColor = OrangeHover; }
-            void OnLeave(object s, EventArgs e) { card.BackColor = Color.White; accent.BackColor = Orange; lblBadge.BackColor = Orange; }
+            void OnEnter(object s, EventArgs e)
+            {
+                card.BackColor = Color.FromArgb(255, 252, 248);
+                accent.BackColor = OrangeHov;
+                lblBadge.BackColor = OrangeHov;
+            }
+            void OnLeave(object s, EventArgs e)
+            {
+                card.BackColor = Color.White;
+                accent.BackColor = Orange;
+                lblBadge.BackColor = Orange;
+            }
             void OnClick(object s, EventArgs e) => onClick?.Invoke();
 
-            foreach (Control ctrl in new Control[] { card, accent, lblBadge, lblTitle, lblDesc })
+            foreach (Control c in new Control[] { card, accent, lblBadge, lblTitle, lblDesc })
             {
-                ctrl.MouseEnter += OnEnter;
-                ctrl.MouseLeave += OnLeave;
-                ctrl.Click += OnClick;
+                c.MouseEnter += OnEnter;
+                c.MouseLeave += OnLeave;
+                c.Click += OnClick;
             }
 
-            // Subtle border
             card.Paint += (s, e) =>
             {
                 using var pen = new Pen(Color.FromArgb(225, 223, 220), 1f);
@@ -125,10 +171,10 @@ namespace QuanLyYTe.Forms
             return card;
         }
 
-        // ── Wire sidebar nav buttons ──────────────────────────────────
+        // ── Nav buttons ───────────────────────────────────────────────
         private void WireNavButtons()
         {
-            var map = new (Button Btn, int FeatureIndex)[]
+            var map = new (Button Btn, int Index)[]
             {
                 (btnNavUsers,    0),
                 (btnNavRoles,    1),
@@ -139,12 +185,12 @@ namespace QuanLyYTe.Forms
 
             foreach (var (btn, idx) in map)
             {
-                var capturedBtn = btn;
-                var capturedIdx = idx;
-                btn.Click += (s, e) =>
+                var b = btn;
+                var i = idx;
+                b.Click += (s, e) =>
                 {
-                    SetActiveNav(capturedBtn);
-                    var f = _features[capturedIdx];
+                    SetActiveNav(b);
+                    var f = _features[i];
                     OpenFeature(f.Title, "Dashboard / " + f.Title, f.Factory);
                 };
             }
@@ -162,22 +208,22 @@ namespace QuanLyYTe.Forms
             _activeNavBtn = btn;
         }
 
-        // ── Open a feature form embedded in pnlContent ────────────────
+        // ── Open feature ──────────────────────────────────────────────
         private void OpenFeature(string title, string breadcrumb, Func<Form> factory)
         {
-            lblPageTitle.Text = title;
-            lblPageBreadcrumb.Text = breadcrumb;
-
-            // Hide home view
+            SetActivePage(title, breadcrumb);
             pnlWelcome.Visible = false;
             pnlCards.Visible = false;
 
-            // Remove any previously embedded form
             var toRemove = new System.Collections.Generic.List<Control>();
             foreach (Control ctrl in pnlContent.Controls)
                 if (ctrl.Tag?.ToString() == "embedded")
                     toRemove.Add(ctrl);
-            foreach (var ctrl in toRemove) { pnlContent.Controls.Remove(ctrl); ctrl.Dispose(); }
+            foreach (var ctrl in toRemove)
+            {
+                pnlContent.Controls.Remove(ctrl);
+                ctrl.Dispose();
+            }
 
             try
             {
@@ -186,20 +232,23 @@ namespace QuanLyYTe.Forms
                 child.FormBorderStyle = FormBorderStyle.None;
                 child.Dock = DockStyle.Fill;
                 child.Tag = "embedded";
-
                 pnlContent.Controls.Add(child);
                 child.BringToFront();
                 child.Show();
             }
             catch (Exception ex)
             {
-                // Placeholder when form not yet connected
-                var ph = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Tag = "embedded" };
+                var ph = new Panel
+                {
+                    Dock = DockStyle.Fill,
+                    BackColor = Color.White,
+                    Tag = "embedded"
+                };
                 var lbl = new Label
                 {
-                    Text = $"⚠  Form [{title}] chưa được kết nối.\n\n{ex.Message}",
+                    Text = $"Lỗi tải form:\n\n{ex.Message}",
                     Font = new Font("Segoe UI", 10f),
-                    ForeColor = Color.FromArgb(160, 100, 40),
+                    ForeColor = Color.FromArgb(180, 40, 40),
                     TextAlign = ContentAlignment.MiddleCenter,
                     Dock = DockStyle.Fill,
                 };
@@ -208,18 +257,28 @@ namespace QuanLyYTe.Forms
             }
         }
 
-        // ── Return to home dashboard ──────────────────────────────────
-        private void ShowHome()
+        private void SetActivePage(string title, string breadcrumb)
         {
-            lblPageTitle.Text = "Dashboard";
-            lblPageBreadcrumb.Text = "Trang chủ";
+            lblPageTitle.Text = title;
+            lblPageBreadcrumb.Text = breadcrumb;
+        }
+
+        // ── Logo click → home ─────────────────────────────────────────
+        private void lblAppTitle_Click(object sender, EventArgs e)
+        {
+            SetActivePage("Dashboard", "Trang chủ");
             pnlWelcome.Visible = true;
             pnlCards.Visible = true;
 
             var toRemove = new System.Collections.Generic.List<Control>();
             foreach (Control ctrl in pnlContent.Controls)
-                if (ctrl.Tag?.ToString() == "embedded") toRemove.Add(ctrl);
-            foreach (var ctrl in toRemove) { pnlContent.Controls.Remove(ctrl); ctrl.Dispose(); }
+                if (ctrl.Tag?.ToString() == "embedded")
+                    toRemove.Add(ctrl);
+            foreach (var ctrl in toRemove)
+            {
+                pnlContent.Controls.Remove(ctrl);
+                ctrl.Dispose();
+            }
 
             if (_activeNavBtn != null)
             {
@@ -228,8 +287,5 @@ namespace QuanLyYTe.Forms
                 _activeNavBtn = null;
             }
         }
-
-        // Click logo label → go home
-        private void lblAppTitle_Click(object sender, EventArgs e) => ShowHome();
     }
 }

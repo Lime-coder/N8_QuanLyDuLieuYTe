@@ -19,209 +19,283 @@
 
         private void InitializeComponent()
         {
-            // ── Controls ──────────────────────────────────────────────
-            this.pnlSidebar = new System.Windows.Forms.Panel();
-            this.pnlLogo = new System.Windows.Forms.Panel();
-            this.lblAppTitle = new System.Windows.Forms.Label();
-            this.lblAppSub = new System.Windows.Forms.Label();
-            this.pnlVersion = new System.Windows.Forms.Panel();
-            this.lblVersion = new System.Windows.Forms.Label();
-
-            this.pnlMain = new System.Windows.Forms.Panel();
-            this.pnlDivider = new System.Windows.Forms.Panel();
-            this.pnlCenter = new System.Windows.Forms.Panel();
-            this.pnlCard = new System.Windows.Forms.Panel();
-
-            this.lblTitle = new System.Windows.Forms.Label();
-            this.lblSubtitle = new System.Windows.Forms.Label();
-
-            this.lblUsername = new System.Windows.Forms.Label();
-            this.txtUsername = new System.Windows.Forms.TextBox();
-
-            this.lblPassword = new System.Windows.Forms.Label();
-            this.txtPassword = new System.Windows.Forms.TextBox();
-
-            this.lblDataSource = new System.Windows.Forms.Label();
-            this.txtDataSource = new System.Windows.Forms.TextBox();
-
-            this.lblError = new System.Windows.Forms.Label();
-            this.btnConnect = new System.Windows.Forms.Button();
-
-            this.pnlSidebar.SuspendLayout();
-            this.pnlMain.SuspendLayout();
-            this.pnlCard.SuspendLayout();
-            this.SuspendLayout();
-
-            // ── Sidebar ───────────────────────────────────────────────
-            this.pnlSidebar.BackColor = System.Drawing.Color.FromArgb(24, 24, 28);
-            this.pnlSidebar.Dock = System.Windows.Forms.DockStyle.Left;
-            this.pnlSidebar.Width = 220;
-            this.pnlSidebar.Controls.Add(this.pnlVersion);
-            this.pnlSidebar.Controls.Add(this.pnlLogo);
-
-            // Logo
-            this.pnlLogo.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlLogo.Height = 80;
-            this.pnlLogo.BackColor = System.Drawing.Color.FromArgb(30, 30, 35);
-            this.pnlLogo.Controls.Add(this.lblAppSub);
-            this.pnlLogo.Controls.Add(this.lblAppTitle);
-
-            this.lblAppTitle.Text = "OracleAdmin";
-            this.lblAppTitle.Font = new System.Drawing.Font("Segoe UI", 14f, System.Drawing.FontStyle.Bold);
-            this.lblAppTitle.ForeColor = System.Drawing.Color.FromArgb(255, 140, 40);
-            this.lblAppTitle.AutoSize = true;
-            this.lblAppTitle.Location = new System.Drawing.Point(20, 16);
-
-            this.lblAppSub.Text = "DBA Management Console";
-            this.lblAppSub.Font = new System.Drawing.Font("Segoe UI", 7.5f);
-            this.lblAppSub.ForeColor = System.Drawing.Color.FromArgb(120, 120, 130);
-            this.lblAppSub.AutoSize = true;
-            this.lblAppSub.Location = new System.Drawing.Point(22, 44);
-
-            // Version footer
-            this.pnlVersion.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlVersion.Height = 40;
-            this.pnlVersion.BackColor = System.Drawing.Color.FromArgb(24, 24, 28);
-            this.pnlVersion.Controls.Add(this.lblVersion);
-
-            this.lblVersion.Text = "Phân Hệ 1 · v1.0";
-            this.lblVersion.Font = new System.Drawing.Font("Segoe UI", 7.5f);
-            this.lblVersion.ForeColor = System.Drawing.Color.FromArgb(80, 80, 90);
-            this.lblVersion.AutoSize = true;
-            this.lblVersion.Location = new System.Drawing.Point(20, 12);
-
-            // ── Main ──────────────────────────────────────────────────
-            this.pnlMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlMain.BackColor = System.Drawing.Color.FromArgb(245, 244, 242);
-            this.pnlMain.Controls.Add(this.pnlCenter);
-            this.pnlMain.Controls.Add(this.pnlDivider);
-
-            // Orange top stripe
-            this.pnlDivider.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlDivider.Height = 3;
-            this.pnlDivider.BackColor = System.Drawing.Color.FromArgb(255, 140, 40);
-
-            // Center wrapper (fills remaining space, centers the card)
-            this.pnlCenter.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlCenter.BackColor = System.Drawing.Color.Transparent;
-            this.pnlCenter.Controls.Add(this.pnlCard);
-            this.pnlCenter.Resize += new System.EventHandler(this.pnlCenter_Resize);
-
-            // ── Login Card ────────────────────────────────────────────
-            this.pnlCard.Size = new System.Drawing.Size(310, 340);
-            this.pnlCard.BackColor = System.Drawing.Color.White;
-            this.pnlCard.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pnlCard.Controls.Add(this.btnConnect);
-            this.pnlCard.Controls.Add(this.lblError);
-            this.pnlCard.Controls.Add(this.txtDataSource);
-            this.pnlCard.Controls.Add(this.lblDataSource);
-            this.pnlCard.Controls.Add(this.txtPassword);
-            this.pnlCard.Controls.Add(this.lblPassword);
-            this.pnlCard.Controls.Add(this.txtUsername);
-            this.pnlCard.Controls.Add(this.lblUsername);
-            this.pnlCard.Controls.Add(this.lblSubtitle);
-            this.pnlCard.Controls.Add(this.lblTitle);
-            this.pnlCard.Padding = new System.Windows.Forms.Padding(28);
-
-            int x = 28, y = 24, w = 254;
-
-            // Title
-            this.lblTitle.Text = "Đăng nhập";
-            this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 15f, System.Drawing.FontStyle.Bold);
-            this.lblTitle.ForeColor = System.Drawing.Color.FromArgb(28, 28, 32);
-            this.lblTitle.AutoSize = true;
-            this.lblTitle.Location = new System.Drawing.Point(x, y);
-
-            // Subtitle
-            this.lblSubtitle.Text = "Kết nối trực tiếp Oracle Database";
-            this.lblSubtitle.Font = new System.Drawing.Font("Segoe UI", 8.5f);
-            this.lblSubtitle.ForeColor = System.Drawing.Color.FromArgb(140, 140, 150);
-            this.lblSubtitle.AutoSize = true;
-            this.lblSubtitle.Location = new System.Drawing.Point(x, y + 32);
-
-            // Username
-            SetupFieldLabel(this.lblUsername, "Tên người dùng", x, y + 68);
-            SetupTextBox(this.txtUsername, "sys", x, y + 84, w);
-
-            // Password
-            SetupFieldLabel(this.lblPassword, "Mật khẩu", x, y + 120);
-            SetupTextBox(this.txtPassword, "", x, y + 136, w);
-            this.txtPassword.UseSystemPasswordChar = true;
-            this.txtPassword.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtPassword_KeyDown);
-
-            // Data Source
-            SetupFieldLabel(this.lblDataSource, "Data Source (TNS / Host:Port/SID)", x, y + 172);
-            SetupTextBox(this.txtDataSource, "localhost:1521/ORCLPDB1", x, y + 188, w);
-
-            // Error label
-            this.lblError.Text = "";
-            this.lblError.Font = new System.Drawing.Font("Segoe UI", 8f);
-            this.lblError.ForeColor = System.Drawing.Color.FromArgb(180, 40, 40);
-            this.lblError.AutoSize = false;
-            this.lblError.Size = new System.Drawing.Size(w, 28);
-            this.lblError.Location = new System.Drawing.Point(x, y + 224);
-            this.lblError.Visible = false;
-
-            // Connect button
-            this.btnConnect.Text = "Kết nối";
-            this.btnConnect.Font = new System.Drawing.Font("Segoe UI", 10f, System.Drawing.FontStyle.Bold);
-            this.btnConnect.ForeColor = System.Drawing.Color.White;
-            this.btnConnect.BackColor = System.Drawing.Color.FromArgb(255, 140, 40);
-            this.btnConnect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnConnect.FlatAppearance.BorderSize = 0;
-            this.btnConnect.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(230, 120, 20);
-            this.btnConnect.Size = new System.Drawing.Size(w, 38);
-            this.btnConnect.Location = new System.Drawing.Point(x, y + 258);
-            this.btnConnect.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnConnect.Click += new System.EventHandler(this.btnConnect_Click);
-
-            // ── Form root ─────────────────────────────────────────────
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(680, 420);
-            this.MinimumSize = new System.Drawing.Size(580, 380);
-            this.Text = "Oracle DBA — Đăng nhập";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Font = new System.Drawing.Font("Segoe UI", 9f);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-
-            this.Controls.Add(this.pnlMain);
-            this.Controls.Add(this.pnlSidebar);
-
-            this.pnlSidebar.ResumeLayout(false);
-            this.pnlMain.ResumeLayout(false);
-            this.pnlCard.ResumeLayout(false);
-            this.pnlCard.PerformLayout();
-            this.ResumeLayout(false);
+            pnlSidebar = new Panel();
+            pnlVersion = new Panel();
+            lblVersion = new Label();
+            pnlLogo = new Panel();
+            lblAppSub = new Label();
+            lblAppTitle = new Label();
+            pnlMain = new Panel();
+            pnlCenter = new Panel();
+            pnlCard = new Panel();
+            btnConnect = new Button();
+            lblError = new Label();
+            txtPassword = new TextBox();
+            lblPassword = new Label();
+            txtUsername = new TextBox();
+            lblUsername = new Label();
+            lblSubtitle = new Label();
+            lblTitle = new Label();
+            pnlDivider = new Panel();
+            pnlSidebar.SuspendLayout();
+            pnlVersion.SuspendLayout();
+            pnlLogo.SuspendLayout();
+            pnlMain.SuspendLayout();
+            pnlCenter.SuspendLayout();
+            pnlCard.SuspendLayout();
+            SuspendLayout();
+            // 
+            // pnlSidebar
+            // 
+            pnlSidebar.BackColor = Color.FromArgb(24, 24, 28);
+            pnlSidebar.Controls.Add(pnlVersion);
+            pnlSidebar.Controls.Add(pnlLogo);
+            pnlSidebar.Dock = DockStyle.Left;
+            pnlSidebar.Location = new Point(0, 0);
+            pnlSidebar.Margin = new Padding(3, 4, 3, 4);
+            pnlSidebar.Name = "pnlSidebar";
+            pnlSidebar.Size = new Size(274, 667);
+            pnlSidebar.TabIndex = 1;
+            // 
+            // pnlVersion
+            // 
+            pnlVersion.BackColor = Color.FromArgb(24, 24, 28);
+            pnlVersion.Controls.Add(lblVersion);
+            pnlVersion.Dock = DockStyle.Bottom;
+            pnlVersion.Location = new Point(0, 608);
+            pnlVersion.Margin = new Padding(3, 4, 3, 4);
+            pnlVersion.Name = "pnlVersion";
+            pnlVersion.Size = new Size(274, 59);
+            pnlVersion.TabIndex = 0;
+            // 
+            // lblVersion
+            // 
+            lblVersion.AutoSize = true;
+            lblVersion.Font = new Font("Segoe UI", 7.5F);
+            lblVersion.ForeColor = Color.FromArgb(80, 80, 90);
+            lblVersion.Location = new Point(23, 19);
+            lblVersion.Name = "lblVersion";
+            lblVersion.Size = new Size(101, 17);
+            lblVersion.TabIndex = 0;
+            lblVersion.Text = "Phân Hệ 1 · v1.0";
+            // 
+            // pnlLogo
+            // 
+            pnlLogo.BackColor = Color.FromArgb(30, 30, 35);
+            pnlLogo.Controls.Add(lblAppSub);
+            pnlLogo.Controls.Add(lblAppTitle);
+            pnlLogo.Dock = DockStyle.Top;
+            pnlLogo.Location = new Point(0, 0);
+            pnlLogo.Margin = new Padding(3, 4, 3, 4);
+            pnlLogo.Name = "pnlLogo";
+            pnlLogo.Size = new Size(274, 117);
+            pnlLogo.TabIndex = 1;
+            // 
+            // lblAppSub
+            // 
+            lblAppSub.AutoSize = true;
+            lblAppSub.Font = new Font("Segoe UI", 7.5F);
+            lblAppSub.ForeColor = Color.FromArgb(120, 120, 130);
+            lblAppSub.Location = new Point(25, 69);
+            lblAppSub.Name = "lblAppSub";
+            lblAppSub.Size = new Size(164, 17);
+            lblAppSub.TabIndex = 0;
+            lblAppSub.Text = "DBA Management Console";
+            // 
+            // lblAppTitle
+            // 
+            lblAppTitle.AutoSize = true;
+            lblAppTitle.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            lblAppTitle.ForeColor = Color.FromArgb(255, 140, 40);
+            lblAppTitle.Location = new Point(23, 24);
+            lblAppTitle.Name = "lblAppTitle";
+            lblAppTitle.Size = new Size(163, 32);
+            lblAppTitle.TabIndex = 1;
+            lblAppTitle.Text = "OracleAdmin";
+            // 
+            // pnlMain
+            // 
+            pnlMain.BackColor = Color.FromArgb(245, 244, 242);
+            pnlMain.Controls.Add(pnlCenter);
+            pnlMain.Controls.Add(pnlDivider);
+            pnlMain.Dock = DockStyle.Fill;
+            pnlMain.Location = new Point(274, 0);
+            pnlMain.Margin = new Padding(3, 4, 3, 4);
+            pnlMain.Name = "pnlMain";
+            pnlMain.Size = new Size(572, 667);
+            pnlMain.TabIndex = 0;
+            // 
+            // pnlCenter
+            // 
+            pnlCenter.BackColor = Color.Transparent;
+            pnlCenter.Controls.Add(pnlCard);
+            pnlCenter.Dock = DockStyle.Fill;
+            pnlCenter.Location = new Point(0, 4);
+            pnlCenter.Margin = new Padding(3, 4, 3, 4);
+            pnlCenter.Name = "pnlCenter";
+            pnlCenter.Size = new Size(572, 663);
+            pnlCenter.TabIndex = 0;
+            pnlCenter.Resize += pnlCenter_Resize;
+            // 
+            // pnlCard
+            // 
+            pnlCard.BackColor = Color.White;
+            pnlCard.BorderStyle = BorderStyle.FixedSingle;
+            pnlCard.Controls.Add(btnConnect);
+            pnlCard.Controls.Add(lblError);
+            pnlCard.Controls.Add(txtPassword);
+            pnlCard.Controls.Add(lblPassword);
+            pnlCard.Controls.Add(txtUsername);
+            pnlCard.Controls.Add(lblUsername);
+            pnlCard.Controls.Add(lblSubtitle);
+            pnlCard.Controls.Add(lblTitle);
+            pnlCard.Location = new Point(0, 0);
+            pnlCard.Margin = new Padding(3, 4, 3, 4);
+            pnlCard.Name = "pnlCard";
+            pnlCard.Size = new Size(365, 370);
+            pnlCard.TabIndex = 0;
+            // 
+            // btnConnect
+            // 
+            btnConnect.BackColor = Color.FromArgb(255, 140, 40);
+            btnConnect.Cursor = Cursors.Hand;
+            btnConnect.FlatAppearance.BorderSize = 0;
+            btnConnect.FlatAppearance.MouseOverBackColor = Color.FromArgb(230, 120, 20);
+            btnConnect.FlatStyle = FlatStyle.Flat;
+            btnConnect.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnConnect.ForeColor = Color.White;
+            btnConnect.Location = new Point(32, 299);
+            btnConnect.Margin = new Padding(3, 4, 3, 4);
+            btnConnect.Name = "btnConnect";
+            btnConnect.Size = new Size(302, 51);
+            btnConnect.TabIndex = 3;
+            btnConnect.Text = "Kết nối";
+            btnConnect.UseVisualStyleBackColor = false;
+            btnConnect.Click += btnConnect_Click;
+            // 
+            // lblError
+            // 
+            lblError.Font = new Font("Segoe UI", 8F);
+            lblError.ForeColor = Color.FromArgb(180, 40, 40);
+            lblError.Location = new Point(32, 264);
+            lblError.Name = "lblError";
+            lblError.Size = new Size(302, 27);
+            lblError.TabIndex = 4;
+            lblError.Visible = false;
+            // 
+            // txtPassword
+            // 
+            txtPassword.BackColor = Color.FromArgb(250, 249, 248);
+            txtPassword.BorderStyle = BorderStyle.FixedSingle;
+            txtPassword.Font = new Font("Segoe UI", 9.5F);
+            txtPassword.Location = new Point(32, 219);
+            txtPassword.Margin = new Padding(3, 4, 3, 4);
+            txtPassword.Name = "txtPassword";
+            txtPassword.Size = new Size(301, 29);
+            txtPassword.TabIndex = 2;
+            txtPassword.UseSystemPasswordChar = true;
+            txtPassword.KeyDown += txtPassword_KeyDown;
+            // 
+            // lblPassword
+            // 
+            lblPassword.AutoSize = true;
+            lblPassword.Font = new Font("Segoe UI", 8.5F);
+            lblPassword.ForeColor = Color.FromArgb(100, 100, 110);
+            lblPassword.Location = new Point(32, 195);
+            lblPassword.Name = "lblPassword";
+            lblPassword.Size = new Size(70, 20);
+            lblPassword.TabIndex = 5;
+            lblPassword.Text = "Mật khẩu";
+            // 
+            // txtUsername
+            // 
+            txtUsername.BackColor = Color.FromArgb(250, 249, 248);
+            txtUsername.BorderStyle = BorderStyle.FixedSingle;
+            txtUsername.Font = new Font("Segoe UI", 9.5F);
+            txtUsername.Location = new Point(32, 144);
+            txtUsername.Margin = new Padding(3, 4, 3, 4);
+            txtUsername.Name = "txtUsername";
+            txtUsername.Size = new Size(301, 29);
+            txtUsername.TabIndex = 1;
+            // 
+            // lblUsername
+            // 
+            lblUsername.AutoSize = true;
+            lblUsername.Font = new Font("Segoe UI", 8.5F);
+            lblUsername.ForeColor = Color.FromArgb(100, 100, 110);
+            lblUsername.Location = new Point(32, 120);
+            lblUsername.Name = "lblUsername";
+            lblUsername.Size = new Size(113, 20);
+            lblUsername.TabIndex = 6;
+            lblUsername.Text = "Tên người dùng";
+            // 
+            // lblSubtitle
+            // 
+            lblSubtitle.AutoSize = true;
+            lblSubtitle.Font = new Font("Segoe UI", 8.5F);
+            lblSubtitle.ForeColor = Color.FromArgb(140, 140, 150);
+            lblSubtitle.Location = new Point(32, 77);
+            lblSubtitle.Name = "lblSubtitle";
+            lblSubtitle.Size = new Size(170, 20);
+            lblSubtitle.TabIndex = 7;
+            lblSubtitle.Text = "Kết nối Oracle Database";
+            // 
+            // lblTitle
+            // 
+            lblTitle.AutoSize = true;
+            lblTitle.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+            lblTitle.ForeColor = Color.FromArgb(28, 28, 32);
+            lblTitle.Location = new Point(32, 32);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Size = new Size(142, 35);
+            lblTitle.TabIndex = 8;
+            lblTitle.Text = "Đăng nhập";
+            // 
+            // pnlDivider
+            // 
+            pnlDivider.BackColor = Color.FromArgb(255, 140, 40);
+            pnlDivider.Dock = DockStyle.Top;
+            pnlDivider.Location = new Point(0, 0);
+            pnlDivider.Margin = new Padding(3, 4, 3, 4);
+            pnlDivider.Name = "pnlDivider";
+            pnlDivider.Size = new Size(572, 4);
+            pnlDivider.TabIndex = 1;
+            // 
+            // LoginForm
+            // 
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(846, 667);
+            Controls.Add(pnlMain);
+            Controls.Add(pnlSidebar);
+            Font = new Font("Segoe UI", 9F);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            Margin = new Padding(3, 4, 3, 4);
+            MaximizeBox = false;
+            MinimumSize = new Size(683, 571);
+            Name = "LoginForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Oracle DBA — Đăng nhập";
+            Load += new System.EventHandler(this.LoginForm_Load);
+            pnlSidebar.ResumeLayout(false);
+            pnlVersion.ResumeLayout(false);
+            pnlVersion.PerformLayout();
+            pnlLogo.ResumeLayout(false);
+            pnlLogo.PerformLayout();
+            pnlMain.ResumeLayout(false);
+            pnlCenter.ResumeLayout(false);
+            pnlCard.ResumeLayout(false);
+            pnlCard.PerformLayout();
+            ResumeLayout(false);
         }
 
-        private void SetupFieldLabel(System.Windows.Forms.Label lbl, string text, int x, int y)
-        {
-            lbl.Text = text;
-            lbl.Font = new System.Drawing.Font("Segoe UI", 8.5f);
-            lbl.ForeColor = System.Drawing.Color.FromArgb(100, 100, 110);
-            lbl.AutoSize = true;
-            lbl.Location = new System.Drawing.Point(x, y);
-        }
-
-        private void SetupTextBox(System.Windows.Forms.TextBox txt, string placeholder, int x, int y, int w)
-        {
-            txt.Font = new System.Drawing.Font("Segoe UI", 9.5f);
-            txt.Text = placeholder;
-            txt.Size = new System.Drawing.Size(w, 28);
-            txt.Location = new System.Drawing.Point(x, y);
-            txt.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            txt.BackColor = System.Drawing.Color.FromArgb(250, 249, 248);
-        }
-
-        // ── Declarations ──────────────────────────────────────────────
+        // ── Declarations ─────────────────────────────────────────────
         private System.Windows.Forms.Panel pnlSidebar, pnlLogo, pnlVersion;
         private System.Windows.Forms.Panel pnlMain, pnlDivider, pnlCenter, pnlCard;
         private System.Windows.Forms.Label lblAppTitle, lblAppSub, lblVersion;
         private System.Windows.Forms.Label lblTitle, lblSubtitle;
-        private System.Windows.Forms.Label lblUsername, lblPassword, lblDataSource, lblError;
-        private System.Windows.Forms.TextBox txtUsername, txtPassword, txtDataSource;
+        private System.Windows.Forms.Label lblUsername, lblPassword, lblError;
+        private System.Windows.Forms.TextBox txtUsername, txtPassword;
         private System.Windows.Forms.Button btnConnect;
     }
 }

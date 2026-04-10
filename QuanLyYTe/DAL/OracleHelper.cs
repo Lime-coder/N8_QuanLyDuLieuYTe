@@ -13,6 +13,18 @@ namespace QuanLyYTe.DAL
     {
         // Lấy chuỗi kết nối từ App.config
         private static string _connStr = ConfigurationManager.ConnectionStrings["HospitalDB"].ConnectionString;
+        public static void SetConnectionString(string connStr)
+        {
+            _connStr = connStr;
+        }
+
+        public static void TestConnection(string connStr)
+        {
+            using (OracleConnection conn = new OracleConnection(connStr))
+            {
+                conn.Open(); // throws if credentials are wrong
+            }
+        }
 
         // SP trả về một danh sách
         public static DataTable ExecuteQuerySP(string spName, OracleParameter[] parameters = null)
@@ -34,6 +46,31 @@ namespace QuanLyYTe.DAL
                         catch (Exception ex)
                         {
                             throw new Exception($"Lỗi thực thi SP {spName}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            return dt;
+        }
+
+        public static DataTable ExecuteQuery(string sql, OracleParameter[] parameters = null)
+        {
+            DataTable dt = new DataTable();
+            using (OracleConnection conn = new OracleConnection(_connStr))
+            {
+                using (OracleCommand cmd = new OracleCommand(sql, conn))
+                {
+                    cmd.CommandType = CommandType.Text;
+                    if (parameters != null) cmd.Parameters.AddRange(parameters);
+                    using (OracleDataAdapter da = new OracleDataAdapter(cmd))
+                    {
+                        try
+                        {
+                            da.Fill(dt);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"Lỗi thực thi query: {ex.Message}");
                         }
                     }
                 }
