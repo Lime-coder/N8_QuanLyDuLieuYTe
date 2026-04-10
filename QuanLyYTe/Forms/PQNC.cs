@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -68,6 +68,10 @@ namespace QuanLyYTe.Forms
             chkDelete = AddCheckBox("DELETE", 360, checkY);
             chkExecute = AddCheckBox("EXECUTE", 470, checkY);
 
+            // --- THÊM MỚI: Đăng ký sự kiện để kiểm soát mở cột ---
+            chkSelect.CheckedChanged += PrivilegeCheckBox_CheckedChanged;
+            chkUpdate.CheckedChanged += PrivilegeCheckBox_CheckedChanged;
+
             // 5. Tùy chọn nâng cao
             chkWithGrantOption = AddCheckBox("WITH GRANT OPTION", labelX, 350, 250, Color.Blue);
             chkWithAdminOption = AddCheckBox("WITH ADMIN OPTION", 300, 350, 250, Color.DarkGreen);
@@ -99,6 +103,25 @@ namespace QuanLyYTe.Forms
         #endregion
 
         #region Logic & Event Handlers
+
+        // --- THÊM MỚI: Hàm xử lý logic khóa/mở danh sách cột ---
+        private void PrivilegeCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            string type = cbObjectType.Text;
+            if (type == "TABLE" || type == "VIEW")
+            {
+                // Chỉ mở danh sách cột nếu SELECT hoặc UPDATE được tích
+                clbColumns.Enabled = chkSelect.Checked || chkUpdate.Checked;
+
+                // Nếu bị khóa thì xóa hết các tích chọn cột trước đó
+                if (!clbColumns.Enabled)
+                {
+                    for (int i = 0; i < clbColumns.Items.Count; i++)
+                        clbColumns.SetItemChecked(i, false);
+                }
+            }
+        }
+
         private void LoadGranteeNames()
         {
             cbGranteeName.Items.Clear();
@@ -131,7 +154,7 @@ namespace QuanLyYTe.Forms
             else // TABLE / VIEW
             {
                 ExecuteQuery($"SELECT object_name FROM all_objects WHERE object_type = '{type}' AND owner = '{TargetSchema}'", (dr) => lbObjects.Items.Add(dr[0].ToString()));
-                TogglePrivileges(true, true, true, false); // Mở Select/Insert/Update/Delete và Grant Option
+                TogglePrivileges(true, false, true, false); // Mở quyền bảng nhưng mặc định khóa cột cho đến khi tích Select/Update
             }
         }
 
