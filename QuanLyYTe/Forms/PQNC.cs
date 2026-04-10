@@ -1,19 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
-using Oracle.ManagedDataAccess.Client;
+using QuanLyYTe.DAL; // Import the DAL namespace
 
 namespace QuanLyYTe.Forms
 {
     public partial class PQNC : Form
     {
-        // --- CẤU HÌNH ---
+        // --- CONFIGURATION ---
         private const string ConnectionString = "Data Source=localhost:1521/PDB_QLYT;User Id=hospital_dba;Password=123;";
-        private const string TargetSchema = "HOSPITAL_DBA";
+        private readonly PrivilegeRepository _repository;
 
-        // --- ĐIỀU KHIỂN GIAO DIỆN ---
+        // --- UI CONTROLS ---
         private ComboBox cbObjectType, cbGranteeType, cbGranteeName;
         private ListBox lbObjects;
         private CheckedListBox clbColumns;
@@ -22,6 +21,7 @@ namespace QuanLyYTe.Forms
 
         public PQNC()
         {
+            _repository = new PrivilegeRepository(ConnectionString);
             SetupCustomInterface();
             LoadGranteeNames();
         }
@@ -37,7 +37,7 @@ namespace QuanLyYTe.Forms
 
             int labelX = 30; int controlX = 160;
 
-            // 1. Thông tin người nhận
+            // 1. Grantee Information
             AddLabel("Người nhận:", labelX, 25);
             cbGranteeType = AddComboBox(controlX, 22, 100);
             cbGranteeType.Items.AddRange(new string[] { "USER", "ROLE" });
@@ -46,13 +46,13 @@ namespace QuanLyYTe.Forms
 
             cbGranteeName = AddComboBox(controlX + 110, 22, 200);
 
-            // 2. Loại đối tượng
+            // 2. Object Type
             AddLabel("Loại đối tượng:", labelX, 65);
             cbObjectType = AddComboBox(controlX, 62, 200);
             cbObjectType.Items.AddRange(new string[] { "TABLE", "VIEW", "PROCEDURE", "FUNCTION", "GÁN ROLE CHO USER" });
             cbObjectType.SelectedIndexChanged += cbObjectType_SelectedIndexChanged;
 
-            // 3. Danh sách Đối tượng & Cột
+            // 3. Object & Column List
             AddLabel("Chọn Đối tượng/Role:", labelX, 105);
             lbObjects = new ListBox() { Location = new Point(labelX, 130), Width = 370, Height = 150, BorderStyle = BorderStyle.FixedSingle };
             lbObjects.SelectedIndexChanged += lbObjects_SelectedIndexChanged;
@@ -60,7 +60,7 @@ namespace QuanLyYTe.Forms
             AddLabel("Phân quyền mức cột:", 410, 105);
             clbColumns = new CheckedListBox() { Location = new Point(410, 130), Width = 370, Height = 150, CheckOnClick = true, BorderStyle = BorderStyle.FixedSingle };
 
-            // 4. Các quyền truy cập
+            // 4. Access Privileges
             int checkY = 300;
             chkSelect = AddCheckBox("SELECT", labelX, checkY);
             chkInsert = AddCheckBox("INSERT", 140, checkY);
@@ -68,15 +68,14 @@ namespace QuanLyYTe.Forms
             chkDelete = AddCheckBox("DELETE", 360, checkY);
             chkExecute = AddCheckBox("EXECUTE", 470, checkY);
 
-            // --- THÊM MỚI: Đăng ký sự kiện để kiểm soát mở cột ---
             chkSelect.CheckedChanged += PrivilegeCheckBox_CheckedChanged;
             chkUpdate.CheckedChanged += PrivilegeCheckBox_CheckedChanged;
 
-            // 5. Tùy chọn nâng cao
+            // 5. Advanced Options
             chkWithGrantOption = AddCheckBox("WITH GRANT OPTION", labelX, 350, 250, Color.Blue);
             chkWithAdminOption = AddCheckBox("WITH ADMIN OPTION", 300, 350, 250, Color.DarkGreen);
 
-            // 6. Nút thực thi
+            // 6. Execution Button
             btnGrant = new Button()
             {
                 Text = "XÁC NHẬN CẤP QUYỀN",
@@ -102,18 +101,17 @@ namespace QuanLyYTe.Forms
         private CheckBox AddCheckBox(string text, int x, int y, int w = 100, Color? color = null) => new CheckBox { Text = text, Location = new Point(x, y), Width = w, ForeColor = color ?? Color.Black };
         #endregion
 
-        #region Logic & Event Handlers
+        #region UI Event Handlers
 
-        // --- THÊM MỚI: Hàm xử lý logic khóa/mở danh sách cột ---
         private void PrivilegeCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             string type = cbObjectType.Text;
             if (type == "TABLE" || type == "VIEW")
             {
-                // Chỉ mở danh sách cột nếu SELECT hoặc UPDATE được tích
+                // Enable column list only if SELECT or UPDATE is checked
                 clbColumns.Enabled = chkSelect.Checked || chkUpdate.Checked;
 
-                // Nếu bị khóa thì xóa hết các tích chọn cột trước đó
+                // Reset column selection if disabled
                 if (!clbColumns.Enabled)
                 {
                     for (int i = 0; i < clbColumns.Items.Count; i++)
@@ -124,11 +122,13 @@ namespace QuanLyYTe.Forms
 
         private void LoadGranteeNames()
         {
-            cbGranteeName.Items.Clear();
-            string query = cbGranteeType.Text == "USER" ?
-                "SELECT username FROM dba_users WHERE oracle_maintained = 'N'" :
-                "SELECT role FROM dba_roles WHERE oracle_maintained = 'N'";
-            ExecuteQuery(query, (dr) => cbGranteeName.Items.Add(dr[0].ToString()));
+            try
+            {
+                cbGranteeName.Items.Clear();
+                var grantees = _repository.GetGrantees(cbGranteeType.Text);
+                foreach (var name in grantees) cbGranteeName.Items.Add(name);
+            }
+            catch (Exception ex) { MessageBox.Show("Lỗi tải danh sách người nhận: " + ex.Message); }
         }
 
         private void cbObjectType_SelectedIndexChanged(object sender, EventArgs e)
@@ -137,25 +137,31 @@ namespace QuanLyYTe.Forms
             lbObjects.Items.Clear();
             clbColumns.Items.Clear();
 
-            // Reset trạng thái checkbox
             TogglePrivileges(false, false, false, false);
 
-            if (type == "GÁN ROLE CHO USER")
+            try
             {
-                ExecuteQuery("SELECT role FROM dba_roles WHERE oracle_maintained = 'N'", (dr) => lbObjects.Items.Add(dr[0].ToString()));
-                TogglePrivileges(false, false, false, true); // Chỉ mở Admin Option
+                if (type == "GÁN ROLE CHO USER")
+                {
+                    var roles = _repository.GetGrantees("ROLE");
+                    foreach (var r in roles) lbObjects.Items.Add(r);
+                    TogglePrivileges(false, false, false, true);
+                }
+                else if (type == "PROCEDURE" || type == "FUNCTION")
+                {
+                    var procs = _repository.GetObjects(type);
+                    foreach (var p in procs) lbObjects.Items.Add(p);
+                    chkExecute.Enabled = chkExecute.Checked = true;
+                    chkWithGrantOption.Enabled = true;
+                }
+                else // TABLE / VIEW
+                {
+                    var tables = _repository.GetObjects(type);
+                    foreach (var t in tables) lbObjects.Items.Add(t);
+                    TogglePrivileges(true, false, true, false);
+                }
             }
-            else if (type == "PROCEDURE" || type == "FUNCTION")
-            {
-                ExecuteQuery($"SELECT object_name FROM all_objects WHERE object_type = '{type}' AND owner = '{TargetSchema}'", (dr) => lbObjects.Items.Add(dr[0].ToString()));
-                chkExecute.Enabled = chkExecute.Checked = true;
-                chkWithGrantOption.Enabled = true;
-            }
-            else // TABLE / VIEW
-            {
-                ExecuteQuery($"SELECT object_name FROM all_objects WHERE object_type = '{type}' AND owner = '{TargetSchema}'", (dr) => lbObjects.Items.Add(dr[0].ToString()));
-                TogglePrivileges(true, false, true, false); // Mở quyền bảng nhưng mặc định khóa cột cho đến khi tích Select/Update
-            }
+            catch (Exception ex) { MessageBox.Show("Lỗi tải danh sách đối tượng: " + ex.Message); }
         }
 
         private void TogglePrivileges(bool tablePrivs, bool cols, bool grantOpt, bool adminOpt)
@@ -177,8 +183,12 @@ namespace QuanLyYTe.Forms
             string type = cbObjectType.Text;
             if (type == "TABLE" || type == "VIEW")
             {
-                string query = $"SELECT column_name FROM all_tab_columns WHERE table_name = '{lbObjects.SelectedItem}' AND owner = '{TargetSchema}'";
-                ExecuteQuery(query, (dr) => clbColumns.Items.Add(dr[0].ToString()));
+                try
+                {
+                    var columns = _repository.GetColumns(lbObjects.SelectedItem.ToString());
+                    foreach (var col in columns) clbColumns.Items.Add(col);
+                }
+                catch (Exception ex) { MessageBox.Show("Lỗi tải danh sách cột: " + ex.Message); }
             }
         }
 
@@ -198,7 +208,7 @@ namespace QuanLyYTe.Forms
                 return;
             }
 
-            // 2. Thu thập dữ liệu
+            // 2. Data Gathering
             string grantee = cbGranteeName.Text;
             string target = lbObjects.Text;
             int gOpt = chkWithGrantOption.Checked ? 1 : 0;
@@ -208,65 +218,27 @@ namespace QuanLyYTe.Forms
             foreach (var item in clbColumns.CheckedItems) selectedCols.Add(item.ToString());
             string colList = selectedCols.Count > 0 ? string.Join(",", selectedCols) : null;
 
-            // 3. Thực thi
+            // 3. Execution via Repository
             try
             {
-                using (OracleConnection conn = new OracleConnection(ConnectionString))
+                if (isRoleAssign)
                 {
-                    conn.Open();
-                    if (isRoleAssign)
-                    {
-                        CallGrantSP(conn, grantee, target, null, null, 0, aOpt);
-                        // Tự động kích hoạt Role mặc định nếu là User
-                        if (cbGranteeType.Text == "USER")
-                            new OracleCommand($"ALTER USER {grantee} DEFAULT ROLE ALL", conn).ExecuteNonQuery();
-                    }
-                    else
-                    {
-                        if (chkSelect.Checked) CallGrantSP(conn, grantee, "SELECT", target, colList, gOpt, 0);
-                        if (chkInsert.Checked) CallGrantSP(conn, grantee, "INSERT", target, null, gOpt, 0);
-                        if (chkUpdate.Checked) CallGrantSP(conn, grantee, "UPDATE", target, colList, gOpt, 0);
-                        if (chkDelete.Checked) CallGrantSP(conn, grantee, "DELETE", target, null, gOpt, 0);
-                        if (chkExecute.Checked) CallGrantSP(conn, grantee, "EXECUTE", target, null, gOpt, 0);
-                    }
-                    MessageBox.Show($"Đã cấp quyền thành công cho {grantee}!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    _repository.ExecuteGrant(grantee, target, null, null, 0, aOpt);
                 }
-            }
-            catch (Exception ex) { MessageBox.Show("Lỗi Oracle: " + ex.Message, "Thất bại", MessageBoxButtons.OK, MessageBoxIcon.Error); }
-        }
-        #endregion
-
-        #region Data Access
-        private void CallGrantSP(OracleConnection conn, string grantee, string priv, string obj, string cols, int gOpt, int aOpt)
-        {
-            using (OracleCommand cmd = new OracleCommand("usp_GrantPrivilege_Q3", conn))
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add("p_grantee", OracleDbType.Varchar2).Value = grantee;
-                cmd.Parameters.Add("p_priv_or_role", OracleDbType.Varchar2).Value = priv;
-                cmd.Parameters.Add("p_object_name", OracleDbType.Varchar2).Value = (object)obj ?? DBNull.Value;
-                cmd.Parameters.Add("p_column_list", OracleDbType.Varchar2).Value = (object)cols ?? DBNull.Value;
-                cmd.Parameters.Add("p_with_grant", OracleDbType.Int32).Value = gOpt;
-                cmd.Parameters.Add("p_with_admin", OracleDbType.Int32).Value = aOpt;
-                cmd.ExecuteNonQuery();
-            }
-        }
-
-        private void ExecuteQuery(string sql, Action<OracleDataReader> action)
-        {
-            try
-            {
-                using (OracleConnection conn = new OracleConnection(ConnectionString))
+                else
                 {
-                    conn.Open();
-                    using (OracleCommand cmd = new OracleCommand(sql, conn))
-                    using (OracleDataReader dr = cmd.ExecuteReader())
-                    {
-                        while (dr.Read()) action(dr);
-                    }
+                    if (chkSelect.Checked) _repository.ExecuteGrant(grantee, "SELECT", target, colList, gOpt, 0);
+                    if (chkInsert.Checked) _repository.ExecuteGrant(grantee, "INSERT", target, null, gOpt, 0);
+                    if (chkUpdate.Checked) _repository.ExecuteGrant(grantee, "UPDATE", target, colList, gOpt, 0);
+                    if (chkDelete.Checked) _repository.ExecuteGrant(grantee, "DELETE", target, null, gOpt, 0);
+                    if (chkExecute.Checked) _repository.ExecuteGrant(grantee, "EXECUTE", target, null, gOpt, 0);
                 }
+                MessageBox.Show($"Đã cấp quyền thành công cho {grantee}!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-            catch (Exception ex) { Console.WriteLine("Query Error: " + ex.Message); }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi Oracle: " + ex.Message, "Thất bại", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         #endregion
     }
