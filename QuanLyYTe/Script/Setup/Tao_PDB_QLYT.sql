@@ -1,7 +1,7 @@
 -- Chuyển vào CDB$ROOT
 ALTER SESSION SET CONTAINER = CDB$ROOT;
 
--- Tạo PDB (Nếu đã tạo rồi thì bỏ qua bước này)
+---- Tạo PDB (Nếu đã tạo rồi thì bỏ qua bước này)
 -- CREATE PLUGGABLE DATABASE PDB_QLYT ADMIN USER pdb_admin IDENTIFIED BY 123 FILE_NAME_CONVERT = ('pdbseed', 'pdb_qlyt');
 
 ---- Mở và Lưu trạng thái
@@ -11,7 +11,7 @@ ALTER SESSION SET CONTAINER = CDB$ROOT;
 -- Chuyển vào PDB để cấp quyền
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 
--- 1. Tạo User (Nếu đã có thì bỏ qua)
+---- 1. Tạo User (Nếu đã có thì bỏ qua)
 -- CREATE USER hospital_dba IDENTIFIED BY 123;
 
 -- 2. Cấp quyền DBA cơ bản
