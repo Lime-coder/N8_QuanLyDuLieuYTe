@@ -52,6 +52,20 @@ namespace QuanLyYTe.DAL
         }
 
         /// <summary>
+        /// Lấy danh sách các quyền hệ thống có sẵn
+        /// Sử dụng SP: usp_GetAllSystemPrivileges
+        /// </summary>
+        public DataTable GetAllSystemPrivileges()
+        {
+            OracleParameter[] parameters = new OracleParameter[]
+            {
+        new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
+            };
+            return OracleHelper.ExecuteQuerySP("usp_GetAllSystemPrivileges", parameters);
+        }
+
+
+        /// <summary>
         /// Thực thi cấp quyền trên đối tượng
         /// Sử dụng SP: USP_GRANT_OBJECT_PRIV
         /// </summary>
@@ -85,6 +99,21 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_with_admin", OracleDbType.Int32) { Value = withAdmin }
             };
             OracleHelper.ExecuteNonQuerySP("USP_GRANT_ROLE_TO_USER", parameters);
+        }
+
+        /// <summary>
+        /// Thực thi cấp quyền hệ thống cho User hoặc Role
+        /// Sử dụng SP: USP_GRANT_SYSTEM_PRIVILEGE
+        /// </summary>
+        public void GrantSystemPrivilege(string grantee, string priv, int withAdmin)
+        {
+            OracleParameter[] parameters = new OracleParameter[]
+            {
+        new OracleParameter("p_grantee", OracleDbType.Varchar2) { Value = grantee },
+        new OracleParameter("p_privilege", OracleDbType.Varchar2) { Value = priv },
+        new OracleParameter("p_with_admin", OracleDbType.Int32) { Value = withAdmin }
+            };
+            OracleHelper.ExecuteNonQuerySP("USP_GRANT_SYSTEM_PRIVILEGE", parameters);
         }
 
     }

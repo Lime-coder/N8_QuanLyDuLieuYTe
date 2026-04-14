@@ -1,5 +1,6 @@
--- 1. PROCEDURE: Get list of Grantees (Users or Roles)
--- Requirement: Data formatting inside SP, English naming/comments
+
+--------------------------------------------------------------------------------
+--1. Lấy danh sách User hoặc Role
 --------------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE usp_GetGrantees (
     p_grantee_type IN VARCHAR2, -- 'USER' or 'ROLE'
@@ -22,7 +23,7 @@ END;
 /
 
 --------------------------------------------------------------------------------
--- 2. PROCEDURE: Get list of Database Objects (Tables, Views, etc.)
+-- 2. Lấy danh sách đối tượng (Procedure, Function, Table, View)
 --------------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE usp_GetObjects (
     p_object_type IN VARCHAR2, -- 'TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION'
@@ -40,7 +41,7 @@ END;
 /
 
 --------------------------------------------------------------------------------
--- 3. PROCEDURE: Get list of Columns for a specific table/view
+-- 3. PROCEDURE: Lấy danh sách cột của một bảng cụ thể (Dùng cho phân quyền mức cột)
 --------------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE usp_GetColumns (
     p_table_name IN VARCHAR2,
@@ -54,5 +55,17 @@ BEGIN
     WHERE table_name = v_table 
       AND owner = 'HOSPITAL_DBA'
     ORDER BY column_id;
+END;
+/
+--------------------------------------------------------------------------------
+-- 4. Danh sách quyền hệ thống 
+--------------------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE usp_GetAllSystemPrivileges (
+    p_result_cursor OUT SYS_REFCURSOR
+) AS
+BEGIN
+    OPEN p_result_cursor FOR 
+    SELECT NAME FROM SYSTEM_PRIVILEGE_MAP 
+    ORDER BY NAME;
 END;
 /

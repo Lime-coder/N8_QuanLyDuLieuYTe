@@ -1,4 +1,6 @@
+-------------------------------------------------------------------------------------------
 -- 1. Quyền đối tượng
+--------------------------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE USP_GRANT_OBJECT_PRIV (
     p_grantee      IN VARCHAR2, -- Người nhận (User hoặc Role)
     p_priv_or_role IN VARCHAR2, -- SELECT, INSERT, UPDATE, DELETE, EXECUTE
@@ -83,7 +85,9 @@ BEGIN
 END;
 /
 
+----------------------------------------------------------------------------------
 --2. Cấp role cho user
+-----------------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE USP_GRANT_ROLE_TO_USER (
     p_user IN VARCHAR2,       -- Tên User nhận Role
     p_role IN VARCHAR2,       -- Tên Role được cấp
@@ -133,7 +137,9 @@ EXCEPTION
 END;
 /
 
+---------------------------------------------------------------------------------
 --3. Quyền hệ thống
+---------------------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE USP_GRANT_SYSTEM_PRIVILEGE (
     p_grantee IN VARCHAR2,       -- Người nhận (User hoặc Role)
     p_privilege IN VARCHAR2,     -- Quyền hệ thống (CREATE SESSION, CREATE TABLE...)

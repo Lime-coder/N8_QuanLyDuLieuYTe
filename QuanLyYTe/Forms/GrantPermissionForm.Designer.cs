@@ -15,29 +15,17 @@
             tcMain = new TabControl();
             tpObject = new TabPage();
             tpRole = new TabPage();
-            cbGranteeType = new ComboBox();
-            cbGranteeName = new ComboBox();
-            cbObjectType = new ComboBox();
-            lbObjects = new ListBox();
-            clbColumns = new CheckedListBox();
-            chkSelect = new CheckBox();
-            chkInsert = new CheckBox();
-            chkUpdate = new CheckBox();
-            chkDelete = new CheckBox();
-            chkExecute = new CheckBox();
-            chkWithGrantOption = new CheckBox();
-            btnGrant = new Button();
-            cbRoleUser = new ComboBox();
-            cbRoleToGrant = new ComboBox();
-            chkWithAdminOption = new CheckBox();
-            btnGrantRole = new Button();
-            tcMain.SuspendLayout();
+            tpSystem = new TabPage();
+
+            tcMain.SuspendLayout();         
             SuspendLayout();
             // 
             // tcMain
             // 
             tcMain.Controls.Add(tpObject);
             tcMain.Controls.Add(tpRole);
+            tcMain.Controls.Add(tpSystem);
+
             tcMain.Dock = DockStyle.Fill;
             tcMain.Location = new Point(0, 0);
             tcMain.Name = "tcMain";
@@ -63,6 +51,47 @@
             tpRole.TabIndex = 1;
             tpRole.Text = "Cấp Role cho User";
             // 
+            // tpSystem
+            // 
+            tpSystem.BackColor = Color.WhiteSmoke;
+            tpSystem.Location = new Point(4, 29);
+            tpSystem.Name = "tpSystem";
+            tpSystem.Size = new Size(842, 567);
+            tpSystem.TabIndex = 2;
+            tpSystem.Text = "Quyền hệ thống";
+
+            
+            cbGranteeType = new ComboBox();
+            cbGranteeName = new ComboBox();
+            cbObjectType = new ComboBox();
+            lbObjects = new ListBox();
+            clbColumns = new CheckedListBox();
+            chkSelect = new CheckBox();
+            chkInsert = new CheckBox();
+            chkUpdate = new CheckBox();
+            chkDelete = new CheckBox();
+            chkExecute = new CheckBox();
+            chkWithGrantOption = new CheckBox();
+            btnGrant = new Button();
+            cbRoleUser = new ComboBox();
+            cbRoleToGrant = new ComboBox();
+            chkWithAdminOption = new CheckBox();
+            btnGrantRole = new Button();
+
+            // GrantPermissionForm
+            this.ClientSize = new Size(850, 600);
+            this.Controls.Add(this.tcMain);
+            this.Font = new Font("Segoe UI", 9F);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Text = "Cấp quyền - Grant Permission";
+
+            this.tcMain.ResumeLayout(false);
+            this.tpObject.ResumeLayout(false);
+            this.tpRole.ResumeLayout(false);
+            this.tpSystem.ResumeLayout(false);
+            this.ResumeLayout(false);
+
+            //
             // cbGranteeType
             // 
             cbGranteeType.Location = new Point(0, 0);
@@ -184,13 +213,17 @@
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Cấp quyền - Grant Permission";
             Load += GrantPermissionForm_Load;
+
+            SetupTabObjectPrivileges();
+            SetupTabRoleGrant();
+            SetupTabSystemPrivileges();
+
             tcMain.ResumeLayout(false);
             ResumeLayout(false);
         }
 
         private void SetupTabObjectPrivileges()
         {
-            // TẠO KHUNG BAO QUANH CHO TAB QUYỀN ĐỐI TƯỢNG
             Panel pnlObj = new Panel
             {
                 Size = new Size(800, 510),
@@ -237,8 +270,6 @@
             };
 
             pnlObj.Controls.AddRange(new Control[] { cbGranteeType, cbGranteeName, cbObjectType, lbObjects, clbColumns, chkSelect, chkInsert, chkUpdate, chkDelete, chkExecute, chkWithGrantOption, btnGrant });
-
-            // Thêm panel vào TabPage
             this.tpObject.Controls.Add(pnlObj);
         }
 
@@ -275,20 +306,66 @@
             pnl.Controls.AddRange(new Control[] { lblUser, cbRoleUser, lblRole, cbRoleToGrant, chkWithAdminOption, btnGrantRole });
             this.tpRole.Controls.Add(pnl);
         }
+        private void SetupTabSystemPrivileges()
+        {
+            Panel pnl = new Panel
+            {
+                Size = new Size(780, 480),
+                Location = new Point(30, 25),
+                BorderStyle = BorderStyle.FixedSingle,
+                BackColor = Color.FromArgb(248, 249, 250)
+            };
+
+            int labelX = 150; int controlX = 320;
+
+            // Dòng 1: Người nhận
+            pnl.Controls.Add(CreateLabel("Người nhận:", labelX, 100));
+            this.cbSysGranteeType = CreateComboBox(controlX, 97, 100);
+            this.cbSysGranteeType.Items.AddRange(new object[] { "USER", "ROLE" });
+            this.cbSysGranteeName = CreateComboBox(controlX + 110, 97, 190);
+
+            // Dòng 2: Chọn quyền
+            pnl.Controls.Add(CreateLabel("Chọn quyền:", labelX, 180));
+            this.cbSysPrivilege = CreateComboBox(controlX, 177, 300);
+
+            // Dòng 3: Admin Option
+            this.chkWithAdminOptionSys = new CheckBox
+            {
+                Text = "WITH ADMIN OPTION",
+                Location = new Point(labelX, 250),
+                AutoSize = true
+            };
+
+            // Dòng 4: Nút xác nhận
+            this.btnGrantSystem = new Button
+            {
+                Text = "Xác nhận cấp quyền hệ thống",
+                Location = new Point(labelX, 320),
+                Width = 470,
+                Height = 55,
+                BackColor = Color.RoyalBlue,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold)
+            };
+
+            pnl.Controls.AddRange(new Control[] { cbSysGranteeType, cbSysGranteeName, cbSysPrivilege, chkWithAdminOptionSys, btnGrantSystem });
+            this.tpSystem.Controls.Add(pnl);
+        }
 
         private Label CreateLabel(string text, int x, int y) => new Label { Text = text, Location = new Point(x, y), AutoSize = true };
         private System.Windows.Forms.ComboBox CreateComboBox(int x, int y, int w) => new System.Windows.Forms.ComboBox
         {
             Location = new System.Drawing.Point(x, y),
             Width = w,
-            DropDownStyle = ComboBoxStyle.DropDown, // Đổi từ DropDownList sang DropDown để cho phép gõ
-            AutoCompleteMode = AutoCompleteMode.SuggestAppend, // Bật gợi ý
-            AutoCompleteSource = AutoCompleteSource.ListItems  // Lấy nguồn từ danh sách Item
+            DropDownStyle = ComboBoxStyle.DropDown, 
+            AutoCompleteMode = AutoCompleteMode.SuggestAppend, 
+            AutoCompleteSource = AutoCompleteSource.ListItems  
         };
         private CheckBox CreateCheckBox(string text, int x, int y, int w = 100, Color? color = null) => new CheckBox { Text = text, Location = new Point(x, y), Width = w, ForeColor = color ?? Color.Black };
 
         private TabControl tcMain;
-        private TabPage tpObject, tpRole;
+        private TabPage tpObject, tpRole, tpSystem;
         // Tab 1 UI
         private ComboBox cbObjectType, cbGranteeType, cbGranteeName;
         private ListBox lbObjects;
@@ -299,5 +376,9 @@
         private ComboBox cbRoleUser, cbRoleToGrant;
         private CheckBox chkWithAdminOption;
         private Button btnGrantRole;
+        // Tab 3 UI
+        private ComboBox cbSysGranteeType, cbSysGranteeName, cbSysPrivilege;
+        private CheckBox chkWithAdminOptionSys;
+        private Button btnGrantSystem;
     }
 }
