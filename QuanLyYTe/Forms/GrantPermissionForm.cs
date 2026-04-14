@@ -160,17 +160,14 @@ namespace QuanLyYTe.Forms
         {
             try
             {
-                // Lấy dữ liệu (GetGrantees đã xử lý IF USER/ROLE trong SP rồi)
                 DataTable dt = _repository.GetGrantees(cbSysGranteeType.Text);
 
                 if (dt != null && dt.Columns.Count > 0)
                 {
-                    // Xóa trắng để reset trạng thái tìm kiếm
                     cbSysGranteeName.DataSource = null;
                     cbSysGranteeName.Items.Clear();
                     cbSysGranteeName.Text = "";
 
-                    // Gán tên cột đầu tiên trả về từ Cursor làm DisplayMember
                     cbSysGranteeName.DisplayMember = dt.Columns[0].ColumnName;
                     cbSysGranteeName.DataSource = dt;
 
