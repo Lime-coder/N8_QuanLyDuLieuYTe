@@ -1,6 +1,5 @@
-﻿using System;
-using System.Data;
-using System.Windows.Forms;
+﻿using System.Data;
+using System.Text.RegularExpressions;
 using QuanLyYTe.DAL;
 
 namespace QuanLyYTe.Forms
@@ -8,154 +7,463 @@ namespace QuanLyYTe.Forms
     public partial class SecurityAdminForm : Form
     {
         private readonly SecurityAdminRepository _repo = new SecurityAdminRepository();
+        private DataTable? _usersDt;
+        private DataTable? _rolesDt;
 
-        // ── Constructor ──────────────────────────────────────────────
         public SecurityAdminForm()
         {
             InitializeComponent();
-            LoadUsers();
-            LoadRoles();
+            ApplyButtonStyles();
+            dgvUsers.CellFormatting += dgvUsers_CellFormatting;
         }
 
-        // ── Data loaders ─────────────────────────────────────────────
-        private void LoadUsers()
+        private void SecurityAdminForm_Load(object sender, EventArgs e)
         {
-            try { dgvUsers.DataSource = _repo.GetUsers(); }
-            catch (Exception ex) { ShowError(ex.Message); }
+            RefreshUsers();
+            RefreshRoles();
         }
 
-        private void LoadRoles()
+        private void ApplyButtonStyles()
         {
-            try { dgvRoles.DataSource = _repo.GetRoles(); }
-            catch (Exception ex) { ShowError(ex.Message); }
+            void StylePrimary(Button b)
+            {
+                b.FlatStyle = FlatStyle.Flat;
+                b.FlatAppearance.BorderSize = 0;
+                b.BackColor = Color.FromArgb(33, 150, 243);
+                b.ForeColor = Color.White;
+            }
+
+            void StyleWarning(Button b)
+            {
+                b.FlatStyle = FlatStyle.Flat;
+                b.FlatAppearance.BorderSize = 0;
+                b.BackColor = Color.FromArgb(255, 193, 7);
+                b.ForeColor = Color.Black;
+            }
+
+            void StyleSuccess(Button b)
+            {
+                b.FlatStyle = FlatStyle.Flat;
+                b.FlatAppearance.BorderSize = 0;
+                b.BackColor = Color.FromArgb(76, 175, 80);
+                b.ForeColor = Color.White;
+            }
+
+            void StyleDanger(Button b)
+            {
+                b.FlatStyle = FlatStyle.Flat;
+                b.FlatAppearance.BorderSize = 0;
+                b.BackColor = Color.FromArgb(244, 67, 54);
+                b.ForeColor = Color.White;
+            }
+
+            void StyleNeutral(Button b)
+            {
+                b.FlatStyle = FlatStyle.Flat;
+                b.FlatAppearance.BorderSize = 0;
+                b.BackColor = Color.FromArgb(96, 125, 139);
+                b.ForeColor = Color.White;
+            }
+
+            void StyleDefault(Button b)
+            {
+                b.FlatStyle = FlatStyle.Standard;
+                b.UseVisualStyleBackColor = true;
+            }
+
+            StyleNeutral(btnUserRefresh);
+            StylePrimary(btnUserCreate);
+            StyleWarning(btnUserEdit);
+            StyleDanger(btnUserDelete);
+            StyleDefault(btnUserLock);
+            StyleSuccess(btnUserUnlock);
+
+            StyleNeutral(btnRoleRefresh);
+            StylePrimary(btnRoleCreate);
+            StyleWarning(btnRoleEdit);
+            StyleDanger(btnRoleDelete);
         }
 
-        // ── USER actions ─────────────────────────────────────────────
-        private void ShowCreateUserDialog()
+        private void dgvUsers_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
         {
-            using var dlg = new EditUserDialog("Tạo User mới", isCreate: true);
-            if (dlg.ShowDialog() != DialogResult.OK) return;
+            if (dgvUsers.Columns.Count == 0) return;
+            if (!dgvUsers.Columns.Contains("ACCOUNT_STATUS")) return;
+
+            int colIdx = dgvUsers.Columns["ACCOUNT_STATUS"].Index;
+            if (e.ColumnIndex != colIdx) return;
+
+            string status = Convert.ToString(e.Value) ?? string.Empty;
+            string upper = status.ToUpperInvariant();
+
+            if (upper.Contains("LOCKED"))
+            {
+                e.CellStyle.ForeColor = Color.FromArgb(183, 28, 28);
+                e.CellStyle.SelectionForeColor = Color.White;
+                e.CellStyle.SelectionBackColor = Color.FromArgb(244, 67, 54);
+            }
+            else if (upper.Contains("OPEN"))
+            {
+                e.CellStyle.ForeColor = Color.FromArgb(27, 94, 32);
+                e.CellStyle.SelectionForeColor = Color.White;
+                e.CellStyle.SelectionBackColor = Color.FromArgb(76, 175, 80);
+            }
+        }
+
+        private void RefreshUsers()
+        {
             try
             {
-                string password = dlg.NewPassword ?? "";
-                if (string.IsNullOrWhiteSpace(password))
+                _usersDt = _repo.GetAllUsers();
+                _usersDt.CaseSensitive = false;
+                dgvUsers.DataSource = _usersDt;
+                OracleHelper.FormatGridView(dgvUsers);
+
+                if (_usersDt.Columns.Count == 0)
                 {
-                    ShowError("Mật khẩu không được để trống.");
-                    return;
+                    MessageBox.Show(
+                        "Không lấy được dữ liệu Users (DataTable không có cột).\n" +
+                        "Khả năng cao: Stored Procedure chưa tạo/chưa đúng schema, hoặc thiếu quyền SELECT trên DBA_USERS.",
+                        "Chẩn đoán");
                 }
-                _repo.CreateUser(dlg.Username, password);
-                ShowInfo($"Tạo user '{dlg.Username}' thành công.");
-                LoadUsers();
+
+                ApplyUserFilter();
+                UpdateUserButtonsState();
             }
-            catch (Exception ex) { ShowError(ex.Message); }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Lỗi load Users");
+            }
         }
 
-        private void ShowEditUserDialog()
+        private void RefreshRoles()
         {
-            if (!TryGetSelected(dgvUsers, "USERNAME", out string username)) return;
-
-            string currentStatus = dgvUsers.CurrentRow!.Cells["ACCOUNT_STATUS"].Value?.ToString() ?? "";
-            bool isLocked = currentStatus.Contains("LOCKED");
-
-            using var dlg = new EditUserDialog($"Sửa User – {username}",
-                                               isCreate: false,
-                                               fixedUsername: username,
-                                               isCurrentlyLocked: isLocked);
-            if (dlg.ShowDialog() != DialogResult.OK) return;
             try
             {
-                _repo.AlterUser(username, dlg.NewPassword, dlg.LockAction);
+                _rolesDt = _repo.GetAllRoles();
+                _rolesDt.CaseSensitive = false;
+                dgvRoles.DataSource = _rolesDt;
+                OracleHelper.FormatGridView(dgvRoles);
 
-                string msg = $"Cập nhật user '{username}' thành công.";
-                if (dlg.LockAction == LockAction.Lock) msg += "\n→ Tài khoản đã bị KHÓA.";
-                if (dlg.LockAction == LockAction.Unlock) msg += "\n→ Tài khoản đã được MỞ KHÓA.";
-                ShowInfo(msg);
-                LoadUsers();
+                if (_rolesDt.Columns.Count == 0)
+                {
+                    MessageBox.Show(
+                        "Không lấy được dữ liệu Roles (DataTable không có cột).\n" +
+                        "Khả năng cao: Stored Procedure chưa tạo/chưa đúng schema, hoặc thiếu quyền SELECT trên DBA_ROLES.",
+                        "Chẩn đoán");
+                }
+
+                ApplyRoleFilter();
+                UpdateRoleButtonsState();
             }
-            catch (Exception ex) { ShowError(ex.Message); }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Lỗi load Roles");
+            }
         }
 
-        private void DropSelectedUser()
+        private static string EscapeForRowFilterLike(string s)
         {
-            if (!TryGetSelected(dgvUsers, "USERNAME", out string username)) return;
-            if (Confirm($"Xác nhận xóa user '{username}'?") != DialogResult.Yes) return;
+            return s
+                .Replace("'", "''")
+                .Replace("[", "[[]")
+                .Replace("]", "[]]")
+                .Replace("%", "[%]")
+                .Replace("*", "[*]");
+        }
+
+        private void ApplyUserFilter()
+        {
+            if (_usersDt == null) return;
+            string term = (txtUserSearch?.Text ?? string.Empty).Trim();
+
+            var view = _usersDt.DefaultView;
+            if (string.IsNullOrWhiteSpace(term) || !_usersDt.Columns.Contains("USERNAME"))
+            {
+                view.RowFilter = string.Empty;
+                return;
+            }
+
+            string safe = EscapeForRowFilterLike(term);
+            view.RowFilter = $"CONVERT(USERNAME, 'System.String') LIKE '%{safe}%'";
+        }
+
+        private void ApplyRoleFilter()
+        {
+            if (_rolesDt == null) return;
+            string term = (txtRoleSearch?.Text ?? string.Empty).Trim();
+
+            var view = _rolesDt.DefaultView;
+            if (string.IsNullOrWhiteSpace(term) || !_rolesDt.Columns.Contains("ROLE"))
+            {
+                view.RowFilter = string.Empty;
+                return;
+            }
+
+            string safe = EscapeForRowFilterLike(term);
+            view.RowFilter = $"CONVERT(ROLE, 'System.String') LIKE '%{safe}%'";
+        }
+
+        private static bool IsValidOracleIdentifier(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return false;
+            s = s.Trim();
+            return Regex.IsMatch(s, @"^[A-Za-z][A-Za-z0-9_$#]{0,29}$");
+        }
+
+        private string? GetSelectedUsername()
+        {
+            if (dgvUsers.CurrentRow == null) return null;
+            if (!dgvUsers.Columns.Contains("USERNAME")) return null;
+            return Convert.ToString(dgvUsers.CurrentRow.Cells["USERNAME"].Value);
+        }
+
+        private string? GetSelectedUserStatus()
+        {
+            if (dgvUsers.CurrentRow == null) return null;
+            if (!dgvUsers.Columns.Contains("ACCOUNT_STATUS")) return null;
+            return Convert.ToString(dgvUsers.CurrentRow.Cells["ACCOUNT_STATUS"].Value);
+        }
+
+        private string? GetSelectedRoleName()
+        {
+            if (dgvRoles.CurrentRow == null) return null;
+            if (!dgvRoles.Columns.Contains("ROLE")) return null;
+            return Convert.ToString(dgvRoles.CurrentRow.Cells["ROLE"].Value);
+        }
+
+        private void UpdateUserButtonsState()
+        {
+            bool hasRow = dgvUsers.CurrentRow != null;
+            btnUserEdit.Enabled = hasRow;
+            btnUserDelete.Enabled = hasRow;
+            btnUserLock.Enabled = hasRow;
+            btnUserUnlock.Enabled = hasRow;
+
+            if (!hasRow)
+            {
+                return;
+            }
+
+            string? status = GetSelectedUserStatus();
+            bool locked = !string.IsNullOrWhiteSpace(status) && status.ToUpperInvariant().Contains("LOCKED");
+            btnUserLock.Enabled = !locked;
+            btnUserUnlock.Enabled = locked;
+        }
+
+        private void UpdateRoleButtonsState()
+        {
+            bool hasRow = dgvRoles.CurrentRow != null;
+            btnRoleEdit.Enabled = hasRow;
+            btnRoleDelete.Enabled = hasRow;
+        }
+
+        private void btnUserRefresh_Click(object sender, EventArgs e) => RefreshUsers();
+        private void btnRoleRefresh_Click(object sender, EventArgs e) => RefreshRoles();
+
+        private void dgvUsers_SelectionChanged(object sender, EventArgs e) => UpdateUserButtonsState();
+        private void dgvRoles_SelectionChanged(object sender, EventArgs e) => UpdateRoleButtonsState();
+
+        private void txtUserSearch_TextChanged(object sender, EventArgs e) => ApplyUserFilter();
+        private void txtRoleSearch_TextChanged(object sender, EventArgs e) => ApplyRoleFilter();
+
+        private void dgvUsers_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+            btnUserEdit.PerformClick();
+        }
+
+        private void dgvRoles_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0) return;
+            btnRoleEdit.PerformClick();
+        }
+
+        private void btnUserCreate_Click(object sender, EventArgs e)
+        {
+            using var dlg = new EditUserDialog(mode: EditUserDialogMode.Create);
+            if (dlg.ShowDialog(this) != DialogResult.OK) return;
+
+            string username = dlg.Username.Trim().ToUpperInvariant();
+            string password = dlg.Password;
+
+            if (!IsValidOracleIdentifier(username))
+            {
+                MessageBox.Show("Username không hợp lệ. Chỉ dùng chữ/số/_/$/#, bắt đầu bằng chữ, tối đa 30 ký tự.", "Validation");
+                return;
+            }
+
+            try
+            {
+                _repo.CreateUser(username, password);
+                MessageBox.Show("Tạo user thành công.", "OK");
+                RefreshUsers();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Lỗi");
+            }
+        }
+
+        private void btnUserEdit_Click(object sender, EventArgs e)
+        {
+            string? username = GetSelectedUsername();
+            if (string.IsNullOrWhiteSpace(username)) return;
+
+            using var dlg = new EditUserDialog(mode: EditUserDialogMode.EditPassword, presetUsername: username);
+            if (dlg.ShowDialog(this) != DialogResult.OK) return;
+
+            try
+            {
+                _repo.ChangeUserPassword(username, dlg.Password);
+                MessageBox.Show("Cập nhật user thành công.", "OK");
+                RefreshUsers();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Lỗi");
+            }
+        }
+
+        private void btnUserDelete_Click(object sender, EventArgs e)
+        {
+            string? username = GetSelectedUsername();
+            if (string.IsNullOrWhiteSpace(username)) return;
+
+            var confirm = MessageBox.Show(
+                $"Bạn có chắc muốn xóa user `{username}`?",
+                "Confirm",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirm != DialogResult.Yes) return;
+
             try
             {
                 _repo.DropUser(username, cascade: true);
-                ShowInfo($"Đã xóa user '{username}'.");
-                LoadUsers();
+                MessageBox.Show("Xóa user thành công.", "OK");
+                RefreshUsers();
             }
-            catch (Exception ex) { ShowError(ex.Message); }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Lỗi");
+            }
         }
 
-        // ── ROLE actions ─────────────────────────────────────────────
-        private void ShowCreateRoleDialog()
+        private void btnUserLock_Click(object sender, EventArgs e)
         {
-            using var dlg = new EditRoleDialog("Tạo Role mới", isCreate: true);
-            if (dlg.ShowDialog() != DialogResult.OK) return;
+            string? username = GetSelectedUsername();
+            if (string.IsNullOrWhiteSpace(username)) return;
+
+            var confirm = MessageBox.Show(
+                this,
+                $"Bạn có chắc muốn khóa user `{username}`?",
+                "Xác nhận Lock",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+            if (confirm != DialogResult.Yes) return;
+
             try
             {
-                _repo.CreateRole(dlg.RoleName, dlg.Password);
-                ShowInfo($"Tạo role '{dlg.RoleName}' thành công.");
-                LoadRoles();
+                _repo.LockUser(username);
+                RefreshUsers();
             }
-            catch (Exception ex) { ShowError(ex.Message); }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Lỗi");
+            }
         }
 
-        private void ShowEditRoleDialog()
+        private void btnUserUnlock_Click(object sender, EventArgs e)
         {
-            if (!TryGetSelected(dgvRoles, "ROLE", out string roleName)) return;
+            string? username = GetSelectedUsername();
+            if (string.IsNullOrWhiteSpace(username)) return;
 
-            string currentAuth = dgvRoles.CurrentRow!.Cells["PASSWORD_REQUIRED"].Value?.ToString() ?? "NO";
-            using var dlg = new EditRoleDialog($"Sửa Role – {roleName}",
-                                               isCreate: false,
-                                               fixedRoleName: roleName,
-                                               hasPassword: currentAuth == "YES");
-            if (dlg.ShowDialog() != DialogResult.OK) return;
-            if (dlg.KeepPassword) { ShowInfo("Không có thay đổi nào được lưu."); return; }
+            var confirm = MessageBox.Show(
+                this,
+                $"Bạn có chắc muốn mở khóa user `{username}`?",
+                "Xác nhận Unlock",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+            if (confirm != DialogResult.Yes) return;
+
             try
             {
-                _repo.AlterRolePassword(roleName, dlg.Password);
-                ShowInfo($"Cập nhật role '{roleName}' thành công.");
-                LoadRoles();
+                _repo.UnlockUser(username);
+                RefreshUsers();
             }
-            catch (Exception ex) { ShowError(ex.Message); }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Lỗi");
+            }
         }
 
-        private void DropSelectedRole()
+        private void btnRoleCreate_Click(object sender, EventArgs e)
         {
-            if (!TryGetSelected(dgvRoles, "ROLE", out string roleName)) return;
-            if (Confirm($"Xác nhận xóa role '{roleName}'?") != DialogResult.Yes) return;
+            using var dlg = new EditRoleDialog(mode: EditRoleDialogMode.Create);
+            if (dlg.ShowDialog(this) != DialogResult.OK) return;
+
+            string roleName = dlg.RoleName.Trim().ToUpperInvariant();
+            if (!IsValidOracleIdentifier(roleName))
+            {
+                MessageBox.Show("Role name không hợp lệ. Chỉ dùng chữ/số/_/$/#, bắt đầu bằng chữ, tối đa 30 ký tự.", "Validation");
+                return;
+            }
+
+            try
+            {
+                _repo.CreateRole(roleName, dlg.PasswordOrNullForNotIdentified);
+                MessageBox.Show("Tạo role thành công.", "OK");
+                RefreshRoles();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Lỗi");
+            }
+        }
+
+        private void btnRoleEdit_Click(object sender, EventArgs e)
+        {
+            string? roleName = GetSelectedRoleName();
+            if (string.IsNullOrWhiteSpace(roleName)) return;
+
+            using var dlg = new EditRoleDialog(mode: EditRoleDialogMode.Edit, presetRoleName: roleName);
+            if (dlg.ShowDialog(this) != DialogResult.OK) return;
+
+            try
+            {
+                _repo.ChangeRolePassword(roleName, dlg.PasswordOrNullForNotIdentified);
+                MessageBox.Show("Cập nhật role thành công.", "OK");
+                RefreshRoles();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Lỗi");
+            }
+        }
+
+        private void btnRoleDelete_Click(object sender, EventArgs e)
+        {
+            string? roleName = GetSelectedRoleName();
+            if (string.IsNullOrWhiteSpace(roleName)) return;
+
+            var confirm = MessageBox.Show(
+                $"Bạn có chắc muốn xóa role `{roleName}`?",
+                "Confirm",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirm != DialogResult.Yes) return;
+
             try
             {
                 _repo.DropRole(roleName);
-                ShowInfo($"Đã xóa role '{roleName}'.");
-                LoadRoles();
+                MessageBox.Show("Xóa role thành công.", "OK");
+                RefreshRoles();
             }
-            catch (Exception ex) { ShowError(ex.Message); }
-        }
-
-        // ── Tiny helpers ─────────────────────────────────────────────
-        private static bool TryGetSelected(DataGridView dgv, string col, out string value)
-        {
-            value = string.Empty;
-            if (dgv.CurrentRow == null)
+            catch (Exception ex)
             {
-                MessageBox.Show("Vui lòng chọn một dòng.", "Thông báo",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return false;
+                MessageBox.Show(ex.Message, "Lỗi");
             }
-            value = dgv.CurrentRow.Cells[col].Value?.ToString() ?? "";
-            return true;
         }
-
-        private static void ShowInfo(string msg) =>
-            MessageBox.Show(msg, "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-        private static void ShowError(string msg) =>
-            MessageBox.Show(msg, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-
-        private static DialogResult Confirm(string msg) =>
-            MessageBox.Show(msg, "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
     }
 }

@@ -11,11 +11,9 @@ namespace QuanLyYTe.DAL
 {
     public static class OracleHelper
     {
-        // Lấy chuỗi kết nối từ App.config
         private static string _connStr = ConfigurationManager.ConnectionStrings["HospitalDB"].ConnectionString;
 
-        // SP trả về một danh sách
-        public static DataTable ExecuteQuerySP(string spName, OracleParameter[] parameters = null)
+        public static DataTable ExecuteQuerySP(string spName, OracleParameter[]? parameters = null)
         {
             DataTable dt = new DataTable();
             using (OracleConnection conn = new OracleConnection(_connStr))
@@ -33,7 +31,7 @@ namespace QuanLyYTe.DAL
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Lỗi thực thi SP {spName}: {ex.Message}");
+                            throw new Exception($"Stored procedure execution failed ({spName}): {ex.Message}");
                         }
                     }
                 }
@@ -41,8 +39,7 @@ namespace QuanLyYTe.DAL
             return dt;
         }
 
-        // Query từ SQL raw command
-        public static DataTable ExecuteQuery(string sql, OracleParameter[] parameters = null)
+        public static DataTable ExecuteQuery(string sql, OracleParameter[]? parameters = null)
         {
             DataTable dt = new DataTable();
             using (OracleConnection conn = new OracleConnection(_connStr))
@@ -60,7 +57,7 @@ namespace QuanLyYTe.DAL
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Lỗi thực thi query: {ex.Message}");
+                            throw new Exception($"Query execution failed: {ex.Message}");
                         }
                     }
                 }
@@ -68,9 +65,7 @@ namespace QuanLyYTe.DAL
             return dt;
         }
 
-        // SP trả về những tham số - Truyền vào mảng 
-        // SP không trả về tham số
-        public static void ExecuteNonQuerySP(string spName, OracleParameter[] parameters = null)
+        public static void ExecuteNonQuerySP(string spName, OracleParameter[]? parameters = null)
         {
             using (OracleConnection conn = new OracleConnection(_connStr))
             {
@@ -83,18 +78,16 @@ namespace QuanLyYTe.DAL
                     {
                         conn.Open();
                         cmd.ExecuteNonQuery();
-                        // Sau khi Execute, các giá trị từ Oracle đã được nạp ngược lại vào mảng 'parameters'
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception($"Lỗi Action SP {spName}: {ex.Message}");
+                        throw new Exception($"Stored procedure action failed ({spName}): {ex.Message}");
                     }
                 }
             }
         }
 
-        // Execute raw SQL command (không trả về data)
-        public static void ExecuteNonQuery(string sql, OracleParameter[] parameters = null)
+        public static void ExecuteNonQuery(string sql, OracleParameter[]? parameters = null)
         {
             using (OracleConnection conn = new OracleConnection(_connStr))
             {
@@ -110,7 +103,7 @@ namespace QuanLyYTe.DAL
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception($"Lỗi thực thi command: {ex.Message}");
+                        throw new Exception($"Command execution failed: {ex.Message}");
                     }
                 }
             }
@@ -118,11 +111,9 @@ namespace QuanLyYTe.DAL
 
         public static void FormatGridView(DataGridView dgv)
         {
-            // Quy định chung
             dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
-            // Format cột ngày tháng
             if (dgv.Columns.Contains("birthdate"))
                 dgv.Columns["birthdate"].DefaultCellStyle.Format = "dd/MM/yyyy";
         }

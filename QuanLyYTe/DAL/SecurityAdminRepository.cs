@@ -1,114 +1,133 @@
-using System;
+using System.Configuration;
 using System.Data;
-using System.Text.RegularExpressions;
+using Oracle.ManagedDataAccess.Client;
 
 namespace QuanLyYTe.DAL
 {
     public class SecurityAdminRepository
     {
-        private static readonly Regex OracleIdentifierRegex =
-            new Regex(@"^[A-Za-z][A-Za-z0-9_$#]*$", RegexOptions.Compiled);
+        private readonly string? _spOwner;
 
-        // ── Users ────────────────────────────────────────────────────
-        public DataTable GetUsers()
+        public SecurityAdminRepository()
         {
-            string sql = @"SELECT USERNAME, ACCOUNT_STATUS, LOCK_DATE, CREATED
-                           FROM DBA_USERS
-                           ORDER BY USERNAME";
-            return OracleHelper.ExecuteQuery(sql);
+            _spOwner = ConfigurationManager.AppSettings["SecurityAdminSPOwner"];
+            if (!string.IsNullOrWhiteSpace(_spOwner))
+                _spOwner = _spOwner.Trim().ToUpperInvariant();
+        }
+
+        private string Sp(string spName)
+        {
+            if (string.IsNullOrWhiteSpace(_spOwner)) return spName;
+            return $"{_spOwner}.{spName}";
+        }
+
+        public DataTable GetAllUsers()
+        {
+            OracleParameter p_cursor = new OracleParameter
+            {
+                ParameterName = "p_cursor",
+                OracleDbType = OracleDbType.RefCursor,
+                Direction = ParameterDirection.Output
+            };
+
+            return OracleHelper.ExecuteQuerySP(Sp("GET_ALL_USERS"), new[] { p_cursor });
+        }
+
+        public DataTable GetAllRoles()
+        {
+            OracleParameter p_cursor = new OracleParameter
+            {
+                ParameterName = "p_cursor",
+                OracleDbType = OracleDbType.RefCursor,
+                Direction = ParameterDirection.Output
+            };
+
+            return OracleHelper.ExecuteQuerySP(Sp("GET_ALL_ROLES"), new[] { p_cursor });
         }
 
         public void CreateUser(string username, string password)
         {
-            string safeUser = NormalizeIdentifier(username);
-            string safePass = EscapePassword(password);
-            OracleHelper.ExecuteNonQuery($"CREATE USER {safeUser} IDENTIFIED BY \"{safePass}\"");
-        }
-
-        /// <summary>Đổi mật khẩu, khoá/mở khoá tài khoản (tuỳ chọn).</summary>
-        public void AlterUser(string username, string? newPassword, LockAction lockAction)
-        {
-            string safeUser = NormalizeIdentifier(username);
-
-            // Đổi mật khẩu
-            if (!string.IsNullOrWhiteSpace(newPassword))
+            OracleParameter[] p =
             {
-                string safePass = EscapePassword(newPassword);
-                OracleHelper.ExecuteNonQuery($"ALTER USER {safeUser} IDENTIFIED BY \"{safePass}\"");
-            }
+                new OracleParameter("p_username", OracleDbType.Varchar2, 128) { Value = username },
+                new OracleParameter("p_password", OracleDbType.Varchar2, 4000) { Value = password },
+            };
 
-            // Khoá / mở khoá
-            if (lockAction == LockAction.Lock)
-                OracleHelper.ExecuteNonQuery($"ALTER USER {safeUser} ACCOUNT LOCK");
-            else if (lockAction == LockAction.Unlock)
-                OracleHelper.ExecuteNonQuery($"ALTER USER {safeUser} ACCOUNT UNLOCK");
+            OracleHelper.ExecuteNonQuerySP(Sp("CREATE_NEW_USER"), p);
         }
 
-        // Giữ lại để tương thích nếu cần
-        public void AlterUserPassword(string username, string newPassword) =>
-            AlterUser(username, newPassword, LockAction.None);
+        public void ChangeUserPassword(string username, string newPassword)
+        {
+            OracleParameter[] p =
+            {
+                new OracleParameter("p_username", OracleDbType.Varchar2, 128) { Value = username },
+                new OracleParameter("p_new_password", OracleDbType.Varchar2, 4000) { Value = newPassword },
+            };
+
+            OracleHelper.ExecuteNonQuerySP(Sp("ALTER_USER_PASSWORD"), p);
+        }
+
+        public void LockUser(string username)
+        {
+            OracleParameter[] p =
+            {
+                new OracleParameter("p_username", OracleDbType.Varchar2, 128) { Value = username },
+            };
+
+            OracleHelper.ExecuteNonQuerySP(Sp("LOCK_USER"), p);
+        }
+
+        public void UnlockUser(string username)
+        {
+            OracleParameter[] p =
+            {
+                new OracleParameter("p_username", OracleDbType.Varchar2, 128) { Value = username },
+            };
+
+            OracleHelper.ExecuteNonQuerySP(Sp("UNLOCK_USER"), p);
+        }
 
         public void DropUser(string username, bool cascade = true)
         {
-            string safeUser = NormalizeIdentifier(username);
-            string sql = cascade ? $"DROP USER {safeUser} CASCADE" : $"DROP USER {safeUser}";
-            OracleHelper.ExecuteNonQuery(sql);
+            OracleParameter[] p =
+            {
+                new OracleParameter("p_username", OracleDbType.Varchar2, 128) { Value = username },
+                new OracleParameter("p_cascade", OracleDbType.Varchar2, 3) { Value = cascade ? "YES" : "NO" },
+            };
+
+            OracleHelper.ExecuteNonQuerySP(Sp("DROP_USER"), p);
         }
 
-        // ── Roles ────────────────────────────────────────────────────
-        public DataTable GetRoles()
+        public void CreateRole(string roleName, string? password = null)
         {
-            string sql = @"SELECT ROLE, PASSWORD_REQUIRED, AUTHENTICATION_TYPE,
-                                  COMMON, ORACLE_MAINTAINED
-                           FROM DBA_ROLES
-                           ORDER BY ROLE";
-            return OracleHelper.ExecuteQuery(sql);
+            OracleParameter[] p =
+            {
+                new OracleParameter("p_role_name", OracleDbType.Varchar2, 128) { Value = roleName },
+                new OracleParameter("p_password", OracleDbType.Varchar2, 4000) { Value = (object?)password ?? DBNull.Value },
+            };
+
+            OracleHelper.ExecuteNonQuerySP(Sp("CREATE_NEW_ROLE"), p);
         }
 
-        public void CreateRole(string roleName, string? password)
+        public void ChangeRolePassword(string roleName, string? password)
         {
-            string safeRole = NormalizeIdentifier(roleName);
-            string sql = string.IsNullOrWhiteSpace(password)
-                ? $"CREATE ROLE {safeRole}"
-                : $"CREATE ROLE {safeRole} IDENTIFIED BY \"{EscapePassword(password)}\"";
-            OracleHelper.ExecuteNonQuery(sql);
-        }
+            OracleParameter[] p =
+            {
+                new OracleParameter("p_role_name", OracleDbType.Varchar2, 128) { Value = roleName },
+                new OracleParameter("p_password", OracleDbType.Varchar2, 4000) { Value = (object?)password ?? DBNull.Value },
+            };
 
-        /// <summary>Cập nhật mật khẩu role (null/empty = bỏ xác thực).</summary>
-        public void AlterRolePassword(string roleName, string? password)
-        {
-            string safeRole = NormalizeIdentifier(roleName);
-            string sql = string.IsNullOrWhiteSpace(password)
-                ? $"ALTER ROLE {safeRole} NOT IDENTIFIED"
-                : $"ALTER ROLE {safeRole} IDENTIFIED BY \"{EscapePassword(password)}\"";
-            OracleHelper.ExecuteNonQuery(sql);
+            OracleHelper.ExecuteNonQuerySP(Sp("ALTER_ROLE_PASSWORD"), p);
         }
 
         public void DropRole(string roleName)
         {
-            string safeRole = NormalizeIdentifier(roleName);
-            OracleHelper.ExecuteNonQuery($"DROP ROLE {safeRole}");
-        }
+            OracleParameter[] p =
+            {
+                new OracleParameter("p_role_name", OracleDbType.Varchar2, 128) { Value = roleName },
+            };
 
-        // ── Private helpers ──────────────────────────────────────────
-        private static string NormalizeIdentifier(string id)
-        {
-            if (string.IsNullOrWhiteSpace(id))
-                throw new ArgumentException("Tên user/role không được để trống.");
-
-            string t = id.Trim();
-            if (!OracleIdentifierRegex.IsMatch(t))
-                throw new ArgumentException(
-                    "Tên không hợp lệ. Chỉ cho phép chữ cái, số, _, $, #; ký tự đầu phải là chữ cái.");
-
-            return t.ToUpperInvariant();
-        }
-
-        private static string EscapePassword(string pw)
-        {
-            if (string.IsNullOrWhiteSpace(pw))
-                throw new ArgumentException("Mật khẩu không được để trống.");
-            return pw.Replace("\"", "\"\"");
+            OracleHelper.ExecuteNonQuerySP(Sp("DROP_ROLE"), p);
         }
     }
 }
