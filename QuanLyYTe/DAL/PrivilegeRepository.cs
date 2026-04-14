@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Oracle.ManagedDataAccess.Client;
 using System.Data;
-using Oracle.ManagedDataAccess.Client;
-using QuanLyYTe.DAL;
 
 namespace QuanLyYTe.DAL
 {
