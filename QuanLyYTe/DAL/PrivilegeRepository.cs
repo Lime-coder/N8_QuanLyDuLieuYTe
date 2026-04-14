@@ -1,4 +1,5 @@
 ﻿using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Data;
 
 namespace QuanLyYTe.DAL
@@ -57,7 +58,7 @@ namespace QuanLyYTe.DAL
         public void GrantObjectPrivilege(string grantee, string priv, string obj, string cols, int withGrant)
         {
             // Xử lý giá trị columns nếu rỗng thì truyền NULL vào DB
-            object dbCols = string.IsNullOrEmpty(cols) ? (object)DBNull.Value : cols;
+            object dbCols = string.IsNullOrEmpty(cols) ? (object)DBNull.Value : cols.Trim();
 
             OracleParameter[] parameters = new OracleParameter[]
             {
@@ -70,5 +71,21 @@ namespace QuanLyYTe.DAL
 
             OracleHelper.ExecuteNonQuerySP("USP_GRANT_OBJECT_PRIV", parameters);
         }
+
+        /// <summary>
+        /// Thực thi cấp Role cho User
+        /// Sử dụng SP: USP_GRANT_ROLE_TO_USER
+        /// </summary>
+        public void GrantRoleToUser(string user, string role, int withAdmin)
+        {
+            OracleParameter[] parameters = new OracleParameter[]
+            {
+                new OracleParameter("p_user", OracleDbType.Varchar2) { Value = user },
+                new OracleParameter("p_role", OracleDbType.Varchar2) { Value = role },
+                new OracleParameter("p_with_admin", OracleDbType.Int32) { Value = withAdmin }
+            };
+            OracleHelper.ExecuteNonQuerySP("USP_GRANT_ROLE_TO_USER", parameters);
+        }
+
     }
 }

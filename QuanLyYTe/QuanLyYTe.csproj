@@ -12,6 +12,9 @@
     <EmbeddedResource Remove="Data\**" />
     <None Remove="Data\**" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Script\Setup\SP_ListUserRole.sql" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.100" />

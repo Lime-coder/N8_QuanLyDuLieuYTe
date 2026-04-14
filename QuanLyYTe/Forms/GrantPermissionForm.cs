@@ -16,6 +16,7 @@ namespace QuanLyYTe.Forms
             InitializeComponent();
             _repository = new PrivilegeRepository();
 
+            // Đăng ký sự kiện Tab 1
             cbGranteeType.SelectedIndexChanged += (s, e) => LoadGrantees();
             cbObjectType.SelectedIndexChanged += (s, e) => LoadObjects();
             lbObjects.SelectedIndexChanged += (s, e) => LoadColumns();
@@ -23,12 +24,16 @@ namespace QuanLyYTe.Forms
             chkUpdate.CheckedChanged += PrivilegeCheckBox_CheckedChanged;
             btnGrant.Click += btnGrant_Click;
 
+            // Đăng ký sự kiện Tab 2
+            btnGrantRole.Click += btnGrantRole_Click;
+            tcMain.SelectedIndexChanged += tcMain_SelectedIndexChanged;
+
+            // Init mặc định
             cbGranteeType.SelectedIndex = 0;
             cbObjectType.SelectedIndex = 0;
         }
 
-        #region Logic Tải Dữ Liệu
-
+        #region Logic Tab 1: Quyền đối tượng
         private void LoadGrantees()
         {
             try
@@ -36,17 +41,8 @@ namespace QuanLyYTe.Forms
                 DataTable dt = _repository.GetGrantees(cbGranteeType.Text);
                 cbGranteeName.DataSource = dt;
                 cbGranteeName.DisplayMember = dt.Columns[0].ColumnName;
-
-                // CHỈNH SỬA: Ngăn lỗi từ UI - Nếu chọn ROLE thì không cho phép chọn WITH GRANT OPTION
-                if (cbGranteeType.Text == "ROLE")
-                {
-                    chkWithGrantOption.Checked = false;
-                    chkWithGrantOption.Enabled = false;
-                }
-                else
-                {
-                    chkWithGrantOption.Enabled = true;
-                }
+                chkWithGrantOption.Enabled = (cbGranteeType.Text == "USER");
+                if (!chkWithGrantOption.Enabled) chkWithGrantOption.Checked = false;
             }
             catch (Exception ex) { MessageBox.Show("Lỗi tải người nhận: " + ex.Message); }
         }
@@ -55,12 +51,10 @@ namespace QuanLyYTe.Forms
         {
             try
             {
-                string type = cbObjectType.Text;
-                DataTable dt = _repository.GetObjects(type);
+                DataTable dt = _repository.GetObjects(cbObjectType.Text);
                 lbObjects.DataSource = dt;
                 lbObjects.DisplayMember = dt.Columns[0].ColumnName;
-
-                bool isCode = (type == "PROCEDURE" || type == "FUNCTION");
+                bool isCode = (cbObjectType.Text == "PROCEDURE" || cbObjectType.Text == "FUNCTION");
                 TogglePrivileges(!isCode, false, true);
                 chkExecute.Enabled = isCode;
                 chkExecute.Checked = isCode;
@@ -72,104 +66,98 @@ namespace QuanLyYTe.Forms
         {
             clbColumns.Items.Clear();
             if (lbObjects.SelectedValue == null) return;
-
-            string type = cbObjectType.Text;
-            if (type == "TABLE" || type == "VIEW")
+            try
             {
-                try
-                {
-                    string targetObj = lbObjects.GetItemText(lbObjects.SelectedItem);
-                    DataTable dt = _repository.GetColumns(targetObj);
-                    foreach (DataRow row in dt.Rows)
-                        clbColumns.Items.Add(row[0].ToString());
-                }
-                catch (Exception ex) { MessageBox.Show("Lỗi tải danh sách cột: " + ex.Message); }
+                DataTable dt = _repository.GetColumns(lbObjects.GetItemText(lbObjects.SelectedItem));
+                foreach (DataRow row in dt.Rows) clbColumns.Items.Add(row[0].ToString());
             }
-        }
-
-        #endregion
-
-        #region Xử lý Sự kiện & Thực thi
-
-        private void PrivilegeCheckBox_CheckedChanged(object? sender, EventArgs e)
-        {
-            string type = cbObjectType.Text;
-            if (type == "TABLE" || type == "VIEW")
-            {
-                clbColumns.Enabled = chkSelect.Checked || chkUpdate.Checked;
-                if (!clbColumns.Enabled)
-                {
-                    for (int i = 0; i < clbColumns.Items.Count; i++)
-                        clbColumns.SetItemChecked(i, false);
-                }
-            }
-        }
-
-        // BỔ SUNG: Hàm lọc lỗi Oracle để hiển thị thông báo sạch lên UI
-        private string CleanOracleError(string message)
-        {
-            if (string.IsNullOrEmpty(message)) return "Lỗi không xác định.";
-
-            // Tìm vị trí của mã lỗi tự định nghĩa (ORA-20000 -> ORA-20999)
-            if (message.Contains("ORA-20"))
-            {
-                // Cắt lấy phần thông báo sau dấu hai chấm đầu tiên và trước dòng ORA-06512
-                int start = message.IndexOf(":") + 1;
-                int end = message.IndexOf("ORA-06512");
-                if (end > start)
-                    return message.Substring(start, end - start).Trim();
-            }
-            return message;
+            catch (Exception ex) { MessageBox.Show("Lỗi tải cột: " + ex.Message); }
         }
 
         private void btnGrant_Click(object? sender, EventArgs e)
         {
-            if (cbGranteeName.SelectedValue == null || lbObjects.SelectedValue == null)
-            {
-                MessageBox.Show("Vui lòng chọn Người nhận và Đối tượng!");
-                return;
-            }
-
-            // CHỈNH SỬA: Thêm kiểm tra logic tại UI trước khi gửi lên DB (Ngăn lỗi ORA-20004)
-            if (cbGranteeType.Text == "ROLE" && chkWithGrantOption.Checked)
-            {
-                MessageBox.Show("Chính sách bảo mật: Không được cấp 'WITH GRANT OPTION' cho một Vai trò (Role).",
-                                "Thông báo bảo mật", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            if (!(chkSelect.Checked || chkInsert.Checked || chkUpdate.Checked || chkDelete.Checked || chkExecute.Checked))
-            {
-                MessageBox.Show("Vui lòng chọn ít nhất một quyền!");
-                return;
-            }
-
+            if (cbGranteeName.SelectedValue == null || lbObjects.SelectedValue == null) return;
             string grantee = cbGranteeName.GetItemText(cbGranteeName.SelectedItem);
             string objName = lbObjects.GetItemText(lbObjects.SelectedItem);
-            int withGrant = chkWithGrantOption.Checked ? 1 : 0;
+            string cols = clbColumns.Enabled && clbColumns.CheckedItems.Count > 0
+                         ? string.Join(",", clbColumns.CheckedItems.Cast<string>()) : null;
 
-            string colList = null;
-            if (clbColumns.Enabled && clbColumns.CheckedItems.Count > 0)
+            try
             {
-                var cols = clbColumns.CheckedItems.Cast<string>().ToList();
-                colList = string.Join(",", cols);
+                if (chkSelect.Checked) _repository.GrantObjectPrivilege(grantee, "SELECT", objName, cols, chkWithGrantOption.Checked ? 1 : 0);
+                if (chkInsert.Checked) _repository.GrantObjectPrivilege(grantee, "INSERT", objName, null, chkWithGrantOption.Checked ? 1 : 0);
+                if (chkUpdate.Checked) _repository.GrantObjectPrivilege(grantee, "UPDATE", objName, cols, chkWithGrantOption.Checked ? 1 : 0);
+                if (chkDelete.Checked) _repository.GrantObjectPrivilege(grantee, "DELETE", objName, null, chkWithGrantOption.Checked ? 1 : 0);
+                if (chkExecute.Checked) _repository.GrantObjectPrivilege(grantee, "EXECUTE", objName, null, chkWithGrantOption.Checked ? 1 : 0);
+                MessageBox.Show("Cấp quyền đối tượng thành công!");
+            }
+            catch (Exception ex) { MessageBox.Show(CleanOracleError(ex.Message), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+        }
+        #endregion
+
+        #region Logic Tab 2: Cấp Role
+        private void tcMain_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            if (tcMain.SelectedTab == tpRole)
+            {
+                try
+                {
+                    // Load danh sách User
+                    DataTable dtUser = _repository.GetGrantees("USER");
+                    cbRoleUser.DisplayMember = dtUser.Columns[0].ColumnName; // Lấy tên cột đầu tiên (UPPER(USERNAME))
+                    cbRoleUser.DataSource = dtUser;
+
+                    // Load danh sách Role
+                    DataTable dtRole = _repository.GetGrantees("ROLE");
+                    cbRoleToGrant.DisplayMember = dtRole.Columns[0].ColumnName; // Lấy tên cột đầu tiên (UPPER(ROLE))
+                    cbRoleToGrant.DataSource = dtRole;
+                }
+                catch (Exception ex) { MessageBox.Show("Lỗi tải dữ liệu Tab Role: " + ex.Message); }
+            }
+        }
+
+        private void btnGrantRole_Click(object? sender, EventArgs e)
+        {
+            if (cbRoleUser.SelectedItem == null || cbRoleToGrant.SelectedItem == null)
+            {
+                MessageBox.Show("Vui lòng chọn đầy đủ User và Role!");
+                return;
             }
 
             try
             {
-                if (chkSelect.Checked) _repository.GrantObjectPrivilege(grantee, "SELECT", objName, colList, withGrant);
-                if (chkInsert.Checked) _repository.GrantObjectPrivilege(grantee, "INSERT", objName, null, withGrant);
-                if (chkUpdate.Checked) _repository.GrantObjectPrivilege(grantee, "UPDATE", objName, colList, withGrant);
-                if (chkDelete.Checked) _repository.GrantObjectPrivilege(grantee, "DELETE", objName, null, withGrant);
-                if (chkExecute.Checked) _repository.GrantObjectPrivilege(grantee, "EXECUTE", objName, null, withGrant);
+                // Sử dụng GetItemText để lấy đúng chuỗi hiển thị trên ComboBox
+                string userName = cbRoleUser.GetItemText(cbRoleUser.SelectedItem);
+                string roleName = cbRoleToGrant.GetItemText(cbRoleToGrant.SelectedItem);
+                int withAdmin = chkWithAdminOption.Checked ? 1 : 0;
 
-                MessageBox.Show($"Đã cấp quyền cho {grantee} thành công!", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                _repository.GrantRoleToUser(userName, roleName, withAdmin);
+                MessageBox.Show($"Đã gán Role {roleName} cho User {userName} thành công!");
             }
             catch (Exception ex)
             {
-                // CHỈNH SỬA: Sử dụng hàm CleanOracleError để hiển thị lỗi sạch
-                string cleanMsg = CleanOracleError(ex.Message);
-                MessageBox.Show(cleanMsg, "Thông báo từ hệ thống", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(CleanOracleError(ex.Message), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
+
+        #region Helpers
+        private string CleanOracleError(string message)
+        {
+            if (message.Contains("ORA-20"))
+            {
+                int start = message.IndexOf(":") + 1;
+                int end = message.IndexOf("ORA-06512");
+                if (end > start) return message.Substring(start, end - start).Trim();
+            }
+            return message;
+        }
+
+        private void PrivilegeCheckBox_CheckedChanged(object? sender, EventArgs e)
+        {
+            if (cbObjectType.Text == "TABLE" || cbObjectType.Text == "VIEW")
+            {
+                clbColumns.Enabled = chkSelect.Checked || chkUpdate.Checked;
             }
         }
 
@@ -178,10 +166,7 @@ namespace QuanLyYTe.Forms
             chkSelect.Enabled = chkInsert.Enabled = chkUpdate.Enabled = chkDelete.Enabled = tablePrivs;
             chkSelect.Checked = chkInsert.Checked = chkUpdate.Checked = chkDelete.Checked = false;
             clbColumns.Enabled = cols;
-
-            // CHỈNH SỬA: Nếu là ROLE thì dù Toggle thế nào cũng không cho tick Grant Option
             chkWithGrantOption.Enabled = (cbGranteeType.Text == "USER") && grantOpt;
-            chkWithGrantOption.Checked = false;
         }
         #endregion
     }
