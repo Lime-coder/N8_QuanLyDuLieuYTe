@@ -179,5 +179,10 @@ namespace QuanLyYTe.Forms
             chkWithGrantOption.Enabled = (cbGranteeType.Text == "USER") && grantOpt;
         }
         #endregion
+
+        private void GrantPermissionForm_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

@@ -12,61 +12,180 @@
 
         private void InitializeComponent()
         {
-            this.tcMain = new TabControl();
-            this.tpObject = new TabPage();
-            this.tpRole = new TabPage();
-
-            // Tab 1 Controls (Quyền đối tượng)
-            this.cbGranteeType = new ComboBox();
-            this.cbGranteeName = new ComboBox();
-            this.cbObjectType = new ComboBox();
-            this.lbObjects = new ListBox();
-            this.clbColumns = new CheckedListBox();
-            this.chkSelect = new CheckBox();
-            this.chkInsert = new CheckBox();
-            this.chkUpdate = new CheckBox();
-            this.chkDelete = new CheckBox();
-            this.chkExecute = new CheckBox();
-            this.chkWithGrantOption = new CheckBox();
-            this.btnGrant = new Button();
-
-            // Tab 2 Controls (Cấp Role)
-            this.cbRoleUser = new ComboBox();
-            this.cbRoleToGrant = new ComboBox();
-            this.chkWithAdminOption = new CheckBox();
-            this.btnGrantRole = new Button();
-
-            this.tcMain.SuspendLayout();
-            this.tpObject.SuspendLayout();
-            this.tpRole.SuspendLayout();
-            this.SuspendLayout();
-
+            tcMain = new TabControl();
+            tpObject = new TabPage();
+            tpRole = new TabPage();
+            cbGranteeType = new ComboBox();
+            cbGranteeName = new ComboBox();
+            cbObjectType = new ComboBox();
+            lbObjects = new ListBox();
+            clbColumns = new CheckedListBox();
+            chkSelect = new CheckBox();
+            chkInsert = new CheckBox();
+            chkUpdate = new CheckBox();
+            chkDelete = new CheckBox();
+            chkExecute = new CheckBox();
+            chkWithGrantOption = new CheckBox();
+            btnGrant = new Button();
+            cbRoleUser = new ComboBox();
+            cbRoleToGrant = new ComboBox();
+            chkWithAdminOption = new CheckBox();
+            btnGrantRole = new Button();
+            tcMain.SuspendLayout();
+            SuspendLayout();
+            // 
             // tcMain
-            this.tcMain.Controls.Add(this.tpObject);
-            this.tcMain.Controls.Add(this.tpRole);
-            this.tcMain.Dock = DockStyle.Fill;
-            this.tcMain.Location = new Point(0, 0);
-
-            // tpObject Setup
-            this.tpObject.Text = "Quyền đối tượng";
-            this.tpObject.BackColor = Color.WhiteSmoke;
-            SetupTabObjectPrivileges();
-
-            // tpRole Setup
-            this.tpRole.Text = "Cấp Role cho User";
-            this.tpRole.BackColor = Color.WhiteSmoke;
-            SetupTabRoleGrant();
-
+            // 
+            tcMain.Controls.Add(tpObject);
+            tcMain.Controls.Add(tpRole);
+            tcMain.Dock = DockStyle.Fill;
+            tcMain.Location = new Point(0, 0);
+            tcMain.Name = "tcMain";
+            tcMain.SelectedIndex = 0;
+            tcMain.Size = new Size(850, 600);
+            tcMain.TabIndex = 0;
+            // 
+            // tpObject
+            // 
+            tpObject.BackColor = Color.WhiteSmoke;
+            tpObject.Location = new Point(4, 29);
+            tpObject.Name = "tpObject";
+            tpObject.Size = new Size(842, 567);
+            tpObject.TabIndex = 0;
+            tpObject.Text = "Quyền đối tượng";
+            // 
+            // tpRole
+            // 
+            tpRole.BackColor = Color.WhiteSmoke;
+            tpRole.Location = new Point(4, 29);
+            tpRole.Name = "tpRole";
+            tpRole.Size = new Size(842, 567);
+            tpRole.TabIndex = 1;
+            tpRole.Text = "Cấp Role cho User";
+            // 
+            // cbGranteeType
+            // 
+            cbGranteeType.Location = new Point(0, 0);
+            cbGranteeType.Name = "cbGranteeType";
+            cbGranteeType.Size = new Size(121, 28);
+            cbGranteeType.TabIndex = 0;
+            // 
+            // cbGranteeName
+            // 
+            cbGranteeName.Location = new Point(0, 0);
+            cbGranteeName.Name = "cbGranteeName";
+            cbGranteeName.Size = new Size(121, 28);
+            cbGranteeName.TabIndex = 0;
+            // 
+            // cbObjectType
+            // 
+            cbObjectType.Location = new Point(0, 0);
+            cbObjectType.Name = "cbObjectType";
+            cbObjectType.Size = new Size(121, 28);
+            cbObjectType.TabIndex = 0;
+            // 
+            // lbObjects
+            // 
+            lbObjects.Location = new Point(0, 0);
+            lbObjects.Name = "lbObjects";
+            lbObjects.Size = new Size(120, 96);
+            lbObjects.TabIndex = 0;
+            // 
+            // clbColumns
+            // 
+            clbColumns.Location = new Point(0, 0);
+            clbColumns.Name = "clbColumns";
+            clbColumns.Size = new Size(120, 96);
+            clbColumns.TabIndex = 0;
+            // 
+            // chkSelect
+            // 
+            chkSelect.Location = new Point(0, 0);
+            chkSelect.Name = "chkSelect";
+            chkSelect.Size = new Size(104, 24);
+            chkSelect.TabIndex = 0;
+            // 
+            // chkInsert
+            // 
+            chkInsert.Location = new Point(0, 0);
+            chkInsert.Name = "chkInsert";
+            chkInsert.Size = new Size(104, 24);
+            chkInsert.TabIndex = 0;
+            // 
+            // chkUpdate
+            // 
+            chkUpdate.Location = new Point(0, 0);
+            chkUpdate.Name = "chkUpdate";
+            chkUpdate.Size = new Size(104, 24);
+            chkUpdate.TabIndex = 0;
+            // 
+            // chkDelete
+            // 
+            chkDelete.Location = new Point(0, 0);
+            chkDelete.Name = "chkDelete";
+            chkDelete.Size = new Size(104, 24);
+            chkDelete.TabIndex = 0;
+            // 
+            // chkExecute
+            // 
+            chkExecute.Location = new Point(0, 0);
+            chkExecute.Name = "chkExecute";
+            chkExecute.Size = new Size(104, 24);
+            chkExecute.TabIndex = 0;
+            // 
+            // chkWithGrantOption
+            // 
+            chkWithGrantOption.Location = new Point(0, 0);
+            chkWithGrantOption.Name = "chkWithGrantOption";
+            chkWithGrantOption.Size = new Size(104, 24);
+            chkWithGrantOption.TabIndex = 0;
+            // 
+            // btnGrant
+            // 
+            btnGrant.Location = new Point(0, 0);
+            btnGrant.Name = "btnGrant";
+            btnGrant.Size = new Size(75, 23);
+            btnGrant.TabIndex = 0;
+            // 
+            // cbRoleUser
+            // 
+            cbRoleUser.Location = new Point(0, 0);
+            cbRoleUser.Name = "cbRoleUser";
+            cbRoleUser.Size = new Size(121, 28);
+            cbRoleUser.TabIndex = 0;
+            // 
+            // cbRoleToGrant
+            // 
+            cbRoleToGrant.Location = new Point(0, 0);
+            cbRoleToGrant.Name = "cbRoleToGrant";
+            cbRoleToGrant.Size = new Size(121, 28);
+            cbRoleToGrant.TabIndex = 0;
+            // 
+            // chkWithAdminOption
+            // 
+            chkWithAdminOption.Location = new Point(0, 0);
+            chkWithAdminOption.Name = "chkWithAdminOption";
+            chkWithAdminOption.Size = new Size(104, 24);
+            chkWithAdminOption.TabIndex = 0;
+            // 
+            // btnGrantRole
+            // 
+            btnGrantRole.Location = new Point(0, 0);
+            btnGrantRole.Name = "btnGrantRole";
+            btnGrantRole.Size = new Size(75, 23);
+            btnGrantRole.TabIndex = 0;
+            // 
             // GrantPermissionForm
-            this.ClientSize = new Size(850, 600);
-            this.Controls.Add(this.tcMain);
-            this.Font = new Font("Segoe UI", 9F);
-            this.StartPosition = FormStartPosition.CenterScreen;
-            this.Text = "Cấp quyền - Grant Permission";
-            this.tcMain.ResumeLayout(false);
-            this.tpObject.ResumeLayout(false);
-            this.tpRole.ResumeLayout(false);
-            this.ResumeLayout(false);
+            // 
+            ClientSize = new Size(850, 600);
+            Controls.Add(tcMain);
+            Font = new Font("Segoe UI", 9F);
+            Name = "GrantPermissionForm";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Cấp quyền - Grant Permission";
+            Load += GrantPermissionForm_Load;
+            tcMain.ResumeLayout(false);
+            ResumeLayout(false);
         }
 
         private void SetupTabObjectPrivileges()
