@@ -39,8 +39,14 @@ namespace QuanLyYTe.Forms
             try
             {
                 DataTable dt = _repository.GetGrantees(cbGranteeType.Text);
-                cbGranteeName.DataSource = dt;
+
+                // BỔ SUNG: Xóa trắng text cũ khi đổi loại (User/Role) để tránh nhầm lẫn khi tìm kiếm
+                cbGranteeName.SelectedIndex = -1;
+                cbGranteeName.Text = "";
+
                 cbGranteeName.DisplayMember = dt.Columns[0].ColumnName;
+                cbGranteeName.DataSource = dt;
+
                 chkWithGrantOption.Enabled = (cbGranteeType.Text == "USER");
                 if (!chkWithGrantOption.Enabled) chkWithGrantOption.Checked = false;
             }
@@ -104,12 +110,16 @@ namespace QuanLyYTe.Forms
                 {
                     // Load danh sách User
                     DataTable dtUser = _repository.GetGrantees("USER");
-                    cbRoleUser.DisplayMember = dtUser.Columns[0].ColumnName; // Lấy tên cột đầu tiên (UPPER(USERNAME))
+                    cbRoleUser.SelectedIndex = -1; // Xóa chọn cũ
+                    cbRoleUser.Text = "";          // Xóa text cũ
+                    cbRoleUser.DisplayMember = dtUser.Columns[0].ColumnName;
                     cbRoleUser.DataSource = dtUser;
 
                     // Load danh sách Role
                     DataTable dtRole = _repository.GetGrantees("ROLE");
-                    cbRoleToGrant.DisplayMember = dtRole.Columns[0].ColumnName; // Lấy tên cột đầu tiên (UPPER(ROLE))
+                    cbRoleToGrant.SelectedIndex = -1; // Xóa chọn cũ
+                    cbRoleToGrant.Text = "";          // Xóa text cũ
+                    cbRoleToGrant.DisplayMember = dtRole.Columns[0].ColumnName;
                     cbRoleToGrant.DataSource = dtRole;
                 }
                 catch (Exception ex) { MessageBox.Show("Lỗi tải dữ liệu Tab Role: " + ex.Message); }

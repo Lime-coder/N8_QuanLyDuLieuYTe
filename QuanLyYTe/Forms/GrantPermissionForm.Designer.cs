@@ -134,10 +134,10 @@
             };
 
             Label lblUser = new Label { Text = "Người nhận (User):", Location = new Point(150, 100), AutoSize = true };
-            this.cbRoleUser = new ComboBox { Location = new Point(320, 97), Width = 300, DropDownStyle = ComboBoxStyle.DropDownList };
+            this.cbRoleUser = CreateComboBox(320, 97, 300);
 
             Label lblRole = new Label { Text = "Role cần cấp:", Location = new Point(150, 180), AutoSize = true };
-            this.cbRoleToGrant = new ComboBox { Location = new Point(320, 177), Width = 300, DropDownStyle = ComboBoxStyle.DropDownList };
+            this.cbRoleToGrant = CreateComboBox(320, 177, 300);
 
             this.chkWithAdminOption = new CheckBox { Text = "WITH ADMIN OPTION", Location = new Point(150, 250), AutoSize = true };
 
@@ -158,7 +158,14 @@
         }
 
         private Label CreateLabel(string text, int x, int y) => new Label { Text = text, Location = new Point(x, y), AutoSize = true };
-        private ComboBox CreateComboBox(int x, int y, int w) => new ComboBox { Location = new Point(x, y), Width = w, DropDownStyle = ComboBoxStyle.DropDownList };
+        private System.Windows.Forms.ComboBox CreateComboBox(int x, int y, int w) => new System.Windows.Forms.ComboBox
+        {
+            Location = new System.Drawing.Point(x, y),
+            Width = w,
+            DropDownStyle = ComboBoxStyle.DropDown, // Đổi từ DropDownList sang DropDown để cho phép gõ
+            AutoCompleteMode = AutoCompleteMode.SuggestAppend, // Bật gợi ý
+            AutoCompleteSource = AutoCompleteSource.ListItems  // Lấy nguồn từ danh sách Item
+        };
         private CheckBox CreateCheckBox(string text, int x, int y, int w = 100, Color? color = null) => new CheckBox { Text = text, Location = new Point(x, y), Width = w, ForeColor = color ?? Color.Black };
 
         private TabControl tcMain;
