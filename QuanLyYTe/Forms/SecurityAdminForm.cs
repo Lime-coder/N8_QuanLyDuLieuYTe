@@ -224,11 +224,25 @@ namespace QuanLyYTe.Forms
             return Convert.ToString(dgvUsers.CurrentRow.Cells["ACCOUNT_STATUS"].Value);
         }
 
+        private string? GetSelectedUserOracleMaintained()
+        {
+            if (dgvUsers.CurrentRow == null) return null;
+            if (!dgvUsers.Columns.Contains("ORACLE_MAINTAINED")) return null;
+            return Convert.ToString(dgvUsers.CurrentRow.Cells["ORACLE_MAINTAINED"].Value);
+        }
+
         private string? GetSelectedRoleName()
         {
             if (dgvRoles.CurrentRow == null) return null;
             if (!dgvRoles.Columns.Contains("ROLE")) return null;
             return Convert.ToString(dgvRoles.CurrentRow.Cells["ROLE"].Value);
+        }
+
+        private string? GetSelectedRoleOracleMaintained()
+        {
+            if (dgvRoles.CurrentRow == null) return null;
+            if (!dgvRoles.Columns.Contains("ORACLE_MAINTAINED")) return null;
+            return Convert.ToString(dgvRoles.CurrentRow.Cells["ORACLE_MAINTAINED"].Value);
         }
 
         private void UpdateUserButtonsState()
@@ -244,6 +258,16 @@ namespace QuanLyYTe.Forms
                 return;
             }
 
+            bool isSystemUser = string.Equals(GetSelectedUserOracleMaintained(), "Y", StringComparison.OrdinalIgnoreCase);
+            if (isSystemUser)
+            {
+                btnUserEdit.Enabled = false;
+                btnUserDelete.Enabled = false;
+                btnUserLock.Enabled = false;
+                btnUserUnlock.Enabled = false;
+                return;
+            }
+
             string? status = GetSelectedUserStatus();
             bool locked = !string.IsNullOrWhiteSpace(status) && status.ToUpperInvariant().Contains("LOCKED");
             btnUserLock.Enabled = !locked;
@@ -255,6 +279,14 @@ namespace QuanLyYTe.Forms
             bool hasRow = dgvRoles.CurrentRow != null;
             btnRoleEdit.Enabled = hasRow;
             btnRoleDelete.Enabled = hasRow;
+
+            if (!hasRow) return;
+            bool isSystemRole = string.Equals(GetSelectedRoleOracleMaintained(), "Y", StringComparison.OrdinalIgnoreCase);
+            if (isSystemRole)
+            {
+                btnRoleEdit.Enabled = false;
+                btnRoleDelete.Enabled = false;
+            }
         }
 
         private void btnUserRefresh_Click(object sender, EventArgs e) => RefreshUsers();
@@ -306,6 +338,12 @@ namespace QuanLyYTe.Forms
 
         private void btnUserEdit_Click(object sender, EventArgs e)
         {
+            if (string.Equals(GetSelectedUserOracleMaintained(), "Y", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show(this, "Đây là User hệ thống, bạn không có quyền thay đổi.", "Thông báo");
+                return;
+            }
+
             string? username = GetSelectedUsername();
             if (string.IsNullOrWhiteSpace(username)) return;
 
@@ -326,6 +364,12 @@ namespace QuanLyYTe.Forms
 
         private void btnUserDelete_Click(object sender, EventArgs e)
         {
+            if (string.Equals(GetSelectedUserOracleMaintained(), "Y", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show(this, "Đây là User hệ thống, bạn không có quyền thay đổi.", "Thông báo");
+                return;
+            }
+
             string? username = GetSelectedUsername();
             if (string.IsNullOrWhiteSpace(username)) return;
 
@@ -351,6 +395,12 @@ namespace QuanLyYTe.Forms
 
         private void btnUserLock_Click(object sender, EventArgs e)
         {
+            if (string.Equals(GetSelectedUserOracleMaintained(), "Y", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show(this, "Đây là User hệ thống, bạn không có quyền thay đổi.", "Thông báo");
+                return;
+            }
+
             string? username = GetSelectedUsername();
             if (string.IsNullOrWhiteSpace(username)) return;
 
@@ -375,6 +425,12 @@ namespace QuanLyYTe.Forms
 
         private void btnUserUnlock_Click(object sender, EventArgs e)
         {
+            if (string.Equals(GetSelectedUserOracleMaintained(), "Y", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show(this, "Đây là User hệ thống, bạn không có quyền thay đổi.", "Thông báo");
+                return;
+            }
+
             string? username = GetSelectedUsername();
             if (string.IsNullOrWhiteSpace(username)) return;
 
@@ -423,6 +479,12 @@ namespace QuanLyYTe.Forms
 
         private void btnRoleEdit_Click(object sender, EventArgs e)
         {
+            if (string.Equals(GetSelectedRoleOracleMaintained(), "Y", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show(this, "Đây là Role hệ thống, bạn không có quyền thay đổi.", "Thông báo");
+                return;
+            }
+
             string? roleName = GetSelectedRoleName();
             if (string.IsNullOrWhiteSpace(roleName)) return;
 
@@ -443,6 +505,12 @@ namespace QuanLyYTe.Forms
 
         private void btnRoleDelete_Click(object sender, EventArgs e)
         {
+            if (string.Equals(GetSelectedRoleOracleMaintained(), "Y", StringComparison.OrdinalIgnoreCase))
+            {
+                MessageBox.Show(this, "Đây là Role hệ thống, bạn không có quyền thay đổi.", "Thông báo");
+                return;
+            }
+
             string? roleName = GetSelectedRoleName();
             if (string.IsNullOrWhiteSpace(roleName)) return;
 
