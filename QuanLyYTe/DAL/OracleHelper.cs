@@ -12,6 +12,18 @@ namespace QuanLyYTe.DAL
     public static class OracleHelper
     {
         private static string _connStr = ConfigurationManager.ConnectionStrings["HospitalDB"].ConnectionString;
+        public static void SetConnectionString(string connStr)
+        {
+            _connStr = connStr;
+        }
+
+        public static void TestConnection(string connStr)
+        {
+            using (OracleConnection conn = new OracleConnection(connStr))
+            {
+                conn.Open(); // throws if credentials are wrong
+            }
+        }
 
         public static DataTable ExecuteQuerySP(string spName, OracleParameter[]? parameters = null)
         {
@@ -39,7 +51,7 @@ namespace QuanLyYTe.DAL
             return dt;
         }
 
-        public static DataTable ExecuteQuery(string sql, OracleParameter[]? parameters = null)
+        public static DataTable ExecuteQuery(string sql, OracleParameter[] parameters = null)
         {
             DataTable dt = new DataTable();
             using (OracleConnection conn = new OracleConnection(_connStr))
@@ -48,7 +60,6 @@ namespace QuanLyYTe.DAL
                 {
                     cmd.CommandType = CommandType.Text;
                     if (parameters != null) cmd.Parameters.AddRange(parameters);
-
                     using (OracleDataAdapter da = new OracleDataAdapter(cmd))
                     {
                         try
@@ -57,7 +68,7 @@ namespace QuanLyYTe.DAL
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Query execution failed: {ex.Message}");
+                            throw new Exception($"Lỗi thực thi query: {ex.Message}");
                         }
                     }
                 }
@@ -65,7 +76,9 @@ namespace QuanLyYTe.DAL
             return dt;
         }
 
-        public static void ExecuteNonQuerySP(string spName, OracleParameter[]? parameters = null)
+        // SP trả về những tham số - Truyền vào mảng 
+        // SP không trả về tham số
+        public static void ExecuteNonQuerySP(string spName, OracleParameter[] parameters = null)
         {
             using (OracleConnection conn = new OracleConnection(_connStr))
             {
