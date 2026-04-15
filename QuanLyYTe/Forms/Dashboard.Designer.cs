@@ -112,7 +112,7 @@
             pnlLogo.Controls.Add(lblAppSubtitle);
             pnlLogo.Controls.Add(lblAppTitle);
 
-            lblAppTitle.Text = "OracleAdmin";
+            lblAppTitle.Text = "HospitalAdmin";
             lblAppTitle.Font = new System.Drawing.Font("Segoe UI", 14f, System.Drawing.FontStyle.Bold);
             lblAppTitle.ForeColor = System.Drawing.Color.FromArgb(255, 140, 40);
             lblAppTitle.AutoSize = true;
@@ -206,7 +206,7 @@
             pnlWelcome.Controls.Add(lblWelcomeDesc);
             pnlWelcome.Controls.Add(lblWelcomeTitle);
 
-            lblWelcomeTitle.Text = "Chào mừng đến với Oracle DBA Console";
+            lblWelcomeTitle.Text = "Chào mừng đến với Hospital DBA Console";
             lblWelcomeTitle.Font = new System.Drawing.Font("Segoe UI", 13f, System.Drawing.FontStyle.Bold);
             lblWelcomeTitle.ForeColor = System.Drawing.Color.FromArgb(28, 28, 32);
             lblWelcomeTitle.AutoSize = true;
@@ -240,7 +240,7 @@
             MinimumSize = new System.Drawing.Size(900, 560);
             BackColor = System.Drawing.Color.FromArgb(245, 244, 242);
             Font = new System.Drawing.Font("Segoe UI", 9f);
-            Text = "Oracle DBA Management Console";
+            Text = "HospitalAdmin";
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             Name = "Dashboard";
             // Sidebar must be added AFTER pnlMain so Left dock works correctly

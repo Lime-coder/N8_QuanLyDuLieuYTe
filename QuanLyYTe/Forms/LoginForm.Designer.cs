@@ -111,7 +111,7 @@
             lblAppTitle.Name = "lblAppTitle";
             lblAppTitle.Size = new Size(163, 32);
             lblAppTitle.TabIndex = 1;
-            lblAppTitle.Text = "OracleAdmin";
+            lblAppTitle.Text = "HospitalAdmin";
             // 
             // pnlMain
             // 
@@ -238,7 +238,7 @@
             lblSubtitle.Name = "lblSubtitle";
             lblSubtitle.Size = new Size(170, 20);
             lblSubtitle.TabIndex = 7;
-            lblSubtitle.Text = "Kết nối Oracle Database";
+            lblSubtitle.Text = "Kết nối Hospital Database";
             // 
             // lblTitle
             // 
@@ -275,7 +275,7 @@
             MinimumSize = new Size(683, 571);
             Name = "LoginForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Oracle DBA — Đăng nhập";
+            Text = "HospitalAdmin — Đăng nhập";
             Load += new System.EventHandler(this.LoginForm_Load);
             pnlSidebar.ResumeLayout(false);
             pnlVersion.ResumeLayout(false);
