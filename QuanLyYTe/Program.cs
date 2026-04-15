@@ -1,3 +1,5 @@
+using QuanLyYTe.Forms;
+
 namespace QuanLyYTe
 {
     internal static class Program
