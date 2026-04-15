@@ -190,6 +190,10 @@ namespace QuanLyYTe.Forms
 
                 if (dt != null && dt.Columns.Count > 0)
                 {
+                    cbSysGranteeName.DataSource = null;
+                    cbSysGranteeName.Items.Clear();
+                    cbSysGranteeName.Text = "";
+
                     cbSysGranteeName.DisplayMember = dt.Columns[0].ColumnName;
                     cbSysGranteeName.DataSource = dt;
                 }
