@@ -43,17 +43,31 @@ namespace QuanLyYTe.Forms
             try
             {
                 DataTable dt = _repository.GetGrantees(cbGranteeType.Text);
-                cbGranteeName.SelectedIndex = -1;
-                cbGranteeName.Text = "";
-                cbGranteeName.DisplayMember = dt.Columns[0].ColumnName;
-                cbGranteeName.DataSource = dt;
 
+                cbGranteeName.DataSource = null;
+                cbGranteeName.Items.Clear();
+                cbGranteeName.Text = "";
+
+                if (dt != null && dt.Rows.Count > 0)
+                {
+
+                    cbGranteeName.DisplayMember = dt.Columns[0].ColumnName;
+                    cbGranteeName.DataSource = dt;
+
+
+                    cbGranteeName.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+                    cbGranteeName.AutoCompleteSource = AutoCompleteSource.ListItems;
+                }
+
+                cbGranteeName.SelectedIndex = -1;
                 chkWithGrantOption.Enabled = (cbGranteeType.Text == "USER");
                 if (!chkWithGrantOption.Enabled) chkWithGrantOption.Checked = false;
             }
-            catch (Exception ex) { MessageBox.Show("Lỗi tải người nhận: " + ex.Message); }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi tải danh sách người nhận: " + ex.Message);
+            }
         }
-
         private void LoadObjects()
         {
             try
