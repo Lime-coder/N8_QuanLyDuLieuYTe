@@ -19,12 +19,17 @@
 
             tcMain.SuspendLayout();
             SuspendLayout();
-            // 
-            // tcMain
-            // 
+
+            // tcMain 
             tcMain.Controls.Add(tpObject);
             tcMain.Controls.Add(tpRole);
             tcMain.Controls.Add(tpSystem);
+            tcMain.Dock = DockStyle.Fill;
+            tcMain.Location = new Point(0, 0);
+            tcMain.Name = "tcMain";
+            tcMain.SelectedIndex = 0;
+            tcMain.Size = new Size(850, 600);
+            tcMain.TabIndex = 0;
 
             tcMain.Dock = DockStyle.Fill;
             tcMain.Location = new Point(0, 0);
@@ -231,35 +236,38 @@
                 Size = new Size(800, 510),
                 Location = new Point(20, 15),
                 BorderStyle = BorderStyle.FixedSingle,
-                BackColor = Color.FromArgb(248, 249, 250)
+                BackColor = Color.FromArgb(248, 249, 250),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
             };
 
             int labelX = 25; int controlX = 150;
 
             // Hàng 1: Loại người nhận và Tên người nhận
-            pnlObj.Controls.Add(CreateLabel("Người nhận:", labelX, 30));
+            pnlObj.Controls.Add(CreateLabel("Người nhận:", labelX, 30, true));
             this.cbGranteeType = CreateComboBox(controlX, 27, 100);
             this.cbGranteeType.Items.AddRange(new object[] { "USER", "ROLE" });
             this.cbGranteeName = CreateComboBox(controlX + 110, 27, 300);
+           // this.cbGranteeName.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
             // Hàng 2: Loại đối tượng 
-            pnlObj.Controls.Add(CreateLabel("Loại đối tượng:", labelX, 70));
+            pnlObj.Controls.Add(CreateLabel("Loại đối tượng:", labelX, 70, true));
             this.cbObjectType = CreateComboBox(controlX, 67, 410);
             this.cbObjectType.Items.AddRange(new object[] { "TABLE", "VIEW", "PROCEDURE", "FUNCTION" });
 
             // Hàng 3: Chọn đối tượng
-            pnlObj.Controls.Add(CreateLabel("Chọn Đối tượng:", labelX, 110));
+            pnlObj.Controls.Add(CreateLabel("Chọn Đối tượng:", labelX, 110, true));
             this.lbObjects = CreateComboBox(controlX, 107, 410);
 
 
             // Hàng 4: Panels Quyền và Cột
-            pnlObj.Controls.Add(CreateLabel("Chọn quyền:", labelX, 160));
+            pnlObj.Controls.Add(CreateLabel("Chọn quyền:", labelX, 160, true));
             Panel pnlPrivs = new Panel
             {
                 Location = new Point(labelX, 185),
                 Size = new Size(350, 165),
                 BorderStyle = BorderStyle.FixedSingle,
-                BackColor = Color.White
+                BackColor = Color.White,
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left
             };
             this.chkSelect = CreateCheckBox("SELECT", 15, 10);
             this.chkInsert = CreateCheckBox("INSERT", 15, 40);
@@ -268,13 +276,14 @@
             this.chkExecute = CreateCheckBox("EXECUTE", 15, 130);
             pnlPrivs.Controls.AddRange(new Control[] { chkSelect, chkInsert, chkUpdate, chkDelete, chkExecute });
 
-            pnlObj.Controls.Add(CreateLabel("Phân quyền mức cột:", 410, 160));
+            pnlObj.Controls.Add(CreateLabel("Phân quyền mức cột:", 410, 160, true));
             this.clbColumns = new CheckedListBox()
             {
                 Location = new Point(410, 185),
                 Size = new Size(360, 165),
                 BorderStyle = BorderStyle.FixedSingle,
-                CheckOnClick = true
+                CheckOnClick = true,
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
             };
 
             // Hàng 5: Options
@@ -287,10 +296,11 @@
                 Location = new Point(labelX, 415),
                 Width = 740,
                 Height = 65,
-                BackColor = Color.RoyalBlue,
+                BackColor = Color.FromArgb(255, 140, 40),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 12, FontStyle.Bold)
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
             };
 
           
@@ -300,85 +310,172 @@
 
         private void SetupTabRoleGrant()
         {
-            Panel pnl = new Panel
+            Panel pnlOuter = new Panel
             {
                 Size = new Size(780, 480),
                 Location = new Point(30, 25),
                 BorderStyle = BorderStyle.FixedSingle,
-                BackColor = Color.FromArgb(248, 249, 250)
+                BackColor = Color.FromArgb(248, 249, 250),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
             };
 
-            Label lblUser = new Label { Text = "Người nhận (User):", Location = new Point(150, 100), AutoSize = true };
-            this.cbRoleUser = CreateComboBox(320, 97, 300);
+            
+            TableLayoutPanel tlp = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 7, BackColor = Color.FromArgb(248, 249, 250) };
+            tlp.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15F)); // Lề trái
+            tlp.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F)); // Nội dung
+            tlp.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15F)); // Lề phải
 
-            Label lblRole = new Label { Text = "Role cần cấp:", Location = new Point(150, 180), AutoSize = true };
-            this.cbRoleToGrant = CreateComboBox(320, 177, 300);
+    
+            tlp.RowStyles.Add(new RowStyle(SizeType.Percent, 15F));  // Khoảng trống trên
+            tlp.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F)); // Người nhận
+            tlp.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F)); // Role cần cấp
+            tlp.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F)); // Checkbox
+            tlp.RowStyles.Add(new RowStyle(SizeType.Absolute, 60F)); // Spacer giữa input và button
+            tlp.RowStyles.Add(new RowStyle(SizeType.Absolute, 70F)); // Button
+            tlp.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));  // Khoảng trống dưới
 
-            this.chkWithAdminOption = new CheckBox { Text = "WITH ADMIN OPTION", Location = new Point(150, 250), AutoSize = true };
+            tlp.Controls.Add(new Label { Text = "Người nhận (User):", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Dock = DockStyle.Bottom }, 1, 0);
+            this.cbRoleUser = CreateComboBox(0, 0, 400); cbRoleUser.Dock = DockStyle.Fill;
+            tlp.Controls.Add(cbRoleUser, 1, 1);
+
+            tlp.Controls.Add(new Label { Text = "Role cần cấp:", Font = new Font("Segoe UI", 10F, FontStyle.Bold), Dock = DockStyle.Bottom }, 1, 2);
+            this.cbRoleToGrant = CreateComboBox(0, 0, 400); cbRoleToGrant.Dock = DockStyle.Fill;
+            tlp.Controls.Add(cbRoleToGrant, 1, 3);
+
+            this.chkWithAdminOption = CreateCheckBox("WITH ADMIN OPTION", 0, 0, 200);
+            tlp.Controls.Add(chkWithAdminOption, 1, 4);
 
             this.btnGrantRole = new Button
             {
-                Text = "Xác nhận cấp Role cho User",
-                Location = new Point(150, 320),
-                Width = 470,
-                Height = 55,
-                BackColor = Color.RoyalBlue,
+                Text = "Xác nhận cấp role cho user",
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(255, 140, 40),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold)
             };
+            tlp.Controls.Add(btnGrantRole, 1, 5);
 
-            pnl.Controls.AddRange(new Control[] { lblUser, cbRoleUser, lblRole, cbRoleToGrant, chkWithAdminOption, btnGrantRole });
-            this.tpRole.Controls.Add(pnl);
+            pnlOuter.Controls.Add(tlp);
+            this.tpRole.Controls.Add(pnlOuter);
         }
+
         private void SetupTabSystemPrivileges()
         {
-            Panel pnl = new Panel
+        
+            Panel pnlOuter = new Panel
             {
                 Size = new Size(780, 480),
                 Location = new Point(30, 25),
                 BorderStyle = BorderStyle.FixedSingle,
-                BackColor = Color.FromArgb(248, 249, 250)
+                BackColor = Color.FromArgb(248, 249, 250),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
             };
 
-            int labelX = 150; int controlX = 320;
-
-            // Dòng 1: Người nhận
-            pnl.Controls.Add(CreateLabel("Người nhận:", labelX, 100));
-            this.cbSysGranteeType = CreateComboBox(controlX, 97, 100);
-            this.cbSysGranteeType.Items.AddRange(new object[] { "USER", "ROLE" });
-            this.cbSysGranteeName = CreateComboBox(controlX + 110, 97, 190);
-
-            // Dòng 2: Chọn quyền
-            pnl.Controls.Add(CreateLabel("Chọn quyền:", labelX, 180));
-            this.cbSysPrivilege = CreateComboBox(controlX, 177, 300);
-
-            // Dòng 3: Admin Option
-            this.chkWithAdminOptionSys = new CheckBox
+            TableLayoutPanel tlpSys = new TableLayoutPanel
             {
-                Text = "WITH ADMIN OPTION",
-                Location = new Point(labelX, 250),
-                AutoSize = true
+                Dock = DockStyle.Fill,
+                ColumnCount = 3,
+                RowCount = 7,
+                BackColor = Color.Transparent
             };
 
-            // Dòng 4: Nút xác nhận
+         
+            tlpSys.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15F));
+            tlpSys.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
+            tlpSys.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15F));
+
+            tlpSys.RowStyles.Add(new RowStyle(SizeType.Percent, 15F));  // Khoảng trống trên
+            tlpSys.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F)); // Dòng chọn Người nhận
+            tlpSys.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F)); // Nhãn chọn quyền
+            tlpSys.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F)); // Ô chọn quyền
+            tlpSys.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F)); // Checkbox
+            tlpSys.RowStyles.Add(new RowStyle(SizeType.Absolute, 80F)); // Nút bấm
+            tlpSys.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));  // Khoảng trống dưới
+
+     
+
+            // Dòng 1: Nhãn Người nhận 
+            tlpSys.Controls.Add(new Label
+            {
+                Text = "Người nhận:",
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Dock = DockStyle.Bottom
+            }, 1, 0);
+
+            // Dòng 2: ComboBox chọn loại người nhận và tên người nhận trong cùng một hàng
+            TableLayoutPanel tlpGranteeGroup = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1,
+                Margin = new Padding(0, 10, 0, 0) 
+            };
+            tlpGranteeGroup.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tlpGranteeGroup.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 75F));
+            tlpGranteeGroup.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+            this.cbSysGranteeType = CreateComboBox(0, 0, 0);
+            this.cbSysGranteeType.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            this.cbSysGranteeType.Margin = new Padding(0, 0, 5, 0); 
+            this.cbSysGranteeType.Items.AddRange(new object[] { "USER", "ROLE" });
+
+            this.cbSysGranteeName = CreateComboBox(0, 0, 0);
+            this.cbSysGranteeName.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            this.cbSysGranteeName.Margin = new Padding(5, 0, 0, 0); 
+            tlpGranteeGroup.Controls.Add(cbSysGranteeType, 0, 0);
+            tlpGranteeGroup.Controls.Add(cbSysGranteeName, 1, 0);
+            tlpSys.Controls.Add(tlpGranteeGroup, 1, 1);
+
+
+            // Dòng 3: Nhãn Chọn quyền hệ thống
+            tlpSys.Controls.Add(new Label
+            {
+                Text = "Chọn quyền hệ thống:",
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Dock = DockStyle.Bottom
+            }, 1, 2);
+
+            // Dòng 4: Ô chọn quyền
+            this.cbSysPrivilege = CreateComboBox(0, 0, 0);
+            this.cbSysPrivilege.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            this.cbSysPrivilege.Margin = new Padding(0, 10, 0, 0); // Khoảng cách trên 10px y hệt hàng trên
+            tlpSys.Controls.Add(cbSysPrivilege, 1, 3);
+            // Dòng 5: Checkbox Admin Option
+            this.chkWithAdminOptionSys = CreateCheckBox("WITH ADMIN OPTION", 0, 0, 200);
+            tlpSys.Controls.Add(chkWithAdminOptionSys, 1, 4);
+
+            // Dòng 6: Nút bấm xác nhận
             this.btnGrantSystem = new Button
             {
                 Text = "Xác nhận cấp quyền hệ thống",
-                Location = new Point(labelX, 320),
-                Width = 470,
-                Height = 55,
-                BackColor = Color.RoyalBlue,
+                Dock = DockStyle.Fill,
+                Margin = new Padding(0, 10, 0, 0),
+                BackColor = Color.FromArgb(255, 140, 40), 
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold)
+
             };
+            tlpSys.Controls.Add(btnGrantSystem, 1, 5);
 
-            pnl.Controls.AddRange(new Control[] { cbSysGranteeType, cbSysGranteeName, cbSysPrivilege, chkWithAdminOptionSys, btnGrantSystem });
-            this.tpSystem.Controls.Add(pnl);
+            pnlOuter.Controls.Add(tlpSys);
+            this.tpSystem.Controls.Add(pnlOuter);
         }
+        public Label CreateLabel(string text, int x, int y, bool isBold = false)
+        {
+            Label lbl = new Label();
+            lbl.Text = text;
+            lbl.Location = new Point(x, y);
+            lbl.AutoSize = true;
 
-        private Label CreateLabel(string text, int x, int y) => new Label { Text = text, Location = new Point(x, y), AutoSize = true };
+            if (isBold)
+            {
+                lbl.Font = new Font(lbl.Font, FontStyle.Bold);
+            }
+
+            return lbl;
+        }
         private System.Windows.Forms.ComboBox CreateComboBox(int x, int y, int w) => new System.Windows.Forms.ComboBox
         {
             Location = new System.Drawing.Point(x, y),
