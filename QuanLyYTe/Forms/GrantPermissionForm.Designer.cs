@@ -17,7 +17,7 @@
             tpRole = new TabPage();
             tpSystem = new TabPage();
 
-            tcMain.SuspendLayout();         
+            tcMain.SuspendLayout();
             SuspendLayout();
             // 
             // tcMain
@@ -60,11 +60,18 @@
             tpSystem.TabIndex = 2;
             tpSystem.Text = "Quyền hệ thống";
 
-            
+            // GrantPermissionForm
+            this.ClientSize = new Size(850, 600);
+            this.Controls.Add(this.tcMain);
+            this.Font = new Font("Segoe UI", 9F);
+            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Text = "Cấp quyền";
+
+
             cbGranteeType = new ComboBox();
             cbGranteeName = new ComboBox();
             cbObjectType = new ComboBox();
-            lbObjects = new ListBox();
+            lbObjects = new ComboBox();
             clbColumns = new CheckedListBox();
             chkSelect = new CheckBox();
             chkInsert = new CheckBox();
@@ -78,12 +85,7 @@
             chkWithAdminOption = new CheckBox();
             btnGrantRole = new Button();
 
-            // GrantPermissionForm
-            this.ClientSize = new Size(850, 600);
-            this.Controls.Add(this.tcMain);
-            this.Font = new Font("Segoe UI", 9F);
-            this.StartPosition = FormStartPosition.CenterScreen;
-            this.Text = "Cấp quyền - Grant Permission";
+
 
             this.tcMain.ResumeLayout(false);
             this.tpObject.ResumeLayout(false);
@@ -234,42 +236,65 @@
 
             int labelX = 25; int controlX = 150;
 
-            pnlObj.Controls.Add(CreateLabel("Người nhận:", labelX, 25));
-            this.cbGranteeType = CreateComboBox(controlX, 22, 100);
+            // Hàng 1: Loại người nhận và Tên người nhận
+            pnlObj.Controls.Add(CreateLabel("Người nhận:", labelX, 30));
+            this.cbGranteeType = CreateComboBox(controlX, 27, 100);
             this.cbGranteeType.Items.AddRange(new object[] { "USER", "ROLE" });
-            this.cbGranteeName = CreateComboBox(controlX + 110, 22, 215);
+            this.cbGranteeName = CreateComboBox(controlX + 110, 27, 300);
 
-            pnlObj.Controls.Add(CreateLabel("Loại đối tượng:", labelX, 65));
-            this.cbObjectType = CreateComboBox(controlX, 62, 325);
+            // Hàng 2: Loại đối tượng 
+            pnlObj.Controls.Add(CreateLabel("Loại đối tượng:", labelX, 70));
+            this.cbObjectType = CreateComboBox(controlX, 67, 410);
             this.cbObjectType.Items.AddRange(new object[] { "TABLE", "VIEW", "PROCEDURE", "FUNCTION" });
 
-            pnlObj.Controls.Add(CreateLabel("Chọn Đối tượng:", labelX, 105));
-            this.lbObjects = new ListBox() { Location = new Point(labelX, 130), Width = 360, Height = 150, BorderStyle = BorderStyle.FixedSingle };
+            // Hàng 3: Chọn đối tượng
+            pnlObj.Controls.Add(CreateLabel("Chọn Đối tượng:", labelX, 110));
+            this.lbObjects = CreateComboBox(controlX, 107, 410);
 
-            pnlObj.Controls.Add(CreateLabel("Phân quyền mức cột:", 410, 105));
-            this.clbColumns = new CheckedListBox() { Location = new Point(410, 130), Width = 360, Height = 150, CheckOnClick = true, BorderStyle = BorderStyle.FixedSingle };
 
-            int checkY = 300;
-            this.chkSelect = CreateCheckBox("SELECT", labelX, checkY);
-            this.chkInsert = CreateCheckBox("INSERT", 130, checkY);
-            this.chkUpdate = CreateCheckBox("UPDATE", 235, checkY);
-            this.chkDelete = CreateCheckBox("DELETE", 340, checkY);
-            this.chkExecute = CreateCheckBox("EXECUTE", 445, checkY);
-            this.chkWithGrantOption = CreateCheckBox("WITH GRANT OPTION", labelX, 350, 250, Color.Blue);
+            // Hàng 4: Panels Quyền và Cột
+            pnlObj.Controls.Add(CreateLabel("Chọn quyền:", labelX, 160));
+            Panel pnlPrivs = new Panel
+            {
+                Location = new Point(labelX, 185),
+                Size = new Size(350, 165),
+                BorderStyle = BorderStyle.FixedSingle,
+                BackColor = Color.White
+            };
+            this.chkSelect = CreateCheckBox("SELECT", 15, 10);
+            this.chkInsert = CreateCheckBox("INSERT", 15, 40);
+            this.chkUpdate = CreateCheckBox("UPDATE", 15, 70);
+            this.chkDelete = CreateCheckBox("DELETE", 15, 100);
+            this.chkExecute = CreateCheckBox("EXECUTE", 15, 130);
+            pnlPrivs.Controls.AddRange(new Control[] { chkSelect, chkInsert, chkUpdate, chkDelete, chkExecute });
 
+            pnlObj.Controls.Add(CreateLabel("Phân quyền mức cột:", 410, 160));
+            this.clbColumns = new CheckedListBox()
+            {
+                Location = new Point(410, 185),
+                Size = new Size(360, 165),
+                BorderStyle = BorderStyle.FixedSingle,
+                CheckOnClick = true
+            };
+
+            // Hàng 5: Options
+            this.chkWithGrantOption = CreateCheckBox("WITH GRANT OPTION", labelX, 365, 250, Color.Blue);
+
+            // Hàng 6: Nút bấm
             this.btnGrant = new Button
             {
                 Text = "Xác nhận cấp quyền đối tượng",
-                Location = new Point(labelX, 410),
-                Width = 745,
-                Height = 60,
+                Location = new Point(labelX, 415),
+                Width = 740,
+                Height = 65,
                 BackColor = Color.RoyalBlue,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold)
             };
 
-            pnlObj.Controls.AddRange(new Control[] { cbGranteeType, cbGranteeName, cbObjectType, lbObjects, clbColumns, chkSelect, chkInsert, chkUpdate, chkDelete, chkExecute, chkWithGrantOption, btnGrant });
+          
+            pnlObj.Controls.AddRange(new Control[] { cbGranteeType, cbGranteeName, cbObjectType, lbObjects, pnlPrivs, clbColumns, chkWithGrantOption, btnGrant });
             this.tpObject.Controls.Add(pnlObj);
         }
 
@@ -358,17 +383,16 @@
         {
             Location = new System.Drawing.Point(x, y),
             Width = w,
-            DropDownStyle = ComboBoxStyle.DropDown, 
-            AutoCompleteMode = AutoCompleteMode.SuggestAppend, 
-            AutoCompleteSource = AutoCompleteSource.ListItems  
+            DropDownStyle = ComboBoxStyle.DropDown,
+            AutoCompleteMode = AutoCompleteMode.SuggestAppend,
+            AutoCompleteSource = AutoCompleteSource.ListItems
         };
         private CheckBox CreateCheckBox(string text, int x, int y, int w = 100, Color? color = null) => new CheckBox { Text = text, Location = new Point(x, y), Width = w, ForeColor = color ?? Color.Black };
 
         private TabControl tcMain;
         private TabPage tpObject, tpRole, tpSystem;
         // Tab 1 UI
-        private ComboBox cbObjectType, cbGranteeType, cbGranteeName;
-        private ListBox lbObjects;
+        private ComboBox cbObjectType, cbGranteeType, cbGranteeName, lbObjects;
         private CheckedListBox clbColumns;
         private CheckBox chkSelect, chkUpdate, chkInsert, chkDelete, chkExecute, chkWithGrantOption;
         private Button btnGrant;

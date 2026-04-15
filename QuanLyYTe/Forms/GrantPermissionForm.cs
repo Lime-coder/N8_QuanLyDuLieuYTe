@@ -34,7 +34,7 @@ namespace QuanLyYTe.Forms
 
             cbGranteeType.SelectedIndex = 0;
             cbObjectType.SelectedIndex = 0;
-            cbSysGranteeType.SelectedIndex = 0; 
+            cbSysGranteeType.SelectedIndex = 0;
         }
 
         #region Logic Tab 1: Grant Object Privileges
@@ -68,6 +68,7 @@ namespace QuanLyYTe.Forms
                 MessageBox.Show("Lỗi tải danh sách người nhận: " + ex.Message);
             }
         }
+
         private void LoadObjects()
         {
             try
@@ -98,28 +99,34 @@ namespace QuanLyYTe.Forms
         private void btnGrant_Click(object? sender, EventArgs e)
         {
             string grantee = cbGranteeName.Text.Trim();
-            if (string.IsNullOrEmpty(grantee) || lbObjects.SelectedValue == null)
+            string objName = lbObjects.Text.Trim(); 
+
+            if (string.IsNullOrEmpty(grantee) || string.IsNullOrEmpty(objName))
             {
-                MessageBox.Show("Vui lòng chọn đầy đủ thông tin!");
+                MessageBox.Show("Vui lòng chọn hoặc nhập đầy đủ thông tin Người nhận và Đối tượng!");
                 return;
             }
 
-            string objName = lbObjects.GetItemText(lbObjects.SelectedItem);
-            string cols = clbColumns.Enabled && clbColumns.CheckedItems.Count > 0
-                         ? string.Join(",", clbColumns.CheckedItems.Cast<string>()) : null;
+            string colList = (clbColumns.Enabled && clbColumns.CheckedItems.Count > 0)
+                             ? string.Join(",", clbColumns.CheckedItems.Cast<string>()) : null;
 
             try
             {
                 int gOpt = chkWithGrantOption.Checked ? 1 : 0;
-                if (chkSelect.Checked) _repository.GrantObjectPrivilege(grantee, "SELECT", objName, cols, gOpt);
-                if (chkInsert.Checked) _repository.GrantObjectPrivilege(grantee, "INSERT", objName, null, gOpt);
-                if (chkUpdate.Checked) _repository.GrantObjectPrivilege(grantee, "UPDATE", objName, cols, gOpt);
-                if (chkDelete.Checked) _repository.GrantObjectPrivilege(grantee, "DELETE", objName, null, gOpt);
-                if (chkExecute.Checked) _repository.GrantObjectPrivilege(grantee, "EXECUTE", objName, null, gOpt);
+                bool hasGranted = false;
 
-                MessageBox.Show($"Đã cấp quyền đối tượng cho {grantee} thành công!");
+                if (chkSelect.Checked) { _repository.GrantObjectPrivilege(grantee, "SELECT", objName, colList, gOpt); hasGranted = true; }
+                if (chkInsert.Checked) { _repository.GrantObjectPrivilege(grantee, "INSERT", objName, null, gOpt); hasGranted = true; }
+                if (chkUpdate.Checked) { _repository.GrantObjectPrivilege(grantee, "UPDATE", objName, colList, gOpt); hasGranted = true; }
+                if (chkDelete.Checked) { _repository.GrantObjectPrivilege(grantee, "DELETE", objName, null, gOpt); hasGranted = true; }
+                if (chkExecute.Checked) { _repository.GrantObjectPrivilege(grantee, "EXECUTE", objName, null, gOpt); hasGranted = true; }
+
+                if (hasGranted)
+                    MessageBox.Show($"Đã cấp quyền trên {objName} cho {grantee} thành công!");
+                else
+                    MessageBox.Show("Vui lòng tick chọn ít nhất một quyền (SELECT, INSERT...)");
             }
-            catch (Exception ex) { MessageBox.Show(CleanOracleError(ex.Message), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            catch (Exception ex) { MessageBox.Show(CleanOracleError(ex.Message), "Lỗi Oracle", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
         #endregion
 
@@ -144,6 +151,9 @@ namespace QuanLyYTe.Forms
             }
             else if (tcMain.SelectedTab == tpSystem)
             {
+        
+                if (cbSysGranteeType.SelectedIndex == -1) cbSysGranteeType.SelectedIndex = 0;
+
                 LoadSysGrantees();
                 LoadAllSystemPrivileges();
             }
@@ -174,27 +184,18 @@ namespace QuanLyYTe.Forms
         {
             try
             {
-                // Lấy dữ liệu (GetGrantees đã xử lý IF USER/ROLE trong SP rồi)
                 DataTable dt = _repository.GetGrantees(cbSysGranteeType.Text);
+                cbSysGranteeName.DataSource = null; 
+                cbSysGranteeName.Text = "";
 
                 if (dt != null && dt.Columns.Count > 0)
                 {
-                    // Xóa trắng để reset trạng thái tìm kiếm
-                    cbSysGranteeName.DataSource = null;
-                    cbSysGranteeName.Items.Clear();
-                    cbSysGranteeName.Text = "";
-
-                    // Gán tên cột đầu tiên trả về từ Cursor làm DisplayMember
                     cbSysGranteeName.DisplayMember = dt.Columns[0].ColumnName;
                     cbSysGranteeName.DataSource = dt;
-
-                    cbSysGranteeName.SelectedIndex = -1;
                 }
+                cbSysGranteeName.SelectedIndex = -1;
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Lỗi khi tải danh sách đối tượng nhận quyền: " + ex.Message);
-            }
+            catch (Exception ex) { MessageBox.Show("Lỗi: " + ex.Message); }
         }
 
         private void LoadAllSystemPrivileges()
