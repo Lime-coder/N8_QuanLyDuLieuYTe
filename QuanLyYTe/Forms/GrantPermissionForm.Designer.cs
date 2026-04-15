@@ -439,7 +439,7 @@
             // Dòng 4: Ô chọn quyền
             this.cbSysPrivilege = CreateComboBox(0, 0, 0);
             this.cbSysPrivilege.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-            this.cbSysPrivilege.Margin = new Padding(0, 10, 0, 0); // Khoảng cách trên 10px y hệt hàng trên
+            this.cbSysPrivilege.Margin = new Padding(0, 10, 0, 0);
             tlpSys.Controls.Add(cbSysPrivilege, 1, 3);
             // Dòng 5: Checkbox Admin Option
             this.chkWithAdminOptionSys = CreateCheckBox("WITH ADMIN OPTION", 0, 0, 200);
