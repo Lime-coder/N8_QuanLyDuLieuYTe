@@ -1,237 +1,257 @@
 using System;
 using System.Data;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using QuanLyYTe.DAL;
 
 namespace QuanLyYTe.Forms
 {
-    /// <summary>
-    /// Form quản lý quyền:
-    ///   - Câu 4: Thu hồi quyền từ user hoặc role
-    ///   - Câu 5: Xem thông tin về quyền của mỗi user/role trên các đối tượng dữ liệu
-    /// </summary>
     public partial class FrmPrivilege : Form
     {
         private readonly PrivilegeRepository _repo = new PrivilegeRepository();
+        private DataTable _dtPrivileges;
 
         public FrmPrivilege()
         {
             InitializeComponent();
         }
 
-        // ================================================================
-        // LOAD FORM
-        // ================================================================
         private void FrmPrivilege_Load(object sender, EventArgs e)
         {
-            LoadGranteeCombo();
             ApplyGridStyle(dgvPrivilege);
-
-            // Mặc định chọn "Theo User/Role"
-            rbByGrantee.Checked = true;
+            cbSearchType.SelectedIndex = 0; // Default to "User"
+            cbFilterType.SelectedIndex = 0; // Default to "Tất cả"
         }
 
-        // ----------------------------------------------------------------
-        // Nạp User + Role vào ComboBox
-        // ----------------------------------------------------------------
-        private void LoadGranteeCombo()
+        // ================================================================
+        // COMBOBOX DYNAMIC LOADING
+        // ================================================================
+        private void cbSearchType_SelectedIndexChanged(object sender, EventArgs e)
         {
+            string type = cbSearchType.Text;
             try
             {
-                DataTable dtUsers = _repo.GetUsers();
-                DataTable dtRoles = _repo.GetRoles();
-
-                var dt = new DataTable();
-                dt.Columns.Add("DISPLAY",  typeof(string));
-                dt.Columns.Add("GRANTEE",  typeof(string));
-
-                foreach (DataRow r in dtUsers.Rows)
+                if (type == "User")
                 {
-                    string name = r["USERNAME"].ToString()!;
-                    dt.Rows.Add($"[User]  {name}", name);
+                    lblSearchName.Text = "Tên User";
+                    DataTable dt = _repo.GetUsers();
+                    cbSearchName.DataSource = dt;
+                    cbSearchName.DisplayMember = "USERNAME";
+                    cbSearchName.ValueMember = "USERNAME";
                 }
-                foreach (DataRow r in dtRoles.Rows)
+                else if (type == "Role")
                 {
-                    string name = r["ROLENAME"].ToString()!;
-                    dt.Rows.Add($"[Role]  {name}", name);
+                    lblSearchName.Text = "Tên Role";
+                    DataTable dt = _repo.GetRoles();
+                    cbSearchName.DataSource = dt;
+                    cbSearchName.DisplayMember = "ROLENAME";
+                    cbSearchName.ValueMember = "ROLENAME";
                 }
-
-                cbGrantee.DataSource    = dt;
-                cbGrantee.DisplayMember = "DISPLAY";
-                cbGrantee.ValueMember   = "GRANTEE";
-
-                if (cbGrantee.Items.Count > 0) cbGrantee.SelectedIndex = 0;
+                else if (type == "Đối tượng")
+                {
+                    lblSearchName.Text = "Tên Đối tượng";
+                    string sql = "SELECT object_name FROM ALL_OBJECTS WHERE OWNER = 'HOSPITAL_DBA' " +
+                                 "AND object_type IN ('TABLE', 'VIEW') ORDER BY object_name";
+                    DataTable dtObj = OracleHelper.ExecuteQuery(sql);
+                    if (dtObj != null && dtObj.Rows.Count > 0)
+                    {
+                        cbSearchName.DataSource = dtObj;
+                        cbSearchName.DisplayMember = "object_name";
+                        cbSearchName.ValueMember = "object_name";
+                    }
+                }
             }
-            catch (Exception ex) { ShowError("Lỗi tải danh sách", ex.Message); }
+            catch (Exception ex)
+            {
+                ShowError("Lỗi tải danh sách", ex.Message);
+            }
         }
 
         // ================================================================
-        // SỰ KIỆN: RadioButton chuyển chế độ xem
-        // ================================================================
-        private void rbByGrantee_CheckedChanged(object sender, EventArgs e)
-        {
-            bool byGrantee = rbByGrantee.Checked;
-            pnlGrantee.Visible = byGrantee;
-            pnlObject.Visible  = !byGrantee;
-            ClearGrid();
-        }
-
-        // ================================================================
-        // NÚT "XEM QUYỀN"
+        // ACTIONS
         // ================================================================
         private void btnView_Click(object sender, EventArgs e)
         {
-            if (rbByGrantee.Checked)
-                LoadByGrantee();
+            string searchType = cbSearchType.Text;
+            string searchName = cbSearchName.Text.Trim();
+
+            if (string.IsNullOrEmpty(searchName))
+            {
+                ShowWarn($"Vui lòng nhập hoặc chọn {searchType}!");
+                return;
+            }
+
+            if (searchType == "Đối tượng")
+                LoadByObject(searchName);
             else
-                LoadByObject();
+                LoadByGrantee(searchName);
         }
 
-        private void LoadByGrantee()
+        private void LoadByGrantee(string grantee)
         {
-            if (cbGrantee.SelectedIndex < 0) { ShowWarn("Vui lòng chọn User / Role."); return; }
-
-            string grantee = cbGrantee.SelectedValue?.ToString() ?? "";
-            if (string.IsNullOrWhiteSpace(grantee)) { ShowWarn("Grantee không hợp lệ."); return; }
-
             try
             {
                 Cursor = Cursors.WaitCursor;
-                DataTable dt = _repo.GetAllPrivileges(grantee);
-                BindGrid(dt);
+                _dtPrivileges = _repo.GetAllPrivileges(grantee);
+                BindGrid(_dtPrivileges);
                 RenameColumns_ByGrantee();
-                lblCount.Text = $"Tổng: {dt.Rows.Count} quyền  |  Grantee: {grantee}";
+                UpdateSummaryLabel(grantee, false);
+                FilterGrid(); 
             }
             catch (Exception ex) { ShowError("Lỗi xem quyền", ex.Message); }
             finally { Cursor = Cursors.Default; }
         }
 
-        private void LoadByObject()
+        private void LoadByObject(string objName)
         {
-            string owner  = txtOwner.Text.Trim();
-            string objName = txtObject.Text.Trim();
-            if (string.IsNullOrEmpty(owner) || string.IsNullOrEmpty(objName))
-            { ShowWarn("Vui lòng nhập Schema và Tên đối tượng."); return; }
-
             try
             {
                 Cursor = Cursors.WaitCursor;
-                DataTable dt = _repo.GetPrivsOnObject(owner, objName);
-                BindGrid(dt);
+                _dtPrivileges = _repo.GetPrivsOnObject("HOSPITAL_DBA", objName);
+                BindGrid(_dtPrivileges);
                 RenameColumns_ByObject();
-                lblCount.Text = $"Tổng: {dt.Rows.Count} bản ghi  |  Đối tượng: {owner}.{objName}";
+                UpdateSummaryLabel(objName, true);
+                FilterGrid();
             }
             catch (Exception ex) { ShowError("Lỗi xem quyền đối tượng", ex.Message); }
             finally { Cursor = Cursors.Default; }
         }
 
-        // ================================================================
-        // NÚT "THU HỒI QUYỀN" (Câu 4)
-        // ================================================================
         private void btnRevoke_Click(object sender, EventArgs e)
         {
-            // Chỉ cho phép thu hồi khi đang xem theo Grantee
-            if (rbByObject.Checked)
-            {
-                ShowWarn("Để thu hồi quyền, hãy chọn chế độ\n\"Theo User / Role\", tải danh sách rồi chọn dòng cần thu hồi.");
-                return;
-            }
-
             if (dgvPrivilege.SelectedRows.Count == 0)
             {
-                ShowWarn("Vui lòng chọn dòng quyền cần thu hồi.");
+                ShowWarn("Vui lòng chọn 1 dòng quyền bên trên để thu hồi.");
                 return;
             }
 
             DataGridViewRow row = dgvPrivilege.SelectedRows[0];
 
-            // Đọc dữ liệu từ dòng đang chọn (dùng tên cột gốc của Oracle)
-            string type      = GetCell(row, "LOAI_QUYEN");
+            string type = GetCell(row, "LOAI_QUYEN");
             string privilege = GetCell(row, "QUYEN");
-            string owner     = GetCell(row, "CHU_SO_HUU");
-            string obj       = GetCell(row, "DOI_TUONG");
-            string column    = GetCell(row, "COT");
-            string grantee   = cbGrantee.SelectedValue?.ToString() ?? "";
+            string owner = GetCell(row, "CHU_SO_HUU");
+            string obj = GetCell(row, "DOI_TUONG");
+            string column = GetCell(row, "COT");
+            
+            // Tìm grantee
+            string grantee = "";
+            if (cbSearchType.Text == "Đối tượng")
+                grantee = GetCell(row, "NGUOI_NHAN"); // NGUOI_NHAN là cột trả về từ USP_GET_PRIVS_ON_OBJ
+            else
+                grantee = cbSearchName.Text.Trim();
 
-            if (string.IsNullOrEmpty(grantee))
-            { ShowWarn("Không xác định được Grantee. Vui lòng tải lại danh sách."); return; }
+            if (string.IsNullOrEmpty(grantee)) return;
 
-            // Thông tin xác nhận
-            string info =
-                $"  Grantee   : {grantee}\n" +
-                $"  Loại      : {type}\n" +
-                $"  Quyền     : {privilege}" +
-                (string.IsNullOrEmpty(obj)    ? "" : $"\n  Đối tượng : {owner}.{obj}") +
-                (string.IsNullOrEmpty(column) ? "" : $"\n  Cột       : {column}");
+            // KIỂM TRA ĐIỀU KIỆN: Không cho DBA tự thu hồi chính mình.
+            if (grantee.Trim().ToUpper() == "HOSPITAL_DBA")
+            {
+                ShowWarn("Tuyệt đối không thể tự thu hồi quyền của chính tài khoản Database Administrator (HOSPITAL_DBA).");
+                return;
+            }
 
-            var confirm = MessageBox.Show(
-                $"Xác nhận thu hồi quyền sau?\n\n{info}",
-                "Xác nhận Thu hồi",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning
-            );
-            if (confirm == DialogResult.No) return;
+            string info = $"Người nhận: {grantee}\nLoại đối tượng: {type}\nQuyền: {privilege}";
+            if (!string.IsNullOrEmpty(obj)) info += $"\nĐối tượng: {owner}.{obj}";
+            if (!string.IsNullOrEmpty(column)) info += $"\nCột: {column}";
+
+            if (MessageBox.Show($"Bạn có chắc chắn muốn thu hồi quyền sau?\n\n{info}", "Xác nhận Thu hồi",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No) return;
 
             try
             {
                 Cursor = Cursors.WaitCursor;
                 _repo.RevokePrivilege(type, privilege, owner, obj, column, grantee);
-                MessageBox.Show("Thu hồi quyền thành công!", "Thành công",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
-                LoadByGrantee(); // reload
+                MessageBox.Show("Thu hồi quyền thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                btnView_Click(null, null); // Reload grid
             }
-            catch (Exception ex) { ShowError("Lỗi thu hồi quyền", ex.Message); }
+            catch (Exception ex) { ShowError("Lỗi thu hồi", ex.Message); }
             finally { Cursor = Cursors.Default; }
+        }
+
+        // ================================================================
+        // FILTER
+        // ================================================================
+        private void cbFilterType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            FilterGrid();
+        }
+
+        private void FilterGrid()
+        {
+            if (_dtPrivileges == null || dgvPrivilege.DataSource == null) return;
+
+            if (!_dtPrivileges.Columns.Contains("LOAI_QUYEN")) 
+            {
+                FitColumns();
+                return; // Không thể lọc theo cột này nếu danh sách trả về là đối tượng thông thường (không có trường phân loại)
+            }
+
+            string type = cbFilterType.Text;
+            DataView dv = _dtPrivileges.DefaultView;
+
+            if (string.IsNullOrEmpty(type) || type == "Tất cả")
+            {
+                dv.RowFilter = "";
+            }
+            else if (type == "Quyền đối tượng (Table/View/Proc)")
+            {
+                dv.RowFilter = "LOAI_QUYEN IN ('TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION')";
+            }
+            else if (type == "Quyền theo cột")
+            {
+                dv.RowFilter = "LOAI_QUYEN = 'COLUMN'";
+            }
+            else if (type == "Quyền hệ thống")
+            {
+                dv.RowFilter = "LOAI_QUYEN = 'SYSTEM'";
+            }
+            else if (type == "Role được cấp")
+            {
+                dv.RowFilter = "LOAI_QUYEN = 'ROLE'";
+            }
+
+            FitColumns();
         }
 
         // ================================================================
         // HELPERS
         // ================================================================
-
         private void BindGrid(DataTable dt)
         {
-            dgvPrivilege.DataSource = null;
             dgvPrivilege.DataSource = dt;
             FitColumns();
         }
 
-        private void ClearGrid()
+        private void UpdateSummaryLabel(string targetName, bool isObjectMode)
         {
-            dgvPrivilege.DataSource = null;
-            lblCount.Text = "";
+            if (_dtPrivileges == null) return;
+            
+            int total = _dtPrivileges.Rows.Count;
+            // Tính số lượng cho từng loại (khi ở chế độ xem user/role)
+            int dtCount = 0, cotCount = 0, sysCount = 0, roleCount = 0;
+            
+            if (!isObjectMode)
+            {
+                foreach(DataRow row in _dtPrivileges.Rows)
+                {
+                    string loai = row["LOAI_QUYEN"]?.ToString() ?? "";
+                    if (loai == "COLUMN") cotCount++;
+                    else if (loai == "SYSTEM") sysCount++;
+                    else if (loai == "ROLE") roleCount++;
+                    else dtCount++; // Table, View, Procedure
+                }
+                lblSummary.Text = $"{targetName}: {dtCount} quyền đối tượng | {cotCount} quyền cột | {sysCount} quyền hệ thống | {roleCount} role (Tổng: {total})";
+            }
+            else
+            {
+                lblSummary.Text = $"Đối tượng [HOSPITAL_DBA.{targetName}]: Có tổng cộng {total} quyền được cấp phát.";
+            }
         }
 
-        /// <summary>
-        /// Tự động căn cột vừa nội dung nhưng không vượt quá maxWidth,
-        /// và tổng chiều rộng không vượt quá DataGridView.
-        /// </summary>
         private void FitColumns()
         {
-            if (dgvPrivilege.Columns.Count == 0) return;
-
-            // Bước 1: Cho mỗi cột tự co giãn theo nội dung
-            dgvPrivilege.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
-
-            // Bước 2: Lấy chiều rộng theo AllCells, gán cố định, rồi tắt AutoSize
-            int totalWidth = 0;
-            foreach (DataGridViewColumn col in dgvPrivilege.Columns)
-            {
-                int w = col.Width;
-                col.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-                col.Width = w;
-                totalWidth += w;
-            }
-
-            dgvPrivilege.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
-
-            // Bước 3: Nếu tổng cột < chiều rộng grid → dùng Fill để căn khít
-            int gridWidth = dgvPrivilege.ClientSize.Width;
-            if (totalWidth < gridWidth - 20)
-            {
-                dgvPrivilege.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            }
-            // Nếu tổng cột > grid → giữ nguyên kích thước AllCells (có scrollbar ngang)
+            if (dgvPrivilege.Columns.Count == 0 || dgvPrivilege.Rows.Count == 0) return;
+            dgvPrivilege.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         }
 
         private void ApplyGridStyle(DataGridView dgv)
@@ -246,20 +266,21 @@ namespace QuanLyYTe.Forms
             dgv.BorderStyle                = BorderStyle.None;
             dgv.GridColor                  = Color.FromArgb(220, 220, 220);
 
-            dgv.ColumnHeadersDefaultCellStyle.BackColor  = Color.FromArgb(30, 100, 160);
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor  = Color.White;
+            // Bám sát màu sắc trong hình feedback
+            dgv.ColumnHeadersDefaultCellStyle.BackColor  = Color.White;
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor  = Color.FromArgb(40, 40, 40);
             dgv.ColumnHeadersDefaultCellStyle.Font       = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             dgv.ColumnHeadersDefaultCellStyle.Alignment  = DataGridViewContentAlignment.MiddleLeft;
-            dgv.ColumnHeadersHeight = 34;
+            dgv.ColumnHeadersHeight = 36;
+            dgv.EnableHeadersVisualStyles = false;
 
             dgv.DefaultCellStyle.Font               = new Font("Segoe UI", 9.5f);
-            dgv.DefaultCellStyle.SelectionBackColor  = Color.FromArgb(52, 152, 219);
+            dgv.DefaultCellStyle.SelectionBackColor  = Color.FromArgb(50, 100, 200);
             dgv.DefaultCellStyle.SelectionForeColor  = Color.White;
             dgv.DefaultCellStyle.Padding             = new Padding(4, 0, 4, 0);
 
-            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 248, 252);
-            dgv.RowTemplate.Height  = 28;
-            dgv.EnableHeadersVisualStyles = false;
+            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(235, 242, 255);
+            dgv.RowTemplate.Height  = 30;
         }
 
         private static string GetCell(DataGridViewRow row, string colName)
@@ -271,12 +292,15 @@ namespace QuanLyYTe.Forms
 
         private void RenameColumns_ByGrantee()
         {
-            Rename("LOAI_QUYEN",     "Loại quyền");
-            Rename("QUYEN",          "Quyền / Role được cấp");
+            Rename("LOAI_QUYEN",     "Kiểu");
+            Rename("QUYEN",          "Quyền");
             Rename("CHU_SO_HUU",     "Schema");
             Rename("DOI_TUONG",      "Đối tượng");
-            Rename("COT",            "Cột");
-            Rename("CO_THE_CAP_LAI", "Cấp lại?");
+            
+            // Ẩn các cột thừa theo yêu cầu
+            if (dgvPrivilege.Columns.Contains("COT")) dgvPrivilege.Columns["COT"].Visible = false;
+            if (dgvPrivilege.Columns.Contains("CO_THE_CAP_LAI")) dgvPrivilege.Columns["CO_THE_CAP_LAI"].Visible = false;
+            if (dgvPrivilege.Columns.Contains("CO_THE_HIERARCHY")) dgvPrivilege.Columns["CO_THE_HIERARCHY"].Visible = false;
         }
 
         private void RenameColumns_ByObject()
@@ -284,10 +308,13 @@ namespace QuanLyYTe.Forms
             Rename("NGUOI_NHAN",       "User / Role nhận");
             Rename("CHU_SO_HUU",       "Schema");
             Rename("DOI_TUONG",        "Đối tượng");
-            Rename("COT",              "Cột");
             Rename("QUYEN",            "Quyền");
-            Rename("CO_THE_CAP_LAI",   "Cấp lại?");
-            Rename("CO_THE_HIERARCHY", "Hierarchy?");
+            Rename("LOAI_QUYEN",       "Kiểu");
+
+            // Ẩn các cột thừa theo yêu cầu
+            if (dgvPrivilege.Columns.Contains("COT")) dgvPrivilege.Columns["COT"].Visible = false;
+            if (dgvPrivilege.Columns.Contains("CO_THE_CAP_LAI")) dgvPrivilege.Columns["CO_THE_CAP_LAI"].Visible = false;
+            if (dgvPrivilege.Columns.Contains("CO_THE_HIERARCHY")) dgvPrivilege.Columns["CO_THE_HIERARCHY"].Visible = false;
         }
 
         private void Rename(string colName, string header)
@@ -296,10 +323,7 @@ namespace QuanLyYTe.Forms
                 dgvPrivilege.Columns[colName].HeaderText = header;
         }
 
-        private void ShowWarn(string msg)
-            => MessageBox.Show(msg, "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
-        private void ShowError(string title, string msg)
-            => MessageBox.Show(msg, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        private void ShowWarn(string msg) => MessageBox.Show(msg, "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        private void ShowError(string title, string msg) => MessageBox.Show(msg, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 }

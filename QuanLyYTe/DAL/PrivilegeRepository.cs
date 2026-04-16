@@ -96,8 +96,7 @@ namespace QuanLyYTe.DAL
 
             OracleHelper.ExecuteNonQuerySP("USP_REVOKE_PRIV", parameters);
         }
-    public class PrivilegeRepository
-    {
+
         /// <summary>
         /// Lấy danh sách Người dùng hoặc Vai trò (User/Role)
         /// Sử dụng SP: usp_GetGrantees
@@ -207,6 +206,5 @@ namespace QuanLyYTe.DAL
             };
             OracleHelper.ExecuteNonQuerySP("USP_GRANT_SYSTEM_PRIVILEGE", parameters);
         }
-
     }
 }
