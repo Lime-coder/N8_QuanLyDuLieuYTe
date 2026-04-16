@@ -18,7 +18,7 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
 
-            return OracleHelper.ExecuteQuerySP("usp_GetGrantees", parameters);
+            return OracleHelper.ExecuteQuerySP("USP_GET_GRANTEES", parameters);
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
 
-            return OracleHelper.ExecuteQuerySP("usp_GetObjects", parameters);
+            return OracleHelper.ExecuteQuerySP("USP_GET_OBJECTS", parameters);
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
 
-            return OracleHelper.ExecuteQuerySP("usp_GetColumns", parameters);
+            return OracleHelper.ExecuteQuerySP("USP_GET_COLUMNS", parameters);
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace QuanLyYTe.DAL
             {
         new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return OracleHelper.ExecuteQuerySP("usp_GetAllSystemPrivileges", parameters);
+            return OracleHelper.ExecuteQuerySP("USP_GET_ALL_SYSTEM_PRIVILEGES", parameters);
         }
 
 

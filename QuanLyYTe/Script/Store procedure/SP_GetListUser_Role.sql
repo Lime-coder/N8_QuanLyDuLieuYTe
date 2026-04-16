@@ -2,7 +2,7 @@
 --------------------------------------------------------------------------------
 --1. Lấy danh sách User hoặc Role
 --------------------------------------------------------------------------------
-CREATE OR REPLACE PROCEDURE usp_GetGrantees (
+CREATE OR REPLACE PROCEDURE USP_GET_GRANTEES (
     p_grantee_type IN VARCHAR2, -- 'USER' or 'ROLE'
     p_result_cursor OUT SYS_REFCURSOR
 ) AS
@@ -25,7 +25,7 @@ END;
 --------------------------------------------------------------------------------
 -- 2. Lấy danh sách đối tượng (Procedure, Function, Table, View)
 --------------------------------------------------------------------------------
-CREATE OR REPLACE PROCEDURE usp_GetObjects (
+CREATE OR REPLACE PROCEDURE USP_GET_OBJECTS (
     p_object_type IN VARCHAR2, -- 'TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION'
     p_result_cursor OUT SYS_REFCURSOR
 ) AS
@@ -43,7 +43,7 @@ END;
 --------------------------------------------------------------------------------
 -- 3. PROCEDURE: Lấy danh sách cột của một bảng cụ thể (Dùng cho phân quyền mức cột)
 --------------------------------------------------------------------------------
-CREATE OR REPLACE PROCEDURE usp_GetColumns (
+CREATE OR REPLACE PROCEDURE USP_GET_COLUMNS (
     p_table_name IN VARCHAR2,
     p_result_cursor OUT SYS_REFCURSOR
 ) AS
@@ -60,7 +60,7 @@ END;
 --------------------------------------------------------------------------------
 -- 4. Danh sách quyền hệ thống 
 --------------------------------------------------------------------------------
-CREATE OR REPLACE PROCEDURE usp_GetAllSystemPrivileges (
+CREATE OR REPLACE PROCEDURE USP_GET_ALL_SYSTEM_PRIVILEGES (
     p_result_cursor OUT SYS_REFCURSOR
 ) AS
 BEGIN
