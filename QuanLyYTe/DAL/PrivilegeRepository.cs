@@ -150,7 +150,7 @@ namespace QuanLyYTe.DAL
         {
             OracleParameter[] parameters = new OracleParameter[]
             {
-        new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
+                new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
             return OracleHelper.ExecuteQuerySP("USP_GET_ALL_SYSTEM_PRIVILEGES", parameters);
         }
@@ -200,9 +200,9 @@ namespace QuanLyYTe.DAL
         {
             OracleParameter[] parameters = new OracleParameter[]
             {
-        new OracleParameter("p_grantee", OracleDbType.Varchar2) { Value = grantee },
-        new OracleParameter("p_privilege", OracleDbType.Varchar2) { Value = priv },
-        new OracleParameter("p_with_admin", OracleDbType.Int32) { Value = withAdmin }
+                    new OracleParameter("p_grantee", OracleDbType.Varchar2) { Value = grantee },
+                    new OracleParameter("p_privilege", OracleDbType.Varchar2) { Value = priv },
+                    new OracleParameter("p_with_admin", OracleDbType.Int32) { Value = withAdmin }
             };
             OracleHelper.ExecuteNonQuerySP("USP_GRANT_SYSTEM_PRIVILEGE", parameters);
         }

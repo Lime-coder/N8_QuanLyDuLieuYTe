@@ -24,7 +24,7 @@
             btnNavRoles = new System.Windows.Forms.Button();
             btnNavGrant = new System.Windows.Forms.Button();
             btnNavRevoke = new System.Windows.Forms.Button();
-            btnNavPermView = new System.Windows.Forms.Button();
+            // btnNavPermView = new System.Windows.Forms.Button();
             pnlLogo = new System.Windows.Forms.Panel();
             lblAppSubtitle = new System.Windows.Forms.Label();
             lblAppTitle = new System.Windows.Forms.Label();
@@ -88,20 +88,20 @@
             pnlNavItems.Controls.Add(btnNavRoles);
             pnlNavItems.Controls.Add(btnNavGrant);
             pnlNavItems.Controls.Add(btnNavRevoke);
-            pnlNavItems.Controls.Add(btnNavPermView);
+            // pnlNavItems.Controls.Add(btnNavPermView);
 
             // Setup each nav button with proper position/style
             SetupNavButton(btnNavUsers, "  Quản lý User", 0);
             SetupNavButton(btnNavRoles, "  Quản lý Role", 1);
             SetupNavButton(btnNavGrant, "  Cấp Quyền", 2);
-            SetupNavButton(btnNavRevoke, "  Thu Hồi Quyền", 3);
-            SetupNavButton(btnNavPermView, "  Xem Quyền", 4);
+            SetupNavButton(btnNavRevoke, "  Xem và thu Hồi Quyền", 3);
+            // SetupNavButton(btnNavPermView, "  Xem Quyền", 4);
 
             btnNavUsers.Name = "btnNavUsers"; btnNavUsers.TabIndex = 0;
             btnNavRoles.Name = "btnNavRoles"; btnNavRoles.TabIndex = 1;
             btnNavGrant.Name = "btnNavGrant"; btnNavGrant.TabIndex = 2;
             btnNavRevoke.Name = "btnNavRevoke"; btnNavRevoke.TabIndex = 3;
-            btnNavPermView.Name = "btnNavPermView"; btnNavPermView.TabIndex = 4;
+            // btnNavPermView.Name = "btnNavPermView"; btnNavPermView.TabIndex = 4;
 
             // ── Logo ──────────────────────────────────────────────────
             pnlLogo.BackColor = System.Drawing.Color.FromArgb(30, 30, 35);
@@ -188,7 +188,7 @@
 
             // ── Content Panel ─────────────────────────────────────────
             // Add order: Cards(Top/AutoSize) first, Welcome(Top) last
-            pnlContent.AutoScroll = true;
+            pnlContent.AutoScroll = false;
             pnlContent.BackColor = System.Drawing.Color.FromArgb(245, 244, 242);
             pnlContent.Dock = System.Windows.Forms.DockStyle.Fill;
             pnlContent.Padding = new System.Windows.Forms.Padding(24, 20, 24, 24);
@@ -291,7 +291,7 @@
         private System.Windows.Forms.Button btnNavRoles;
         private System.Windows.Forms.Button btnNavGrant;
         private System.Windows.Forms.Button btnNavRevoke;
-        private System.Windows.Forms.Button btnNavPermView;
+        // private System.Windows.Forms.Button btnNavPermView;
         private System.Windows.Forms.Panel pnlSidebarFooter;
         private System.Windows.Forms.Label lblVersion;
         private System.Windows.Forms.Panel pnlMain;

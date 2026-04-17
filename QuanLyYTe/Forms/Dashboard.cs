@@ -26,11 +26,11 @@ namespace QuanLyYTe.Forms
 
             _features = new (string Badge, string Title, string Desc, Func<Form> Factory)[]
             {
-                ("USR", "Quản lý User",  "Tạo, sửa, xóa tài khoản người dùng Oracle", () => new frmUserMangement()),
+                ("USR", "Quản lý User",  "Tạo, sửa, xóa tài khoản người dùng Oracle", () => new frmUserManagement()),
                 ("ROL", "Quản lý Role",  "Tạo, sửa, xóa role trong hệ thống Oracle",  () => new frmRoleManagement()),
                 ("GRT", "Cấp Quyền",     "Cấp quyền cho user / role",                  () => new frmGrantPermission()),
-                ("REV", "Thu Hồi Quyền", "Thu hồi quyền đã cấp",                       () => new frmRevokePermission()),
-                ("VIW", "Xem Quyền",     "Xem chi tiết quyền của mỗi user / role",     () => new frmViewPermissions()),
+                ("REV", "Xem và thu hồi quyền", "Xem và thu hồi quyền đã cấp",                       () => new frmRevokePermission()),
+                // ("VIW", "Xem Quyền",     "Xem chi tiết quyền của mỗi user / role",     () => new frmViewPermissions()),
             };
 
             WireNavButtons();
@@ -180,7 +180,7 @@ namespace QuanLyYTe.Forms
                 (btnNavRoles,    1),
                 (btnNavGrant,    2),
                 (btnNavRevoke,   3),
-                (btnNavPermView, 4),
+                // (btnNavPermView, 4),
             };
 
             foreach (var (btn, idx) in map)
@@ -232,8 +232,15 @@ namespace QuanLyYTe.Forms
                 child.FormBorderStyle = FormBorderStyle.None;
                 child.Dock = DockStyle.Fill;
                 child.Tag = "embedded";
-                pnlContent.Controls.Add(child);
-                child.BringToFront();
+                var scrollWrapper = new Panel
+                {
+                    Dock = DockStyle.Fill,
+                    AutoScroll = true,
+                    Tag = "embedded"
+                };
+                scrollWrapper.Controls.Add(child);
+                pnlContent.Controls.Add(scrollWrapper);
+                scrollWrapper.BringToFront();
                 child.Show();
             }
             catch (Exception ex)

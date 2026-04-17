@@ -151,7 +151,7 @@ namespace QuanLyYTe.Forms
             }
             else if (tcMain.SelectedTab == tpSystem)
             {
-
+        
                 if (cbSysGranteeType.SelectedIndex == -1) cbSysGranteeType.SelectedIndex = 0;
 
                 LoadSysGrantees();

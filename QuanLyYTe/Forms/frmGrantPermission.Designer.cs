@@ -304,7 +304,6 @@
                 Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
             };
 
-
             pnlObj.Controls.AddRange(new Control[] { cbGranteeType, cbGranteeName, cbObjectType, lbObjects, pnlPrivs, clbColumns, chkWithGrantOption, btnGrant });
             this.tpObject.Controls.Add(pnlObj);
         }
@@ -320,12 +319,10 @@
                 Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
             };
 
-
             TableLayoutPanel tlp = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 3, RowCount = 7, BackColor = Color.FromArgb(248, 249, 250) };
             tlp.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15F)); // Lề trái
             tlp.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F)); // Nội dung
             tlp.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15F)); // Lề phải
-
 
             tlp.RowStyles.Add(new RowStyle(SizeType.Percent, 15F));  // Khoảng trống trên
             tlp.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F)); // Người nhận
@@ -363,7 +360,6 @@
 
         private void SetupTabSystemPrivileges()
         {
-
             Panel pnlOuter = new Panel
             {
                 Size = new Size(780, 480),
@@ -381,7 +377,6 @@
                 BackColor = Color.Transparent
             };
 
-
             tlpSys.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15F));
             tlpSys.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
             tlpSys.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 15F));
@@ -393,8 +388,6 @@
             tlpSys.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F)); // Checkbox
             tlpSys.RowStyles.Add(new RowStyle(SizeType.Absolute, 80F)); // Nút bấm
             tlpSys.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));  // Khoảng trống dưới
-
-
 
             // Hàng 1: Nhãn Người nhận 
             tlpSys.Controls.Add(new Label
@@ -418,26 +411,24 @@
 
             this.cbSysGranteeType = CreateComboBox(0, 0, 0);
             this.cbSysGranteeType.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-            this.cbSysGranteeType.Margin = new Padding(0, 0, 5, 0);
+            this.cbSysGranteeType.Margin = new Padding(0, 0, 5, 0); 
             this.cbSysGranteeType.Items.AddRange(new object[] { "USER", "ROLE" });
 
             this.cbSysGranteeName = CreateComboBox(0, 0, 0);
             this.cbSysGranteeName.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-            this.cbSysGranteeName.Margin = new Padding(5, 0, 0, 0);
+            this.cbSysGranteeName.Margin = new Padding(5, 0, 0, 0); 
             tlpGranteeGroup.Controls.Add(cbSysGranteeType, 0, 0);
             tlpGranteeGroup.Controls.Add(cbSysGranteeName, 1, 0);
             tlpSys.Controls.Add(tlpGranteeGroup, 1, 1);
 
-
-            // Hàng 3: Nhãn Chọn quyền hệ thống
+            // Dòng 3: Nhãn Chọn quyền hệ thống
             tlpSys.Controls.Add(new Label
             {
                 Text = "Chọn quyền hệ thống:",
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 Dock = DockStyle.Bottom
             }, 1, 2);
-
-            // Hàng 4: Ô chọn quyền
+            // Dòng 4: Ô chọn quyền
             this.cbSysPrivilege = CreateComboBox(0, 0, 0);
             this.cbSysPrivilege.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             this.cbSysPrivilege.Margin = new Padding(0, 10, 0, 0);
@@ -445,7 +436,6 @@
             // Hàng 5: Checkbox Admin Option
             this.chkWithAdminOptionSys = CreateCheckBox("WITH ADMIN OPTION", 0, 0, 200);
             tlpSys.Controls.Add(chkWithAdminOptionSys, 1, 4);
-
             // Hàng 6: Nút bấm xác nhận
             this.btnGrantSystem = new Button
             {
