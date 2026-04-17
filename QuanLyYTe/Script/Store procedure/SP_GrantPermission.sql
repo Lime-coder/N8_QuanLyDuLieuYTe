@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------------------
 -- 1. Quyền đối tượng
 --------------------------------------------------------------------------------------------
-CREATE OR REPLACE PROCEDURE USP_GRANT_OBJECT_PRIV (
+CREATE OR REPLACE PROCEDURE USP_GRANT_OBJECT_PRIVILEGE (
     p_grantee      IN VARCHAR2, -- Người nhận (User hoặc Role)
     p_priv_or_role IN VARCHAR2, -- SELECT, INSERT, UPDATE, DELETE, EXECUTE
     p_object_name  IN VARCHAR2,-- Tên bảng, view, proc, function
