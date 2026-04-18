@@ -1,5 +1,5 @@
 -- Sử dụng database XEPDB1
-ALTER SESSION SET CONTAINER = xepdb1;
+ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 ---------------------------------------------------------------------------------
 -- 1. DROP EVERYTHING

@@ -1,5 +1,5 @@
 -- Sử dụng database XEPDB1
-ALTER SESSION SET CONTAINER = xepdb1;
+ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 --  Tạo User Admin cho đồ án và cấp các quyền cần thiết để DBA có thể sử dụng database
 CREATE USER hospital_dba IDENTIFIED BY 123;

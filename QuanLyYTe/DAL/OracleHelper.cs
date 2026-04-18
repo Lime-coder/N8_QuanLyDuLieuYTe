@@ -11,12 +11,30 @@ namespace QuanLyYTe.DAL
 {
     public static class OracleHelper
     {
-        // Lấy chuỗi kết nối từ App.config
-        private static string _connStr = ConfigurationManager.ConnectionStrings["HospitalDB"].ConnectionString;
-
-        // SP trả về một danh sách
-        public static DataTable ExecuteQuerySP(string spName, OracleParameter[] parameters = null)
+        private static string _connStr = null;
+        public static void SetConnectionString(string connStr)
         {
+            _connStr = connStr;
+        }
+
+        // Guard added to every public method
+        private static void EnsureConnected()
+        {
+            if (string.IsNullOrEmpty(_connStr))
+                throw new InvalidOperationException("Chưa đăng nhập. Vui lòng đăng nhập trước.");
+        }
+
+        public static void TestConnection(string connStr)
+        {
+            using (OracleConnection conn = new OracleConnection(connStr))
+            {
+                conn.Open(); // throws if credentials are wrong
+            }
+        }
+
+        public static DataTable ExecuteQuerySP(string spName, OracleParameter[]? parameters = null)
+        {
+            EnsureConnected();
             DataTable dt = new DataTable();
             using (OracleConnection conn = new OracleConnection(_connStr))
             {
@@ -33,7 +51,7 @@ namespace QuanLyYTe.DAL
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Lỗi thực thi SP {spName}: {ex.Message}");
+                            throw new Exception($"Stored procedure execution failed ({spName}): {ex.Message}");
                         }
                     }
                 }
@@ -41,10 +59,36 @@ namespace QuanLyYTe.DAL
             return dt;
         }
 
-        // SP trả về những tham số - Truyền vào mảng 
-        // SP không trả về tham số
-        public static void ExecuteNonQuerySP(string spName, OracleParameter[] parameters = null)
+        public static DataTable ExecuteQuery(string sql, OracleParameter[]? parameters = null)
         {
+            EnsureConnected();
+            DataTable dt = new DataTable();
+            using (OracleConnection conn = new OracleConnection(_connStr))
+            {
+                using (OracleCommand cmd = new OracleCommand(sql, conn))
+                {
+                    cmd.CommandType = CommandType.Text;
+                    if (parameters != null) cmd.Parameters.AddRange(parameters);
+
+                    using (OracleDataAdapter da = new OracleDataAdapter(cmd))
+                    {
+                        try
+                        {
+                            da.Fill(dt);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"Query execution failed: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            return dt;
+        }
+
+        public static void ExecuteNonQuerySP(string spName, OracleParameter[]? parameters = null)
+        {
+            EnsureConnected();
             using (OracleConnection conn = new OracleConnection(_connStr))
             {
                 using (OracleCommand cmd = new OracleCommand(spName, conn))
@@ -56,11 +100,10 @@ namespace QuanLyYTe.DAL
                     {
                         conn.Open();
                         cmd.ExecuteNonQuery();
-                        // Sau khi Execute, các giá trị từ Oracle đã được nạp ngược lại vào mảng 'parameters'
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception($"Lỗi Action SP {spName}: {ex.Message}");
+                        throw new Exception($"Stored procedure action failed ({spName}): {ex.Message}");
                     }
                 }
             }
@@ -68,13 +111,15 @@ namespace QuanLyYTe.DAL
 
         public static void FormatGridView(DataGridView dgv)
         {
-            // Quy định chung
             dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
-            // Format cột ngày tháng
-            if (dgv.Columns.Contains("birthdate"))
-                dgv.Columns["birthdate"].DefaultCellStyle.Format = "dd/MM/yyyy";
+            string[] dateColumns = { "birthdate", "LOCK_DATE", "CREATED" };
+            foreach (string col in dateColumns)
+            {
+                if (dgv.Columns.Contains(col))
+                    dgv.Columns[col].DefaultCellStyle.Format = "dd/MM/yyyy";
+            }
         }
     }
 }

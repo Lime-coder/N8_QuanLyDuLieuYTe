@@ -7,11 +7,13 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="Data\**" />
+    <Compile Remove="Script\Auth\**" />
     <EmbeddedResource Remove="Data\**" />
+    <EmbeddedResource Remove="Script\Auth\**" />
     <None Remove="Data\**" />
+    <None Remove="Script\Auth\**" />
   </ItemGroup>
 
   <ItemGroup>

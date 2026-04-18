@@ -1,0 +1,23 @@
+create or replace PROCEDURE USP_GET_GRANTED_ROLE (
+    p_user      IN  VARCHAR2,
+    p_cursor    OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT GRANTED_ROLE
+        FROM DBA_ROLE_PRIVS
+        WHERE GRANTEE = UPPER(p_user)
+        AND ROWNUM = 1;
+END USP_GET_GRANTED_ROLE;
+/
+create or replace PROCEDURE USP_GET_SESSION_ROLE (
+    p_cursor    OUT SYS_REFCURSOR
+)
+AS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT ROLE
+        FROM SESSION_ROLES
+        WHERE ROWNUM = 1;
+END USP_GET_SESSION_ROLE;
