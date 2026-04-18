@@ -11,10 +11,17 @@ namespace QuanLyYTe.DAL
 {
     public static class OracleHelper
     {
-        private static string _connStr = ConfigurationManager.ConnectionStrings["HospitalDB"].ConnectionString;
+        private static string _connStr = null;
         public static void SetConnectionString(string connStr)
         {
             _connStr = connStr;
+        }
+
+        // Guard added to every public method
+        private static void EnsureConnected()
+        {
+            if (string.IsNullOrEmpty(_connStr))
+                throw new InvalidOperationException("Chưa đăng nhập. Vui lòng đăng nhập trước.");
         }
 
         public static void TestConnection(string connStr)
@@ -27,6 +34,7 @@ namespace QuanLyYTe.DAL
 
         public static DataTable ExecuteQuerySP(string spName, OracleParameter[]? parameters = null)
         {
+            EnsureConnected();
             DataTable dt = new DataTable();
             using (OracleConnection conn = new OracleConnection(_connStr))
             {
@@ -53,6 +61,7 @@ namespace QuanLyYTe.DAL
 
         public static DataTable ExecuteQuery(string sql, OracleParameter[]? parameters = null)
         {
+            EnsureConnected();
             DataTable dt = new DataTable();
             using (OracleConnection conn = new OracleConnection(_connStr))
             {
@@ -79,6 +88,7 @@ namespace QuanLyYTe.DAL
 
         public static void ExecuteNonQuerySP(string spName, OracleParameter[]? parameters = null)
         {
+            EnsureConnected();
             using (OracleConnection conn = new OracleConnection(_connStr))
             {
                 using (OracleCommand cmd = new OracleCommand(spName, conn))
@@ -94,28 +104,6 @@ namespace QuanLyYTe.DAL
                     catch (Exception ex)
                     {
                         throw new Exception($"Stored procedure action failed ({spName}): {ex.Message}");
-                    }
-                }
-            }
-        }
-
-        public static void ExecuteNonQuery(string sql, OracleParameter[]? parameters = null)
-        {
-            using (OracleConnection conn = new OracleConnection(_connStr))
-            {
-                using (OracleCommand cmd = new OracleCommand(sql, conn))
-                {
-                    cmd.CommandType = CommandType.Text;
-                    if (parameters != null) cmd.Parameters.AddRange(parameters);
-
-                    try
-                    {
-                        conn.Open();
-                        cmd.ExecuteNonQuery();
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception($"Command execution failed: {ex.Message}");
                     }
                 }
             }

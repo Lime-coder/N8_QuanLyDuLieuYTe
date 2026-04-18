@@ -30,22 +30,17 @@ namespace QuanLyYTe.Forms
                 return;
             }
 
-            // Build connection string using the Data Source already in App.config
-            string baseConnStr = ConfigurationManager.ConnectionStrings["HospitalDB"].ConnectionString;
-            // Replace/inject credentials into the existing connection string
-            var builder = new OracleConnectionStringBuilder(baseConnStr)
-            {
-                UserID = user,
-                Password = password
-            };
+            // Read address only — no credentials in config anymore
+            string dataSource = ConfigurationManager.AppSettings["DataSource"];
+            string connStr = $"User Id={user}; Password={password}; Data Source={dataSource};";
 
             try
             {
                 btnConnect.Enabled = false;
                 btnConnect.Text = "Đang kết nối...";
 
-                OracleHelper.TestConnection(builder.ConnectionString);
-                OracleHelper.SetConnectionString(builder.ConnectionString);
+                OracleHelper.TestConnection(connStr);
+                OracleHelper.SetConnectionString(connStr);
 
                 var dashboard = new Dashboard(user);
                 dashboard.Show();
