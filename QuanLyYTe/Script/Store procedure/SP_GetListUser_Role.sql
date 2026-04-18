@@ -11,7 +11,7 @@ BEGIN
     IF v_type = 'USER' THEN
         OPEN p_result_cursor FOR 
         SELECT UPPER(username) FROM dba_users 
-        WHERE oracle_maintained = 'N' 
+        WHERE oracle_maintained = 'N' AND username != 'HOSPITAL_DBA'
         ORDER BY username;
     ELSE
         OPEN p_result_cursor FOR 
