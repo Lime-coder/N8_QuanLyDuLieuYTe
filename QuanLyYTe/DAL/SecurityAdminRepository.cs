@@ -10,7 +10,7 @@ namespace QuanLyYTe.DAL
 
         public SecurityAdminRepository()
         {
-            _spOwner = ConfigurationManager.AppSettings["SchemaOwner"];
+            _spOwner = ConfigurationManager.AppSettings["ProcedureOwner"];
             if (!string.IsNullOrWhiteSpace(_spOwner))
                 _spOwner = _spOwner.Trim().ToUpperInvariant();
         }

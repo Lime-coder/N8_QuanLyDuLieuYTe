@@ -9,16 +9,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Data\**" />
+    <Compile Remove="Script\Auth\**" />
     <EmbeddedResource Remove="Data\**" />
+    <EmbeddedResource Remove="Script\Auth\**" />
     <None Remove="Data\**" />
+    <None Remove="Script\Auth\**" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.100" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Script\Auth\" />
   </ItemGroup>
 
 </Project>

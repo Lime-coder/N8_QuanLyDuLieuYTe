@@ -8,7 +8,7 @@ namespace QuanLyYTe.DAL
     {
         private static string Sp(string name)
         {
-            string owner = ConfigurationManager.AppSettings["SchemaOwner"];
+            string owner = ConfigurationManager.AppSettings["ProcedureOwner"];
             return string.IsNullOrEmpty(owner) ? name : $"{owner}.{name}";
         }
 
