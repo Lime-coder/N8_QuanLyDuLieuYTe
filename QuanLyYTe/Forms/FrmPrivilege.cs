@@ -192,7 +192,7 @@ namespace QuanLyYTe.Forms
             string typeFilter = "";
             if (_dtPrivileges.Columns.Contains("LOAI_QUYEN")) 
             {
-                if (type == "Quyền đối tượng (Table/View/Proc)")
+                if (type == "Quyền đối tượng")
                     typeFilter = "LOAI_QUYEN IN ('TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION')";
                 else if (type == "Quyền theo cột")
                     typeFilter = "LOAI_QUYEN = 'COLUMN'";
