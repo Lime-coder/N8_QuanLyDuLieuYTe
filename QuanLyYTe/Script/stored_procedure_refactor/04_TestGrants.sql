@@ -1,6 +1,6 @@
 -- Run as: hospital_dba | Container: PDB_QLYT
 -- Creates Oracle users matching mock staff and sets up roles and privileges for testing
-ALTER SESSION SET CONTAINER = PDB_QLYT_Nhap;
+ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 BEGIN
     FOR u IN (SELECT username FROM all_users
