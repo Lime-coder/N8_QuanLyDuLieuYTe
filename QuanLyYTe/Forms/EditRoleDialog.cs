@@ -34,11 +34,11 @@ namespace QuanLyYTe.Forms
             if (_mode == EditRoleDialogMode.Edit)
             {
                 txtRole.ReadOnly = true;
-                Text = "Edit role";
+                Text = "Sửa role";
             }
             else
             {
-                Text = "Create role";
+                Text = "Tạo role";
             }
 
             TogglePasswordEnabled();
@@ -59,19 +59,19 @@ namespace QuanLyYTe.Forms
 
             lblRole.AutoSize = true;
             lblRole.Location = new Point(16, 18);
-            lblRole.Text = "Role name";
+            lblRole.Text = "Tên role";
 
             txtRole.Location = new Point(110, 14);
             txtRole.Size = new Size(260, 27);
 
             chkNotIdentified.AutoSize = true;
             chkNotIdentified.Location = new Point(110, 54);
-            chkNotIdentified.Text = "NOT IDENTIFIED (no password)";
+            chkNotIdentified.Text = "NOT IDENTIFIED (không mật khẩu)";
             chkNotIdentified.CheckedChanged += (_, __) => TogglePasswordEnabled();
 
             lblPassword.AutoSize = true;
             lblPassword.Location = new Point(16, 90);
-            lblPassword.Text = "Password";
+            lblPassword.Text = "Mật khẩu";
 
             txtPassword.Location = new Point(110, 86);
             txtPassword.Size = new Size(260, 27);
@@ -79,12 +79,12 @@ namespace QuanLyYTe.Forms
 
             btnOk.Location = new Point(214, 130);
             btnOk.Size = new Size(75, 30);
-            btnOk.Text = "OK";
+            btnOk.Text = "Đồng ý";
             btnOk.DialogResult = DialogResult.OK;
 
             btnCancel.Location = new Point(295, 130);
             btnCancel.Size = new Size(75, 30);
-            btnCancel.Text = "Cancel";
+            btnCancel.Text = "Hủy";
             btnCancel.DialogResult = DialogResult.Cancel;
 
             AcceptButton = btnOk;

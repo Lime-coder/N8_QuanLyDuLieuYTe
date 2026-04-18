@@ -23,6 +23,42 @@ namespace QuanLyYTe.Forms
             RefreshRoles();
         }
 
+        /// <summary>
+        /// Hiển thị tiêu đề cột tiếng Việt; giữ nguyên các từ user, ORACLE_MAINTAINED theo yêu cầu.
+        /// </summary>
+        private void ApplyUsersGridColumnHeaders()
+        {
+            void Set(string columnName, string headerText)
+            {
+                if (dgvUsers.Columns.Contains(columnName))
+                    dgvUsers.Columns[columnName].HeaderText = headerText;
+            }
+
+            Set("USERNAME", "Tên user");
+            Set("ACCOUNT_STATUS", "Trạng thái tài khoản");
+            Set("ORACLE_MAINTAINED", "ORACLE_MAINTAINED");
+            Set("LOCK_DATE", "Ngày khóa");
+            Set("CREATED", "Ngày tạo");
+        }
+
+        /// <summary>
+        /// Hiển thị tiêu đề cột tiếng Việt; giữ nguyên các từ role, ORACLE_MAINTAINED theo yêu cầu.
+        /// </summary>
+        private void ApplyRolesGridColumnHeaders()
+        {
+            void Set(string columnName, string headerText)
+            {
+                if (dgvRoles.Columns.Contains(columnName))
+                    dgvRoles.Columns[columnName].HeaderText = headerText;
+            }
+
+            Set("ROLE", "Tên role");
+            Set("PASSWORD_REQUIRED", "Yêu cầu mật khẩu");
+            Set("AUTHENTICATION_TYPE", "Kiểu xác thực");
+            Set("COMMON", "Chung (CDB)");
+            Set("ORACLE_MAINTAINED", "ORACLE_MAINTAINED");
+        }
+
         private void ApplyButtonStyles()
         {
             void StylePrimary(Button b)
@@ -117,6 +153,7 @@ namespace QuanLyYTe.Forms
                 _usersDt.CaseSensitive = false;
                 dgvUsers.DataSource = _usersDt;
                 OracleHelper.FormatGridView(dgvUsers);
+                ApplyUsersGridColumnHeaders();
 
                 if (_usersDt.Columns.Count == 0)
                 {
@@ -131,7 +168,7 @@ namespace QuanLyYTe.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Lỗi load Users");
+                MessageBox.Show(ex.Message, "Lỗi tải danh sách user");
             }
         }
 
@@ -143,6 +180,7 @@ namespace QuanLyYTe.Forms
                 _rolesDt.CaseSensitive = false;
                 dgvRoles.DataSource = _rolesDt;
                 OracleHelper.FormatGridView(dgvRoles);
+                ApplyRolesGridColumnHeaders();
 
                 if (_rolesDt.Columns.Count == 0)
                 {
@@ -157,7 +195,7 @@ namespace QuanLyYTe.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Lỗi load Roles");
+                MessageBox.Show(ex.Message, "Lỗi tải danh sách role");
             }
         }
 
@@ -320,14 +358,14 @@ namespace QuanLyYTe.Forms
 
             if (!IsValidOracleIdentifier(username))
             {
-                MessageBox.Show("Username không hợp lệ. Chỉ dùng chữ/số/_/$/#, bắt đầu bằng chữ, tối đa 30 ký tự.", "Validation");
+                MessageBox.Show("Tên user không hợp lệ. Chỉ dùng chữ/số/_/$/#, bắt đầu bằng chữ, tối đa 30 ký tự.", "Kiểm tra");
                 return;
             }
 
             try
             {
                 _repo.CreateUser(username, password);
-                MessageBox.Show("Tạo user thành công.", "OK");
+                MessageBox.Show("Tạo user thành công.", "Thông báo");
                 RefreshUsers();
             }
             catch (Exception ex)
@@ -353,7 +391,7 @@ namespace QuanLyYTe.Forms
             try
             {
                 _repo.ChangeUserPassword(username, dlg.Password);
-                MessageBox.Show("Cập nhật user thành công.", "OK");
+                MessageBox.Show("Cập nhật user thành công.", "Thông báo");
                 RefreshUsers();
             }
             catch (Exception ex)
@@ -375,7 +413,7 @@ namespace QuanLyYTe.Forms
 
             var confirm = MessageBox.Show(
                 $"Bạn có chắc muốn xóa user `{username}`?",
-                "Confirm",
+                "Xác nhận",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
 
@@ -384,7 +422,7 @@ namespace QuanLyYTe.Forms
             try
             {
                 _repo.DropUser(username, cascade: true);
-                MessageBox.Show("Xóa user thành công.", "OK");
+                MessageBox.Show("Xóa user thành công.", "Thông báo");
                 RefreshUsers();
             }
             catch (Exception ex)
@@ -407,7 +445,7 @@ namespace QuanLyYTe.Forms
             var confirm = MessageBox.Show(
                 this,
                 $"Bạn có chắc muốn khóa user `{username}`?",
-                "Xác nhận Lock",
+                "Xác nhận khóa",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
             if (confirm != DialogResult.Yes) return;
@@ -437,7 +475,7 @@ namespace QuanLyYTe.Forms
             var confirm = MessageBox.Show(
                 this,
                 $"Bạn có chắc muốn mở khóa user `{username}`?",
-                "Xác nhận Unlock",
+                "Xác nhận mở khóa",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
             if (confirm != DialogResult.Yes) return;
@@ -461,14 +499,14 @@ namespace QuanLyYTe.Forms
             string roleName = dlg.RoleName.Trim().ToUpperInvariant();
             if (!IsValidOracleIdentifier(roleName))
             {
-                MessageBox.Show("Role name không hợp lệ. Chỉ dùng chữ/số/_/$/#, bắt đầu bằng chữ, tối đa 30 ký tự.", "Validation");
+                MessageBox.Show("Tên role không hợp lệ. Chỉ dùng chữ/số/_/$/#, bắt đầu bằng chữ, tối đa 30 ký tự.", "Kiểm tra");
                 return;
             }
 
             try
             {
                 _repo.CreateRole(roleName, dlg.PasswordOrNullForNotIdentified);
-                MessageBox.Show("Tạo role thành công.", "OK");
+                MessageBox.Show("Tạo role thành công.", "Thông báo");
                 RefreshRoles();
             }
             catch (Exception ex)
@@ -494,7 +532,7 @@ namespace QuanLyYTe.Forms
             try
             {
                 _repo.ChangeRolePassword(roleName, dlg.PasswordOrNullForNotIdentified);
-                MessageBox.Show("Cập nhật role thành công.", "OK");
+                MessageBox.Show("Cập nhật role thành công.", "Thông báo");
                 RefreshRoles();
             }
             catch (Exception ex)
@@ -516,7 +554,7 @@ namespace QuanLyYTe.Forms
 
             var confirm = MessageBox.Show(
                 $"Bạn có chắc muốn xóa role `{roleName}`?",
-                "Confirm",
+                "Xác nhận",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Warning);
 
@@ -525,7 +563,7 @@ namespace QuanLyYTe.Forms
             try
             {
                 _repo.DropRole(roleName);
-                MessageBox.Show("Xóa role thành công.", "OK");
+                MessageBox.Show("Xóa role thành công.", "Thông báo");
                 RefreshRoles();
             }
             catch (Exception ex)

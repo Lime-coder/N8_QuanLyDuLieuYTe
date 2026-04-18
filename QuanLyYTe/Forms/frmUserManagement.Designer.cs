@@ -67,7 +67,7 @@ namespace QuanLyYTe.Forms
             tabUsers.Padding = new Padding(3);
             tabUsers.Size = new Size(1092, 617);
             tabUsers.TabIndex = 0;
-            tabUsers.Text = "Users";
+            tabUsers.Text = "Danh sách user";
             tabUsers.UseVisualStyleBackColor = true;
             // 
             // dgvUsers
@@ -110,7 +110,7 @@ namespace QuanLyYTe.Forms
             btnUserRefresh.Name = "btnUserRefresh";
             btnUserRefresh.Size = new Size(120, 32);
             btnUserRefresh.TabIndex = 3;
-            btnUserRefresh.Text = "Refresh";
+            btnUserRefresh.Text = "Làm mới";
             btnUserRefresh.UseVisualStyleBackColor = true;
             btnUserRefresh.Click += btnUserRefresh_Click;
             // 
@@ -121,13 +121,13 @@ namespace QuanLyYTe.Forms
             lblUserSearch.Name = "lblUserSearch";
             lblUserSearch.Size = new Size(55, 20);
             lblUserSearch.TabIndex = 0;
-            lblUserSearch.Text = "Search";
+            lblUserSearch.Text = "Tìm:";
             // 
             // txtUserSearch
             // 
             txtUserSearch.Location = new Point(72, 12);
             txtUserSearch.Name = "txtUserSearch";
-            txtUserSearch.PlaceholderText = "username...";
+            txtUserSearch.PlaceholderText = "Nhập tên user...";
             txtUserSearch.Size = new Size(249, 27);
             txtUserSearch.TabIndex = 1;
             txtUserSearch.TextChanged += txtUserSearch_TextChanged;
@@ -138,7 +138,7 @@ namespace QuanLyYTe.Forms
             btnUserCreate.Name = "btnUserCreate";
             btnUserCreate.Size = new Size(120, 32);
             btnUserCreate.TabIndex = 4;
-            btnUserCreate.Text = "Create";
+            btnUserCreate.Text = "Tạo";
             btnUserCreate.UseVisualStyleBackColor = true;
             btnUserCreate.Click += btnUserCreate_Click;
             // 
@@ -148,7 +148,7 @@ namespace QuanLyYTe.Forms
             btnUserEdit.Name = "btnUserEdit";
             btnUserEdit.Size = new Size(120, 32);
             btnUserEdit.TabIndex = 5;
-            btnUserEdit.Text = "Edit";
+            btnUserEdit.Text = "Sửa";
             btnUserEdit.UseVisualStyleBackColor = true;
             btnUserEdit.Click += btnUserEdit_Click;
             // 
@@ -158,7 +158,7 @@ namespace QuanLyYTe.Forms
             btnUserDelete.Name = "btnUserDelete";
             btnUserDelete.Size = new Size(120, 32);
             btnUserDelete.TabIndex = 6;
-            btnUserDelete.Text = "Delete";
+            btnUserDelete.Text = "Xóa";
             btnUserDelete.UseVisualStyleBackColor = true;
             btnUserDelete.Click += btnUserDelete_Click;
             // 
@@ -168,7 +168,7 @@ namespace QuanLyYTe.Forms
             btnUserLock.Name = "btnUserLock";
             btnUserLock.Size = new Size(120, 32);
             btnUserLock.TabIndex = 7;
-            btnUserLock.Text = "Lock";
+            btnUserLock.Text = "Khóa";
             btnUserLock.UseVisualStyleBackColor = true;
             btnUserLock.Click += btnUserLock_Click;
             // 
@@ -178,7 +178,7 @@ namespace QuanLyYTe.Forms
             btnUserUnlock.Name = "btnUserUnlock";
             btnUserUnlock.Size = new Size(120, 32);
             btnUserUnlock.TabIndex = 8;
-            btnUserUnlock.Text = "Unlock";
+            btnUserUnlock.Text = "Mở khóa";
             btnUserUnlock.UseVisualStyleBackColor = true;
             btnUserUnlock.Click += btnUserUnlock_Click;
             // 
@@ -191,7 +191,7 @@ namespace QuanLyYTe.Forms
             tabRoles.Padding = new Padding(3);
             tabRoles.Size = new Size(1092, 617);
             tabRoles.TabIndex = 1;
-            tabRoles.Text = "Roles";
+            tabRoles.Text = "Danh sách role";
             tabRoles.UseVisualStyleBackColor = true;
             // 
             // dgvRoles
@@ -232,7 +232,7 @@ namespace QuanLyYTe.Forms
             btnRoleRefresh.Name = "btnRoleRefresh";
             btnRoleRefresh.Size = new Size(120, 32);
             btnRoleRefresh.TabIndex = 3;
-            btnRoleRefresh.Text = "Refresh";
+            btnRoleRefresh.Text = "Làm mới";
             btnRoleRefresh.UseVisualStyleBackColor = true;
             btnRoleRefresh.Click += btnRoleRefresh_Click;
             // 
@@ -243,13 +243,13 @@ namespace QuanLyYTe.Forms
             lblRoleSearch.Name = "lblRoleSearch";
             lblRoleSearch.Size = new Size(55, 20);
             lblRoleSearch.TabIndex = 0;
-            lblRoleSearch.Text = "Search";
+            lblRoleSearch.Text = "Tìm:";
             // 
             // txtRoleSearch
             // 
             txtRoleSearch.Location = new Point(72, 12);
             txtRoleSearch.Name = "txtRoleSearch";
-            txtRoleSearch.PlaceholderText = "role...";
+            txtRoleSearch.PlaceholderText = "Nhập tên role...";
             txtRoleSearch.Size = new Size(310, 27);
             txtRoleSearch.TabIndex = 1;
             txtRoleSearch.TextChanged += txtRoleSearch_TextChanged;
@@ -260,7 +260,7 @@ namespace QuanLyYTe.Forms
             btnRoleCreate.Name = "btnRoleCreate";
             btnRoleCreate.Size = new Size(120, 32);
             btnRoleCreate.TabIndex = 4;
-            btnRoleCreate.Text = "Create";
+            btnRoleCreate.Text = "Tạo";
             btnRoleCreate.UseVisualStyleBackColor = true;
             btnRoleCreate.Click += btnRoleCreate_Click;
             // 
@@ -270,7 +270,7 @@ namespace QuanLyYTe.Forms
             btnRoleEdit.Name = "btnRoleEdit";
             btnRoleEdit.Size = new Size(120, 32);
             btnRoleEdit.TabIndex = 5;
-            btnRoleEdit.Text = "Edit";
+            btnRoleEdit.Text = "Sửa";
             btnRoleEdit.UseVisualStyleBackColor = true;
             btnRoleEdit.Click += btnRoleEdit_Click;
             // 
@@ -280,7 +280,7 @@ namespace QuanLyYTe.Forms
             btnRoleDelete.Name = "btnRoleDelete";
             btnRoleDelete.Size = new Size(120, 32);
             btnRoleDelete.TabIndex = 6;
-            btnRoleDelete.Text = "Delete";
+            btnRoleDelete.Text = "Xóa";
             btnRoleDelete.UseVisualStyleBackColor = true;
             btnRoleDelete.Click += btnRoleDelete_Click;
             // 
@@ -292,7 +292,7 @@ namespace QuanLyYTe.Forms
             Controls.Add(tabControl1);
             Name = "SecurityAdminForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Oracle Security Admin";
+            Text = "Quản trị bảo mật Oracle";
             Load += SecurityAdminForm_Load;
             tabControl1.ResumeLayout(false);
             tabUsers.ResumeLayout(false);

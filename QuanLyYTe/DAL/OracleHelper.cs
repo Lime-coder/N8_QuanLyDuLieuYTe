@@ -51,7 +51,7 @@ namespace QuanLyYTe.DAL
             return dt;
         }
 
-        public static DataTable ExecuteQuery(string sql, OracleParameter[] parameters = null)
+        public static DataTable ExecuteQuery(string sql, OracleParameter[]? parameters = null)
         {
             DataTable dt = new DataTable();
             using (OracleConnection conn = new OracleConnection(_connStr))
@@ -60,6 +60,7 @@ namespace QuanLyYTe.DAL
                 {
                     cmd.CommandType = CommandType.Text;
                     if (parameters != null) cmd.Parameters.AddRange(parameters);
+
                     using (OracleDataAdapter da = new OracleDataAdapter(cmd))
                     {
                         try
@@ -68,7 +69,7 @@ namespace QuanLyYTe.DAL
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Lỗi thực thi query: {ex.Message}");
+                            throw new Exception($"Query execution failed: {ex.Message}");
                         }
                     }
                 }
@@ -76,9 +77,7 @@ namespace QuanLyYTe.DAL
             return dt;
         }
 
-        // SP trả về những tham số - Truyền vào mảng 
-        // SP không trả về tham số
-        public static void ExecuteNonQuerySP(string spName, OracleParameter[] parameters = null)
+        public static void ExecuteNonQuerySP(string spName, OracleParameter[]? parameters = null)
         {
             using (OracleConnection conn = new OracleConnection(_connStr))
             {
@@ -127,8 +126,12 @@ namespace QuanLyYTe.DAL
             dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
-            if (dgv.Columns.Contains("birthdate"))
-                dgv.Columns["birthdate"].DefaultCellStyle.Format = "dd/MM/yyyy";
+            string[] dateColumns = { "birthdate", "LOCK_DATE", "CREATED" };
+            foreach (string col in dateColumns)
+            {
+                if (dgv.Columns.Contains(col))
+                    dgv.Columns[col].DefaultCellStyle.Format = "dd/MM/yyyy";
+            }
         }
     }
 }
