@@ -176,40 +176,60 @@ namespace QuanLyYTe.Forms
             FilterGrid();
         }
 
+        private void txtKeyword_TextChanged(object sender, EventArgs e)
+        {
+            FilterGrid();
+        }
+
         private void FilterGrid()
         {
             if (_dtPrivileges == null || dgvPrivilege.DataSource == null) return;
 
-            if (!_dtPrivileges.Columns.Contains("LOAI_QUYEN")) 
-            {
-                FitColumns();
-                return; // Không thể lọc theo cột này nếu danh sách trả về là đối tượng thông thường (không có trường phân loại)
-            }
-
             string type = cbFilterType.Text;
             DataView dv = _dtPrivileges.DefaultView;
 
-            if (string.IsNullOrEmpty(type) || type == "Tất cả")
+            // Xây dựng điều kiện lọc theo Type Combobox
+            string typeFilter = "";
+            if (_dtPrivileges.Columns.Contains("LOAI_QUYEN")) 
             {
-                dv.RowFilter = "";
-            }
-            else if (type == "Quyền đối tượng (Table/View/Proc)")
-            {
-                dv.RowFilter = "LOAI_QUYEN IN ('TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION')";
-            }
-            else if (type == "Quyền theo cột")
-            {
-                dv.RowFilter = "LOAI_QUYEN = 'COLUMN'";
-            }
-            else if (type == "Quyền hệ thống")
-            {
-                dv.RowFilter = "LOAI_QUYEN = 'SYSTEM'";
-            }
-            else if (type == "Role được cấp")
-            {
-                dv.RowFilter = "LOAI_QUYEN = 'ROLE'";
+                if (type == "Quyền đối tượng (Table/View/Proc)")
+                    typeFilter = "LOAI_QUYEN IN ('TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION')";
+                else if (type == "Quyền theo cột")
+                    typeFilter = "LOAI_QUYEN = 'COLUMN'";
+                else if (type == "Quyền hệ thống")
+                    typeFilter = "LOAI_QUYEN = 'SYSTEM'";
+                else if (type == "Role được cấp")
+                    typeFilter = "LOAI_QUYEN = 'ROLE'";
             }
 
+            // Xây dựng điều kiện quét Keyword (cột Kiểu, Quyền, Schema, Đối tượng)
+            string keyword = txtKeyword.Text.Trim();
+            string keywordFilter = "";
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                string kw = keyword.Replace("'", "''"); // Tránh lỗi cú pháp RowFilter
+                System.Collections.Generic.List<string> kwList = new System.Collections.Generic.List<string>();
+                
+                if (_dtPrivileges.Columns.Contains("LOAI_QUYEN")) kwList.Add($"LOAI_QUYEN LIKE '%{kw}%'");
+                if (_dtPrivileges.Columns.Contains("QUYEN"))      kwList.Add($"QUYEN LIKE '%{kw}%'");
+                if (_dtPrivileges.Columns.Contains("CHU_SO_HUU")) kwList.Add($"CHU_SO_HUU LIKE '%{kw}%'");
+                if (_dtPrivileges.Columns.Contains("DOI_TUONG"))  kwList.Add($"DOI_TUONG LIKE '%{kw}%'");
+                if (_dtPrivileges.Columns.Contains("NGUOI_NHAN")) kwList.Add($"NGUOI_NHAN LIKE '%{kw}%'");
+
+                if (kwList.Count > 0)
+                    keywordFilter = "(" + string.Join(" OR ", kwList) + ")";
+            }
+
+            // Gộp cả 2 điều kiện lại (nếu có)
+            string finalFilter = "";
+            if (!string.IsNullOrEmpty(typeFilter) && !string.IsNullOrEmpty(keywordFilter))
+                finalFilter = $"{typeFilter} AND {keywordFilter}";
+            else if (!string.IsNullOrEmpty(typeFilter))
+                finalFilter = typeFilter;
+            else if (!string.IsNullOrEmpty(keywordFilter))
+                finalFilter = keywordFilter;
+
+            dv.RowFilter = finalFilter;
             FitColumns();
         }
 
