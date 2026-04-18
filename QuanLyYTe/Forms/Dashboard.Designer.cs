@@ -21,7 +21,7 @@
             lblVersion = new System.Windows.Forms.Label();
             pnlNavItems = new System.Windows.Forms.Panel();
             btnNavUsers = new System.Windows.Forms.Button();
-            btnNavRoles = new System.Windows.Forms.Button();
+            // btnNavRoles = new System.Windows.Forms.Button();
             btnNavGrant = new System.Windows.Forms.Button();
             btnNavRevoke = new System.Windows.Forms.Button();
             // btnNavPermView = new System.Windows.Forms.Button();
@@ -81,27 +81,45 @@
             // ── Nav Items ─────────────────────────────────────────────
             pnlNavItems.BackColor = System.Drawing.Color.FromArgb(24, 24, 28);
             pnlNavItems.Dock = System.Windows.Forms.DockStyle.Top;
-            pnlNavItems.Height = 280;
+            pnlNavItems.Height = 332;
             pnlNavItems.Name = "pnlNavItems";
             pnlNavItems.TabIndex = 1;
             pnlNavItems.Controls.Add(btnNavUsers);
-            pnlNavItems.Controls.Add(btnNavRoles);
+            // pnlNavItems.Controls.Add(btnNavRoles);
             pnlNavItems.Controls.Add(btnNavGrant);
             pnlNavItems.Controls.Add(btnNavRevoke);
             // pnlNavItems.Controls.Add(btnNavPermView);
 
             // Setup each nav button with proper position/style
             SetupNavButton(btnNavUsers, "  Quản lý User", 0);
-            SetupNavButton(btnNavRoles, "  Quản lý Role", 1);
-            SetupNavButton(btnNavGrant, "  Cấp Quyền", 2);
-            SetupNavButton(btnNavRevoke, "  Xem và thu Hồi Quyền", 3);
+            // SetupNavButton(btnNavRoles, "  Quản lý Role", 1);
+            SetupNavButton(btnNavGrant, "  Cấp Quyền", 1);
+            SetupNavButton(btnNavRevoke, "  Xem và thu Hồi Quyền", 2);
             // SetupNavButton(btnNavPermView, "  Xem Quyền", 4);
 
             btnNavUsers.Name = "btnNavUsers"; btnNavUsers.TabIndex = 0;
-            btnNavRoles.Name = "btnNavRoles"; btnNavRoles.TabIndex = 1;
+            // btnNavRoles.Name = "btnNavRoles"; btnNavRoles.TabIndex = 1;
             btnNavGrant.Name = "btnNavGrant"; btnNavGrant.TabIndex = 2;
             btnNavRevoke.Name = "btnNavRevoke"; btnNavRevoke.TabIndex = 3;
             // btnNavPermView.Name = "btnNavPermView"; btnNavPermView.TabIndex = 4;
+
+            btnLogout = new System.Windows.Forms.Button();
+            pnlNavItems.Controls.Add(btnLogout);
+            btnLogout.Text = "  Đăng xuất";
+            btnLogout.Font = new System.Drawing.Font("Segoe UI", 9.5f);
+            btnLogout.ForeColor = System.Drawing.Color.FromArgb(220, 80, 80);
+            btnLogout.BackColor = System.Drawing.Color.Transparent;
+            btnLogout.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btnLogout.FlatAppearance.BorderSize = 0;
+            btnLogout.FlatAppearance.MouseOverBackColor = System.Drawing.Color.FromArgb(60, 220, 80, 80);
+            btnLogout.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            btnLogout.Padding = new System.Windows.Forms.Padding(16, 0, 0, 0);
+            btnLogout.Size = new System.Drawing.Size(216, 46);
+            btnLogout.Location = new System.Drawing.Point(12, 10 + 3 * 52); // index 3, below revoke
+            btnLogout.Cursor = System.Windows.Forms.Cursors.Hand;
+            btnLogout.Name = "btnLogout";
+            btnLogout.TabIndex = 3;
+            btnLogout.Click += new System.EventHandler(this.btnLogout_Click);
 
             // ── Logo ──────────────────────────────────────────────────
             pnlLogo.BackColor = System.Drawing.Color.FromArgb(30, 30, 35);
@@ -288,7 +306,7 @@
         private System.Windows.Forms.Label lblAppSubtitle;
         private System.Windows.Forms.Panel pnlNavItems;
         private System.Windows.Forms.Button btnNavUsers;
-        private System.Windows.Forms.Button btnNavRoles;
+        // private System.Windows.Forms.Button btnNavRoles;
         private System.Windows.Forms.Button btnNavGrant;
         private System.Windows.Forms.Button btnNavRevoke;
         // private System.Windows.Forms.Button btnNavPermView;
@@ -305,6 +323,7 @@
         private System.Windows.Forms.Label lblWelcomeTitle;
         private System.Windows.Forms.Label lblWelcomeDesc;
         private System.Windows.Forms.FlowLayoutPanel pnlCards;
+        private System.Windows.Forms.Button btnLogout;
 
         #endregion
     }

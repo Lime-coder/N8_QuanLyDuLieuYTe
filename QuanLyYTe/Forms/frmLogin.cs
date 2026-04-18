@@ -6,9 +6,9 @@ using QuanLyYTe.DAL;
 
 namespace QuanLyYTe.Forms
 {
-    public partial class LoginForm : Form
+    public partial class frmLogin : Form
     {
-        public LoginForm()
+        public frmLogin()
         {
             InitializeComponent();
         }

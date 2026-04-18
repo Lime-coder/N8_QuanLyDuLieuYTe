@@ -27,7 +27,7 @@ namespace QuanLyYTe.Forms
             _features = new (string Badge, string Title, string Desc, Func<Form> Factory)[]
             {
                 ("USR", "Quản lý User",  "Tạo, sửa, xóa tài khoản người dùng Oracle", () => new frmUserManagement()),
-                ("ROL", "Quản lý Role",  "Tạo, sửa, xóa role trong hệ thống Oracle",  () => new frmRoleManagement()),
+                // ("ROL", "Quản lý Role",  "Tạo, sửa, xóa role trong hệ thống Oracle",  () => new frmRoleManagement()),
                 ("GRT", "Cấp Quyền",     "Cấp quyền cho user / role",                  () => new frmGrantPermission()),
                 ("REV", "Xem và thu hồi quyền", "Xem và thu hồi quyền đã cấp",                       () => new frmRevokePermission()),
                 // ("VIW", "Xem Quyền",     "Xem chi tiết quyền của mỗi user / role",     () => new frmViewPermissions()),
@@ -177,9 +177,9 @@ namespace QuanLyYTe.Forms
             var map = new (Button Btn, int Index)[]
             {
                 (btnNavUsers,    0),
-                (btnNavRoles,    1),
-                (btnNavGrant,    2),
-                (btnNavRevoke,   3),
+                // (btnNavRoles,    1),
+                (btnNavGrant,    1),
+                (btnNavRevoke,   2),
                 // (btnNavPermView, 4),
             };
 
@@ -194,6 +194,20 @@ namespace QuanLyYTe.Forms
                     OpenFeature(f.Title, "Dashboard / " + f.Title, f.Factory);
                 };
             }
+        }
+
+        private void btnLogout_Click(object sender, EventArgs e)
+        {
+            var confirm = MessageBox.Show(
+                "Bạn có chắc chắn muốn đăng xuất?", "Đăng xuất",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (confirm != DialogResult.Yes) return;
+
+            OracleHelper.SetConnectionString(null); // clear session
+
+            // Taking you back to the initial startup screen
+            Application.Restart();
         }
 
         private void SetActiveNav(Button btn)

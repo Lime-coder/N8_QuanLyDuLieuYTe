@@ -152,7 +152,7 @@ namespace QuanLyYTe.DAL
             {
                 new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return OracleHelper.ExecuteQuerySP("USP_GET_ALL_SYSTEM_PRIVILEGES", parameters);
+            return OracleHelper.ExecuteQuerySP("USP_GET_SYSTEM_PRIVILEGES", parameters);
         }
 
 
@@ -168,13 +168,13 @@ namespace QuanLyYTe.DAL
             OracleParameter[] parameters = new OracleParameter[]
             {
                 new OracleParameter("p_grantee", OracleDbType.Varchar2) { Value = grantee },
-                new OracleParameter("p_priv_or_role", OracleDbType.Varchar2) { Value = priv },
+                new OracleParameter("p_privilege", OracleDbType.Varchar2) { Value = priv },
                 new OracleParameter("p_object_name", OracleDbType.Varchar2) { Value = obj },
                 new OracleParameter("p_column_list", OracleDbType.Varchar2) { Value = dbCols },
                 new OracleParameter("p_with_grant", OracleDbType.Int32) { Value = withGrant }
             };
 
-            OracleHelper.ExecuteNonQuerySP("USP_GRANT_OBJECT_PRIV", parameters);
+            OracleHelper.ExecuteNonQuerySP("USP_GRANT_OBJECT_PRIVILEGE", parameters);
         }
 
         /// <summary>

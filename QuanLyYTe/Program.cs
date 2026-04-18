@@ -17,7 +17,7 @@ namespace QuanLyYTe
             // Application.Run(new Forms.frmGrantPermission());
             // Application.Run(new Forms.frmUserManagement());
             // Application.Run(new Forms.frmRevokePermission());
-            Application.Run(new Forms.LoginForm());
+            Application.Run(new Forms.frmLogin());
         }
     }
 }

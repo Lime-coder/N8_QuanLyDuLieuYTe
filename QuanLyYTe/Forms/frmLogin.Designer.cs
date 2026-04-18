@@ -1,6 +1,6 @@
 ﻿namespace QuanLyYTe.Forms
 {
-    partial class LoginForm
+    partial class frmLogin
     {
         private System.ComponentModel.IContainer components = null;
 

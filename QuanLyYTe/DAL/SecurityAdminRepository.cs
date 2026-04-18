@@ -30,7 +30,7 @@ namespace QuanLyYTe.DAL
                 Direction = ParameterDirection.Output
             };
 
-            return OracleHelper.ExecuteQuerySP(Sp("GET_ALL_USERS"), new[] { p_cursor });
+            return OracleHelper.ExecuteQuerySP(Sp("USP_GET_ALL_USERS"), new[] { p_cursor });
         }
 
         public DataTable GetAllRoles()
@@ -42,7 +42,7 @@ namespace QuanLyYTe.DAL
                 Direction = ParameterDirection.Output
             };
 
-            return OracleHelper.ExecuteQuerySP(Sp("GET_ALL_ROLES"), new[] { p_cursor });
+            return OracleHelper.ExecuteQuerySP(Sp("USP_GET_ALL_ROLES"), new[] { p_cursor });
         }
 
         public void CreateUser(string username, string password)
@@ -53,7 +53,7 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_password", OracleDbType.Varchar2, 4000) { Value = password },
             };
 
-            OracleHelper.ExecuteNonQuerySP(Sp("CREATE_NEW_USER"), p);
+            OracleHelper.ExecuteNonQuerySP(Sp("USP_CREATE_USER"), p);
         }
 
         public void ChangeUserPassword(string username, string newPassword)
@@ -64,7 +64,7 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_new_password", OracleDbType.Varchar2, 4000) { Value = newPassword },
             };
 
-            OracleHelper.ExecuteNonQuerySP(Sp("ALTER_USER_PASSWORD"), p);
+            OracleHelper.ExecuteNonQuerySP(Sp("USP_UPDATE_USER_PASSWORD"), p);
         }
 
         public void LockUser(string username)
@@ -74,7 +74,7 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_username", OracleDbType.Varchar2, 128) { Value = username },
             };
 
-            OracleHelper.ExecuteNonQuerySP(Sp("LOCK_USER"), p);
+            OracleHelper.ExecuteNonQuerySP(Sp("USP_LOCK_USER"), p);
         }
 
         public void UnlockUser(string username)
@@ -84,7 +84,7 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_username", OracleDbType.Varchar2, 128) { Value = username },
             };
 
-            OracleHelper.ExecuteNonQuerySP(Sp("UNLOCK_USER"), p);
+            OracleHelper.ExecuteNonQuerySP(Sp("USP_UNLOCK_USER"), p);
         }
 
         public void DropUser(string username, bool cascade = true)
@@ -95,7 +95,7 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_cascade", OracleDbType.Varchar2, 3) { Value = cascade ? "YES" : "NO" },
             };
 
-            OracleHelper.ExecuteNonQuerySP(Sp("DROP_USER"), p);
+            OracleHelper.ExecuteNonQuerySP(Sp("USP_DROP_USER"), p);
         }
 
         public void CreateRole(string roleName, string? password = null)
@@ -106,7 +106,7 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_password", OracleDbType.Varchar2, 4000) { Value = (object?)password ?? DBNull.Value },
             };
 
-            OracleHelper.ExecuteNonQuerySP(Sp("CREATE_NEW_ROLE"), p);
+            OracleHelper.ExecuteNonQuerySP(Sp("USP_CREATE_ROLE"), p);
         }
 
         public void ChangeRolePassword(string roleName, string? password)
@@ -117,7 +117,7 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_password", OracleDbType.Varchar2, 4000) { Value = (object?)password ?? DBNull.Value },
             };
 
-            OracleHelper.ExecuteNonQuerySP(Sp("ALTER_ROLE_PASSWORD"), p);
+            OracleHelper.ExecuteNonQuerySP(Sp("USP_UPDATE_ROLE_PASSWORD"), p);
         }
 
         public void DropRole(string roleName)
@@ -127,7 +127,7 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_role_name", OracleDbType.Varchar2, 128) { Value = roleName },
             };
 
-            OracleHelper.ExecuteNonQuerySP(Sp("DROP_ROLE"), p);
+            OracleHelper.ExecuteNonQuerySP(Sp("USP_DROP_ROLE"), p);
         }
     }
 }

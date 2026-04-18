@@ -51,7 +51,7 @@ namespace QuanLyYTe.Forms
                 else if (type == "Đối tượng")
                 {
                     lblSearchName.Text = "Tên Đối tượng";
-                    string sql = "SELECT object_name FROM ALL_OBJECTS WHERE OWNER = 'HOSPITAL_DBA' " +
+                    string sql = "SELECT object_name FROM ALL_OBJECTS WHERE OWNER = 'HOSPITAL' " +
                                  "AND object_type IN ('TABLE', 'VIEW') ORDER BY object_name";
                     DataTable dtObj = OracleHelper.ExecuteQuery(sql);
                     if (dtObj != null && dtObj.Rows.Count > 0)
@@ -108,7 +108,7 @@ namespace QuanLyYTe.Forms
             try
             {
                 Cursor = Cursors.WaitCursor;
-                _dtPrivileges = _repo.GetPrivsOnObject("HOSPITAL_DBA", objName);
+                _dtPrivileges = _repo.GetPrivsOnObject("HOSPITAL", objName);
                 BindGrid(_dtPrivileges);
                 RenameColumns_ByObject();
                 UpdateSummaryLabel(objName, true);
@@ -264,7 +264,7 @@ namespace QuanLyYTe.Forms
             }
             else
             {
-                lblSummary.Text = $"Đối tượng [HOSPITAL_DBA.{targetName}]: Có tổng cộng {total} quyền được cấp phát.";
+                lblSummary.Text = $"Đối tượng [HOSPITAL.{targetName}]: Có tổng cộng {total} quyền được cấp phát.";
             }
         }
 

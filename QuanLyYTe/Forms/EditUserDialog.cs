@@ -63,15 +63,15 @@ namespace QuanLyYTe.Forms
             lblConfirm.Location = new Point(16, 102);
             lblConfirm.Text = "Xác nhận mật khẩu";
 
-            txtUsername.Location = new Point(110, 14);
-            txtUsername.Size = new Size(260, 27);
+            txtUsername.Location = new Point(145, 14);
+            txtUsername.Size = new Size(225, 27);
 
-            txtPassword.Location = new Point(110, 56);
-            txtPassword.Size = new Size(260, 27);
+            txtPassword.Location = new Point(145, 56);
+            txtPassword.Size = new Size(225, 27);
             txtPassword.UseSystemPasswordChar = true;
 
-            txtConfirmPassword.Location = new Point(110, 98);
-            txtConfirmPassword.Size = new Size(260, 27);
+            txtConfirmPassword.Location = new Point(145, 98);
+            txtConfirmPassword.Size = new Size(225, 27);
             txtConfirmPassword.UseSystemPasswordChar = true;
 
             btnOk.Location = new Point(214, 146);
