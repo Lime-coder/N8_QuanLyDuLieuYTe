@@ -114,8 +114,12 @@ namespace QuanLyYTe.DAL
             dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
 
-            if (dgv.Columns.Contains("birthdate"))
-                dgv.Columns["birthdate"].DefaultCellStyle.Format = "dd/MM/yyyy";
+            string[] dateColumns = { "birthdate", "LOCK_DATE", "CREATED" };
+            foreach (string col in dateColumns)
+            {
+                if (dgv.Columns.Contains(col))
+                    dgv.Columns[col].DefaultCellStyle.Format = "dd/MM/yyyy";
+            }
         }
     }
 }

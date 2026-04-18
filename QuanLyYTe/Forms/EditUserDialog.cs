@@ -30,11 +30,11 @@ namespace QuanLyYTe.Forms
             if (_mode == EditUserDialogMode.EditPassword)
             {
                 txtUsername.ReadOnly = true;
-                Text = "Edit user (change password)";
+                Text = "Sửa user (đổi mật khẩu)";
             }
             else
             {
-                Text = "Create user";
+                Text = "Tạo user";
             }
         }
 
@@ -53,15 +53,15 @@ namespace QuanLyYTe.Forms
 
             lblUsername.AutoSize = true;
             lblUsername.Location = new Point(16, 18);
-            lblUsername.Text = "Username";
+            lblUsername.Text = "Tên user";
 
             lblPassword.AutoSize = true;
             lblPassword.Location = new Point(16, 60);
-            lblPassword.Text = "Password";
+            lblPassword.Text = "Mật khẩu";
 
             lblConfirm.AutoSize = true;
             lblConfirm.Location = new Point(16, 102);
-            lblConfirm.Text = "Confirm";
+            lblConfirm.Text = "Xác nhận mật khẩu";
 
             txtUsername.Location = new Point(110, 14);
             txtUsername.Size = new Size(260, 27);
@@ -76,20 +76,20 @@ namespace QuanLyYTe.Forms
 
             btnOk.Location = new Point(214, 146);
             btnOk.Size = new Size(75, 30);
-            btnOk.Text = "OK";
+            btnOk.Text = "Đồng ý";
             btnOk.Click += (_, __) =>
             {
                 // Require confirm password when setting/changing password
                 if (string.IsNullOrWhiteSpace(txtPassword.Text))
                 {
-                    MessageBox.Show(this, "Password không được để trống.", "Validation");
+                    MessageBox.Show(this, "Mật khẩu không được để trống.", "Kiểm tra");
                     txtPassword.Focus();
                     return;
                 }
 
                 if (!string.Equals(txtPassword.Text, txtConfirmPassword.Text, StringComparison.Ordinal))
                 {
-                    MessageBox.Show(this, "Password và Confirm không khớp.", "Validation");
+                    MessageBox.Show(this, "Hai lần nhập mật khẩu không khớp.", "Kiểm tra");
                     txtConfirmPassword.Focus();
                     txtConfirmPassword.SelectAll();
                     return;
@@ -101,7 +101,7 @@ namespace QuanLyYTe.Forms
 
             btnCancel.Location = new Point(295, 146);
             btnCancel.Size = new Size(75, 30);
-            btnCancel.Text = "Cancel";
+            btnCancel.Text = "Hủy";
             btnCancel.DialogResult = DialogResult.Cancel;
 
             AcceptButton = btnOk;
