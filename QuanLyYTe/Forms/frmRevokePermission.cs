@@ -102,6 +102,7 @@ namespace QuanLyYTe.Forms
             catch (Exception ex) { ShowError("Lỗi xem quyền", ex.Message); }
             finally { Cursor = Cursors.Default; }
         }
+
         private void LoadByObject(string objName)
         {
             try
@@ -116,6 +117,7 @@ namespace QuanLyYTe.Forms
             catch (Exception ex) { ShowError("Lỗi xem quyền đối tượng", ex.Message); }
             finally { Cursor = Cursors.Default; }
         }
+
         private void btnRevoke_Click(object sender, EventArgs e)
         {
             if (dgvPrivilege.SelectedRows.Count == 0)
@@ -174,40 +176,60 @@ namespace QuanLyYTe.Forms
             FilterGrid();
         }
 
+        private void txtKeyword_TextChanged(object sender, EventArgs e)
+        {
+            FilterGrid();
+        }
+
         private void FilterGrid()
         {
             if (_dtPrivileges == null || dgvPrivilege.DataSource == null) return;
 
-            if (!_dtPrivileges.Columns.Contains("LOAI_QUYEN")) 
-            {
-                FitColumns();
-                return; // Không thể lọc theo cột này nếu danh sách trả về là đối tượng thông thường (không có trường phân loại)
-            }
-
             string type = cbFilterType.Text;
             DataView dv = _dtPrivileges.DefaultView;
 
-            if (string.IsNullOrEmpty(type) || type == "Tất cả")
+            // Xây dựng điều kiện lọc theo Type Combobox
+            string typeFilter = "";
+            if (_dtPrivileges.Columns.Contains("LOAI_QUYEN")) 
             {
-                dv.RowFilter = "";
-            }
-            else if (type == "Quyền đối tượng (Table/View/Proc)")
-            {
-                dv.RowFilter = "LOAI_QUYEN IN ('TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION')";
-            }
-            else if (type == "Quyền theo cột")
-            {
-                dv.RowFilter = "LOAI_QUYEN = 'COLUMN'";
-            }
-            else if (type == "Quyền hệ thống")
-            {
-                dv.RowFilter = "LOAI_QUYEN = 'SYSTEM'";
-            }
-            else if (type == "Role được cấp")
-            {
-                dv.RowFilter = "LOAI_QUYEN = 'ROLE'";
+                if (type == "Quyền đối tượng")
+                    typeFilter = "LOAI_QUYEN IN ('TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION')";
+                else if (type == "Quyền theo cột")
+                    typeFilter = "LOAI_QUYEN = 'COLUMN'";
+                else if (type == "Quyền hệ thống")
+                    typeFilter = "LOAI_QUYEN = 'SYSTEM'";
+                else if (type == "Role được cấp")
+                    typeFilter = "LOAI_QUYEN = 'ROLE'";
             }
 
+            // Xây dựng điều kiện quét Keyword (cột Kiểu, Quyền, Schema, Đối tượng)
+            string keyword = txtKeyword.Text.Trim();
+            string keywordFilter = "";
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                string kw = keyword.Replace("'", "''"); // Tránh lỗi cú pháp RowFilter
+                System.Collections.Generic.List<string> kwList = new System.Collections.Generic.List<string>();
+                
+                if (_dtPrivileges.Columns.Contains("LOAI_QUYEN")) kwList.Add($"LOAI_QUYEN LIKE '%{kw}%'");
+                if (_dtPrivileges.Columns.Contains("QUYEN"))      kwList.Add($"QUYEN LIKE '%{kw}%'");
+                if (_dtPrivileges.Columns.Contains("CHU_SO_HUU")) kwList.Add($"CHU_SO_HUU LIKE '%{kw}%'");
+                if (_dtPrivileges.Columns.Contains("DOI_TUONG"))  kwList.Add($"DOI_TUONG LIKE '%{kw}%'");
+                if (_dtPrivileges.Columns.Contains("NGUOI_NHAN")) kwList.Add($"NGUOI_NHAN LIKE '%{kw}%'");
+
+                if (kwList.Count > 0)
+                    keywordFilter = "(" + string.Join(" OR ", kwList) + ")";
+            }
+
+            // Gộp cả 2 điều kiện lại (nếu có)
+            string finalFilter = "";
+            if (!string.IsNullOrEmpty(typeFilter) && !string.IsNullOrEmpty(keywordFilter))
+                finalFilter = $"{typeFilter} AND {keywordFilter}";
+            else if (!string.IsNullOrEmpty(typeFilter))
+                finalFilter = typeFilter;
+            else if (!string.IsNullOrEmpty(keywordFilter))
+                finalFilter = keywordFilter;
+
+            dv.RowFilter = finalFilter;
             FitColumns();
         }
 
@@ -219,6 +241,7 @@ namespace QuanLyYTe.Forms
             dgvPrivilege.DataSource = dt;
             FitColumns();
         }
+
         private void UpdateSummaryLabel(string targetName, bool isObjectMode)
         {
             if (_dtPrivileges == null) return;
@@ -276,7 +299,7 @@ namespace QuanLyYTe.Forms
             dgv.DefaultCellStyle.SelectionForeColor  = Color.White;
             dgv.DefaultCellStyle.Padding             = new Padding(4, 0, 4, 0);
 
-            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(235, 242, 255);
+            // dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(235, 242, 255);
             dgv.RowTemplate.Height  = 30;
         }
 
@@ -322,30 +345,45 @@ namespace QuanLyYTe.Forms
 
         private void ShowWarn(string msg) => MessageBox.Show(msg, "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         private void ShowError(string title, string msg) => MessageBox.Show(msg, title, MessageBoxButtons.OK, MessageBoxIcon.Error);
+
         private void dgvPrivilege_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
         {
             if (e.RowIndex < 0) return;
 
             DataGridViewRow row = dgvPrivilege.Rows[e.RowIndex];
-
-            // Skip selected row — let selection color take over
             if (row.Selected) return;
 
-            string kieuCell = "";
-            if (dgvPrivilege.Columns.Contains("LOAI_QUYEN"))
-                kieuCell = row.Cells["LOAI_QUYEN"].Value?.ToString() ?? "";
-            else if (dgvPrivilege.Columns.Contains("Kiểu")) // after rename
-                kieuCell = row.Cells["Kiểu"].Value?.ToString() ?? "";
+            Color rowColor;
 
-            Color rowColor = kieuCell switch
+            // Try to get LOAI_QUYEN (User / Role mode)
+            if (dgvPrivilege.Columns.Contains("LOAI_QUYEN"))
             {
-                "SYSTEM" => Color.FromArgb(255, 237, 210),   // light orange
-                "ROLE" => Color.FromArgb(255, 248, 235),   // softer orange tint
-                "COLUMN" => Color.FromArgb(220, 240, 255),   // light blue
-                _ => e.RowIndex % 2 == 0
-                                ? Color.White
-                                : Color.FromArgb(235, 242, 255)
-            };
+                string kieuCell = row.Cells["LOAI_QUYEN"].Value?.ToString()?.Trim().ToUpper() ?? "";
+
+                if (kieuCell == "SYSTEM")
+                    rowColor = Color.FromArgb(255, 220, 180);
+                else if (kieuCell == "ROLE")
+                    rowColor = Color.FromArgb(255, 237, 210);
+                else if (kieuCell is "TABLE" or "VIEW" or "PROCEDURE" or "FUNCTION")
+                    rowColor = Color.FromArgb(255, 248, 235);
+                else if (kieuCell == "COLUMN")
+                    rowColor = Color.FromArgb(220, 240, 255);
+                else
+                    rowColor = e.RowIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);
+            }
+            // Đối tượng mode — no LOAI_QUYEN column, use NGUOI_NHAN
+            else if (dgvPrivilege.Columns.Contains("NGUOI_NHAN"))
+            {
+                string nguoiNhan = row.Cells["NGUOI_NHAN"].Value?.ToString() ?? "";
+
+                rowColor = nguoiNhan.StartsWith("RL_", StringComparison.OrdinalIgnoreCase)
+                    ? Color.FromArgb(255, 248, 235)   // orange tint — role grantee
+                    : Color.FromArgb(235, 248, 255);  // blue tint — user grantee
+            }
+            else
+            {
+                rowColor = e.RowIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);
+            }
 
             e.CellStyle.BackColor = rowColor;
             e.CellStyle.ForeColor = Color.FromArgb(40, 40, 40);
