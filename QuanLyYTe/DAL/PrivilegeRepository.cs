@@ -103,13 +103,16 @@ namespace QuanLyYTe.DAL
         /// </summary>
         public DataTable GetGrantees(string granteeType)
         {
+            // Xác định tên SP dựa vào loại granteeType truyền từ UI vào
+            // Nếu là "ROLE" thì gọi USP_GET_ROLES, ngược lại gọi USP_GET_USERS
+            string spName = (granteeType.ToUpper() == "ROLE") ? "USP_GET_ROLES" : "USP_GET_USERS";
+        
             OracleParameter[] parameters = new OracleParameter[]
             {
-                new OracleParameter("p_grantee_type", OracleDbType.Varchar2) { Value = granteeType },
-                new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
+                new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
             };
-
-            return OracleHelper.ExecuteQuerySP("USP_GET_GRANTEES", parameters);
+        
+            return OracleHelper.ExecuteQuerySP(spName, parameters);
         }
 
         /// <summary>
@@ -152,7 +155,7 @@ namespace QuanLyYTe.DAL
             {
                 new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return OracleHelper.ExecuteQuerySP("USP_GET_ALL_SYSTEM_PRIVILEGES", parameters);
+            return OracleHelper.ExecuteQuerySP("USP_GET_SYSTEM_PRIVILEGES", parameters);
         }
 
 
