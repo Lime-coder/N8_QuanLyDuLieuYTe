@@ -30,7 +30,7 @@ namespace QuanLyYTe.DAL
                 Direction = ParameterDirection.Output
             };
 
-            return OracleHelper.ExecuteQuerySP(Sp("GET_ALL_USERS"), new[] { p_cursor });
+            return OracleHelper.ExecuteQuerySP(Sp("USP_GET_ALL_USERS"), new[] { p_cursor });
         }
 
         public DataTable GetAllRoles()
@@ -42,7 +42,7 @@ namespace QuanLyYTe.DAL
                 Direction = ParameterDirection.Output
             };
 
-            return OracleHelper.ExecuteQuerySP(Sp("GET_ALL_ROLES"), new[] { p_cursor });
+            return OracleHelper.ExecuteQuerySP(Sp("USP_GET_ALL_ROLES"), new[] { p_cursor });
         }
 
         public void CreateUser(string username, string password)
