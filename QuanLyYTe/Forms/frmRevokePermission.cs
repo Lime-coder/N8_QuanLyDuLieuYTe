@@ -37,8 +37,8 @@ namespace QuanLyYTe.Forms
                     lblSearchName.Text = "Tên User";
                     DataTable dt = _repo.GetUsers();
                     cbSearchName.DataSource = dt;
-                    cbSearchName.DisplayMember = "USERNAME";
-                    cbSearchName.ValueMember = "USERNAME";
+                    cbSearchName.DisplayMember = "USERN_NAME";
+                    cbSearchName.ValueMember = "USERN_NAME";
                 }
                 else if (type == "Role")
                 {
@@ -51,14 +51,15 @@ namespace QuanLyYTe.Forms
                 else if (type == "Đối tượng")
                 {
                     lblSearchName.Text = "Tên Đối tượng";
-                    string sql = "SELECT object_name FROM ALL_OBJECTS WHERE OWNER = 'HOSPITAL_DBA' " +
+                    
+                    string sql = "SELECT object_name FROM ALL_OBJECTS WHERE OWNER = 'HOSPITAL' " +
                                  "AND object_type IN ('TABLE', 'VIEW') ORDER BY object_name";
                     DataTable dtObj = OracleHelper.ExecuteQuery(sql);
                     if (dtObj != null && dtObj.Rows.Count > 0)
                     {
                         cbSearchName.DataSource = dtObj;
-                        cbSearchName.DisplayMember = "object_name";
-                        cbSearchName.ValueMember = "object_name";
+                        cbSearchName.DisplayMember = "OBJECT_NAME";
+                        cbSearchName.ValueMember = "OBJECT_NAME";
                     }
                 }
             }
@@ -97,7 +98,7 @@ namespace QuanLyYTe.Forms
                 BindGrid(_dtPrivileges);
                 RenameColumns_ByGrantee();
                 UpdateSummaryLabel(grantee, false);
-                FilterGrid(); 
+                FilterGrid();
             }
             catch (Exception ex) { ShowError("Lỗi xem quyền", ex.Message); }
             finally { Cursor = Cursors.Default; }
@@ -108,7 +109,7 @@ namespace QuanLyYTe.Forms
             try
             {
                 Cursor = Cursors.WaitCursor;
-                _dtPrivileges = _repo.GetPrivsOnObject("HOSPITAL_DBA", objName);
+                _dtPrivileges = _repo.GetPrivsOnObject("HOSPITAL", objName);
                 BindGrid(_dtPrivileges);
                 RenameColumns_ByObject();
                 UpdateSummaryLabel(objName, true);
@@ -128,29 +129,28 @@ namespace QuanLyYTe.Forms
 
             DataGridViewRow row = dgvPrivilege.SelectedRows[0];
 
-            string type = GetCell(row, "LOAI_QUYEN");
-            string privilege = GetCell(row, "QUYEN");
-            string owner = GetCell(row, "CHU_SO_HUU");
-            string obj = GetCell(row, "DOI_TUONG");
-            string column = GetCell(row, "COT");
-            
-            // Tìm grantee
+            // Đổi toàn bộ key sang Tiếng Anh
+            string type = GetCell(row, "PRIVILEGE_TYPE");
+            string privilege = GetCell(row, "PRIVILEGE");
+            string owner = GetCell(row, "OWNER");
+            string obj = GetCell(row, "OBJECT_NAME");
+            string column = GetCell(row, "COLUMN_NAME");
+
             string grantee = "";
             if (cbSearchType.Text == "Đối tượng")
-                grantee = GetCell(row, "NGUOI_NHAN"); // NGUOI_NHAN là cột trả về từ USP_GET_PRIVS_ON_OBJ
+                grantee = GetCell(row, "GRANTEE");
             else
                 grantee = cbSearchName.Text.Trim();
 
             if (string.IsNullOrEmpty(grantee)) return;
 
-            // KIỂM TRA ĐIỀU KIỆN: Không cho DBA tự thu hồi chính mình.
-            if (grantee.Trim().ToUpper() == "HOSPITAL_DBA")
+            if (grantee.Trim().ToUpper() == "HOSPITAL_DBA_NHAP")
             {
-                ShowWarn("Tuyệt đối không thể tự thu hồi quyền của chính tài khoản Database Administrator (HOSPITAL_DBA).");
+                ShowWarn("Không thể tự thu hồi quyền của tài khoản Admin đang đăng nhập.");
                 return;
             }
 
-            string info = $"Người nhận: {grantee}\nLoại đối tượng: {type}\nQuyền: {privilege}";
+            string info = $"Người nhận: {grantee}\nLoại: {type}\nQuyền: {privilege}";
             if (!string.IsNullOrEmpty(obj)) info += $"\nĐối tượng: {owner}.{obj}";
             if (!string.IsNullOrEmpty(column)) info += $"\nCột: {column}";
 
@@ -162,7 +162,7 @@ namespace QuanLyYTe.Forms
                 Cursor = Cursors.WaitCursor;
                 _repo.RevokePrivilege(type, privilege, owner, obj, column, grantee);
                 MessageBox.Show("Thu hồi quyền thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                btnView_Click(null, null); // Reload grid
+                btnView_Click(null, null);
             }
             catch (Exception ex) { ShowError("Lỗi thu hồi", ex.Message); }
             finally { Cursor = Cursors.Default; }
@@ -188,39 +188,36 @@ namespace QuanLyYTe.Forms
             string type = cbFilterType.Text;
             DataView dv = _dtPrivileges.DefaultView;
 
-            // Xây dựng điều kiện lọc theo Type Combobox
             string typeFilter = "";
-            if (_dtPrivileges.Columns.Contains("LOAI_QUYEN")) 
+            if (_dtPrivileges.Columns.Contains("PRIVILEGE_TYPE"))
             {
                 if (type == "Quyền đối tượng")
-                    typeFilter = "LOAI_QUYEN IN ('TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION')";
+                    typeFilter = "PRIVILEGE_TYPE IN ('TABLE', 'VIEW', 'PROCEDURE', 'FUNCTION')";
                 else if (type == "Quyền theo cột")
-                    typeFilter = "LOAI_QUYEN = 'COLUMN'";
+                    typeFilter = "PRIVILEGE_TYPE = 'COLUMN'";
                 else if (type == "Quyền hệ thống")
-                    typeFilter = "LOAI_QUYEN = 'SYSTEM'";
+                    typeFilter = "PRIVILEGE_TYPE = 'SYSTEM'";
                 else if (type == "Role được cấp")
-                    typeFilter = "LOAI_QUYEN = 'ROLE'";
+                    typeFilter = "PRIVILEGE_TYPE = 'ROLE'";
             }
 
-            // Xây dựng điều kiện quét Keyword (cột Kiểu, Quyền, Schema, Đối tượng)
             string keyword = txtKeyword.Text.Trim();
             string keywordFilter = "";
             if (!string.IsNullOrEmpty(keyword))
             {
-                string kw = keyword.Replace("'", "''"); // Tránh lỗi cú pháp RowFilter
-                System.Collections.Generic.List<string> kwList = new System.Collections.Generic.List<string>();
-                
-                if (_dtPrivileges.Columns.Contains("LOAI_QUYEN")) kwList.Add($"LOAI_QUYEN LIKE '%{kw}%'");
-                if (_dtPrivileges.Columns.Contains("QUYEN"))      kwList.Add($"QUYEN LIKE '%{kw}%'");
-                if (_dtPrivileges.Columns.Contains("CHU_SO_HUU")) kwList.Add($"CHU_SO_HUU LIKE '%{kw}%'");
-                if (_dtPrivileges.Columns.Contains("DOI_TUONG"))  kwList.Add($"DOI_TUONG LIKE '%{kw}%'");
-                if (_dtPrivileges.Columns.Contains("NGUOI_NHAN")) kwList.Add($"NGUOI_NHAN LIKE '%{kw}%'");
+                string kw = keyword.Replace("'", "''");
+                var kwList = new System.Collections.Generic.List<string>();
+
+                if (_dtPrivileges.Columns.Contains("PRIVILEGE_TYPE")) kwList.Add($"PRIVILEGE_TYPE LIKE '%{kw}%'");
+                if (_dtPrivileges.Columns.Contains("PRIVILEGE")) kwList.Add($"PRIVILEGE LIKE '%{kw}%'");
+                if (_dtPrivileges.Columns.Contains("OWNER")) kwList.Add($"OWNER LIKE '%{kw}%'");
+                if (_dtPrivileges.Columns.Contains("OBJECT_NAME")) kwList.Add($"OBJECT_NAME LIKE '%{kw}%'");
+                if (_dtPrivileges.Columns.Contains("GRANTEE")) kwList.Add($"GRANTEE LIKE '%{kw}%'");
 
                 if (kwList.Count > 0)
                     keywordFilter = "(" + string.Join(" OR ", kwList) + ")";
             }
 
-            // Gộp cả 2 điều kiện lại (nếu có)
             string finalFilter = "";
             if (!string.IsNullOrEmpty(typeFilter) && !string.IsNullOrEmpty(keywordFilter))
                 finalFilter = $"{typeFilter} AND {keywordFilter}";
@@ -245,26 +242,25 @@ namespace QuanLyYTe.Forms
         private void UpdateSummaryLabel(string targetName, bool isObjectMode)
         {
             if (_dtPrivileges == null) return;
-            
+
             int total = _dtPrivileges.Rows.Count;
-            // Tính số lượng cho từng loại (khi ở chế độ xem user/role)
             int dtCount = 0, cotCount = 0, sysCount = 0, roleCount = 0;
-            
+
             if (!isObjectMode)
             {
-                foreach(DataRow row in _dtPrivileges.Rows)
+                foreach (DataRow row in _dtPrivileges.Rows)
                 {
-                    string loai = row["LOAI_QUYEN"]?.ToString() ?? "";
+                    string loai = row["PRIVILEGE_TYPE"]?.ToString() ?? "";
                     if (loai == "COLUMN") cotCount++;
                     else if (loai == "SYSTEM") sysCount++;
                     else if (loai == "ROLE") roleCount++;
-                    else dtCount++; // Table, View, Procedure
+                    else dtCount++;
                 }
                 lblSummary.Text = $"{targetName}: {dtCount} quyền đối tượng | {cotCount} quyền cột | {sysCount} quyền hệ thống | {roleCount} role (Tổng: {total})";
             }
             else
             {
-                lblSummary.Text = $"Đối tượng [HOSPITAL_DBA.{targetName}]: Có tổng cộng {total} quyền được cấp phát.";
+                lblSummary.Text = $"Đối tượng [{targetName}]: Có tổng cộng {total} quyền được cấp phát.";
             }
         }
 
@@ -276,31 +272,28 @@ namespace QuanLyYTe.Forms
 
         private void ApplyGridStyle(DataGridView dgv)
         {
-            dgv.SelectionMode              = DataGridViewSelectionMode.FullRowSelect;
-            dgv.ReadOnly                   = true;
-            dgv.AllowUserToAddRows         = false;
-            dgv.AllowUserToDeleteRows      = false;
-            dgv.RowHeadersVisible          = false;
-            dgv.MultiSelect                = false;
-            dgv.BackgroundColor            = Color.White;
-            dgv.BorderStyle                = BorderStyle.None;
-            dgv.GridColor                  = Color.FromArgb(220, 220, 220);
+            dgv.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgv.ReadOnly = true;
+            dgv.AllowUserToAddRows = false;
+            dgv.AllowUserToDeleteRows = false;
+            dgv.RowHeadersVisible = false;
+            dgv.MultiSelect = false;
+            dgv.BackgroundColor = Color.White;
+            dgv.BorderStyle = BorderStyle.None;
+            dgv.GridColor = Color.FromArgb(220, 220, 220);
 
-            // Bám sát màu sắc trong hình feedback
-            dgv.ColumnHeadersDefaultCellStyle.BackColor  = Color.White;
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor  = Color.FromArgb(40, 40, 40);
-            dgv.ColumnHeadersDefaultCellStyle.Font       = new Font("Segoe UI", 9.5f, FontStyle.Bold);
-            dgv.ColumnHeadersDefaultCellStyle.Alignment  = DataGridViewContentAlignment.MiddleLeft;
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.White;
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(40, 40, 40);
+            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+            dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dgv.ColumnHeadersHeight = 36;
             dgv.EnableHeadersVisualStyles = false;
 
-            dgv.DefaultCellStyle.Font               = new Font("Segoe UI", 9.5f);
-            dgv.DefaultCellStyle.SelectionBackColor  = Color.FromArgb(50, 100, 200);
-            dgv.DefaultCellStyle.SelectionForeColor  = Color.White;
-            dgv.DefaultCellStyle.Padding             = new Padding(4, 0, 4, 0);
-
-            // dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(235, 242, 255);
-            dgv.RowTemplate.Height  = 30;
+            dgv.DefaultCellStyle.Font = new Font("Segoe UI", 9.5f);
+            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(50, 100, 200);
+            dgv.DefaultCellStyle.SelectionForeColor = Color.White;
+            dgv.DefaultCellStyle.Padding = new Padding(4, 0, 4, 0);
+            dgv.RowTemplate.Height = 30;
         }
 
         private static string GetCell(DataGridViewRow row, string colName)
@@ -312,29 +305,25 @@ namespace QuanLyYTe.Forms
 
         private void RenameColumns_ByGrantee()
         {
-            Rename("LOAI_QUYEN",     "Kiểu");
-            Rename("QUYEN",          "Quyền");
-            Rename("CHU_SO_HUU",     "Schema");
-            Rename("DOI_TUONG",      "Đối tượng");
-            
-            // Ẩn các cột thừa theo yêu cầu
-            if (dgvPrivilege.Columns.Contains("COT")) dgvPrivilege.Columns["COT"].Visible = false;
-            if (dgvPrivilege.Columns.Contains("CO_THE_CAP_LAI")) dgvPrivilege.Columns["CO_THE_CAP_LAI"].Visible = false;
-            if (dgvPrivilege.Columns.Contains("CO_THE_HIERARCHY")) dgvPrivilege.Columns["CO_THE_HIERARCHY"].Visible = false;
+            Rename("PRIVILEGE_TYPE", "Kiểu");
+            Rename("PRIVILEGE", "Quyền");
+            Rename("OWNER", "Schema");
+            Rename("OBJECT_NAME", "Đối tượng");
+
+            if (dgvPrivilege.Columns.Contains("COLUMN_NAME")) dgvPrivilege.Columns["COLUMN_NAME"].Visible = false;
+            if (dgvPrivilege.Columns.Contains("GRANTABLE")) dgvPrivilege.Columns["GRANTABLE"].Visible = false;
         }
 
         private void RenameColumns_ByObject()
         {
-            Rename("NGUOI_NHAN",       "User / Role nhận");
-            Rename("CHU_SO_HUU",       "Schema");
-            Rename("DOI_TUONG",        "Đối tượng");
-            Rename("QUYEN",            "Quyền");
-            Rename("LOAI_QUYEN",       "Kiểu");
+            Rename("GRANTEE", "User / Role nhận");
+            Rename("OWNER", "Schema");
+            Rename("OBJECT_NAME", "Đối tượng");
+            Rename("PRIVILEGE", "Quyền");
+            Rename("PRIVILEGE_TYPE", "Kiểu");
 
-            // Ẩn các cột thừa theo yêu cầu
-            if (dgvPrivilege.Columns.Contains("COT")) dgvPrivilege.Columns["COT"].Visible = false;
-            if (dgvPrivilege.Columns.Contains("CO_THE_CAP_LAI")) dgvPrivilege.Columns["CO_THE_CAP_LAI"].Visible = false;
-            if (dgvPrivilege.Columns.Contains("CO_THE_HIERARCHY")) dgvPrivilege.Columns["CO_THE_HIERARCHY"].Visible = false;
+            if (dgvPrivilege.Columns.Contains("COLUMN_NAME")) dgvPrivilege.Columns["COLUMN_NAME"].Visible = false;
+            if (dgvPrivilege.Columns.Contains("GRANTABLE")) dgvPrivilege.Columns["GRANTABLE"].Visible = false;
         }
 
         private void Rename(string colName, string header)
@@ -355,10 +344,9 @@ namespace QuanLyYTe.Forms
 
             Color rowColor;
 
-            // Try to get LOAI_QUYEN (User / Role mode)
-            if (dgvPrivilege.Columns.Contains("LOAI_QUYEN"))
+            if (dgvPrivilege.Columns.Contains("PRIVILEGE_TYPE"))
             {
-                string kieuCell = row.Cells["LOAI_QUYEN"].Value?.ToString()?.Trim().ToUpper() ?? "";
+                string kieuCell = row.Cells["PRIVILEGE_TYPE"].Value?.ToString()?.Trim().ToUpper() ?? "";
 
                 if (kieuCell == "SYSTEM")
                     rowColor = Color.FromArgb(255, 220, 180);
@@ -371,14 +359,12 @@ namespace QuanLyYTe.Forms
                 else
                     rowColor = e.RowIndex % 2 == 0 ? Color.White : Color.FromArgb(245, 245, 245);
             }
-            // Đối tượng mode — no LOAI_QUYEN column, use NGUOI_NHAN
-            else if (dgvPrivilege.Columns.Contains("NGUOI_NHAN"))
+            else if (dgvPrivilege.Columns.Contains("GRANTEE"))
             {
-                string nguoiNhan = row.Cells["NGUOI_NHAN"].Value?.ToString() ?? "";
-
+                string nguoiNhan = row.Cells["GRANTEE"].Value?.ToString() ?? "";
                 rowColor = nguoiNhan.StartsWith("RL_", StringComparison.OrdinalIgnoreCase)
-                    ? Color.FromArgb(255, 248, 235)   // orange tint — role grantee
-                    : Color.FromArgb(235, 248, 255);  // blue tint — user grantee
+                    ? Color.FromArgb(255, 248, 235)
+                    : Color.FromArgb(235, 248, 255);
             }
             else
             {
