@@ -74,8 +74,15 @@ namespace QuanLyYTe.Forms
             try
             {
                 DataTable dt = _repository.GetObjects(cbObjectType.Text);
-                lbObjects.DataSource = dt;
+
+                // 1. Set DisplayMember BEFORE DataSource to fix the empty columns issue
                 lbObjects.DisplayMember = dt.Columns[0].ColumnName;
+                lbObjects.DataSource = dt;
+
+                // 2. Clear the default selection so it doesn't auto-fill "DEPARTMENT"
+                lbObjects.SelectedIndex = -1;
+                lbObjects.Text = "";
+
                 bool isCode = (cbObjectType.Text == "PROCEDURE" || cbObjectType.Text == "FUNCTION");
                 TogglePrivileges(!isCode, false, true);
                 chkExecute.Enabled = isCode;
@@ -87,7 +94,8 @@ namespace QuanLyYTe.Forms
         private void LoadColumns()
         {
             clbColumns.Items.Clear();
-            if (lbObjects.SelectedValue == null) return;
+            if (lbObjects.SelectedIndex == -1 || lbObjects.SelectedItem == null) return;
+
             try
             {
                 DataTable dt = _repository.GetColumns(lbObjects.GetItemText(lbObjects.SelectedItem));

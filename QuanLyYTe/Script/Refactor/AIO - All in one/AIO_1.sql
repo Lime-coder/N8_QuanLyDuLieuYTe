@@ -50,7 +50,7 @@ GRANT SELECT ON SYS.DBA_COL_PRIVS     TO hospital_dba;
 GRANT SELECT ON SYS.DBA_TABLES        TO hospital_dba;
 GRANT SELECT ON SYS.DBA_ROLES         TO hospital_dba;
 GRANT SELECT ON SYS.DBA_OBJECTS       TO hospital_dba;
-
+GRANT SELECT ON SYS.DBA_TAB_COLUMNS   TO hospital_dba;
 /*
 DROP USER hospital CASCADE;
 DROP USER hospital_dba CASCADE;
