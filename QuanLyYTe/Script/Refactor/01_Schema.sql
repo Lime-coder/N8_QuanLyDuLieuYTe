@@ -50,15 +50,16 @@ GRANT SELECT ON SYS.DBA_COL_PRIVS     TO hospital_dba;
 GRANT SELECT ON SYS.DBA_TABLES        TO hospital_dba;
 GRANT SELECT ON SYS.DBA_ROLES         TO hospital_dba;
 GRANT SELECT ON SYS.DBA_OBJECTS       TO hospital_dba;
+GRANT SELECT ON SYS.DBA_TAB_COLUMNS   TO hospital_dba;
 
 
 -- Only run after executed the table
-GRANT SELECT ON hospital.department   TO hospital_dba;
-GRANT SELECT ON hospital.staff        TO hospital_dba;
-GRANT SELECT ON hospital.patient      TO hospital_dba;
-GRANT SELECT ON hospital.medical_record  TO hospital_dba;
-GRANT SELECT ON hospital.service_record  TO hospital_dba;
-GRANT SELECT ON hospital.prescription TO hospital_dba;
+GRANT SELECT ON hospital.department     TO hospital_dba WITH GRANT OPTION;
+GRANT SELECT ON hospital.staff          TO hospital_dba WITH GRANT OPTION;
+GRANT SELECT ON hospital.patient        TO hospital_dba WITH GRANT OPTION;
+GRANT SELECT ON hospital.medical_record TO hospital_dba WITH GRANT OPTION;
+GRANT SELECT ON hospital.service_record TO hospital_dba WITH GRANT OPTION;
+GRANT SELECT ON hospital.prescription   TO hospital_dba WITH GRANT OPTION;
 
 /*
 DROP USER hospital CASCADE;

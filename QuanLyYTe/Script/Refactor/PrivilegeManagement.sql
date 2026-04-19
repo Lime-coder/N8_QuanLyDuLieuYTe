@@ -52,7 +52,7 @@ BEGIN
 
             UNION ALL
 
-            -- 3. OBJECT PRIVILEGES
+            -- 3. STANDARD OBJECT PRIVILEGES (Filter out custom V_PRIV views)
             SELECT 
                 CASE ao.OBJECT_TYPE 
                     WHEN 'TABLE' THEN 'TABLE' WHEN 'VIEW' THEN 'VIEW'
@@ -63,6 +63,7 @@ BEGIN
             FROM DBA_TAB_PRIVS tp
             JOIN DBA_OBJECTS ao ON ao.OWNER = tp.OWNER AND ao.OBJECT_NAME = tp.TABLE_NAME
             WHERE UPPER(tp.GRANTEE) = UPPER(p_grantee)
+              AND tp.TABLE_NAME NOT LIKE 'V\_PRIV\_%' ESCAPE '\' -- Ignore dynamic views here
               AND NOT EXISTS (
                   SELECT 1 FROM DBA_COL_PRIVS cp
                   WHERE UPPER(cp.GRANTEE) = UPPER(p_grantee)
@@ -73,12 +74,20 @@ BEGIN
 
             UNION ALL
 
-            -- 4. COLUMN PRIVILEGES (Updated to output "TABLE (COLUMN)")
+            -- 4. NATIVE COLUMN PRIVILEGES (e.g., UPDATE)
             SELECT 'COLUMN', cp.PRIVILEGE, cp.OWNER, 
                    cp.TABLE_NAME || ' (' || cp.COLUMN_NAME || ')', NULL, 
                    cp.GRANTABLE
             FROM DBA_COL_PRIVS cp
             WHERE UPPER(cp.GRANTEE) = UPPER(p_grantee)
+            
+            UNION ALL
+            
+            -- 5. DYNAMIC COLUMN-SELECT VIEWS (Format as COLUMN to match UI)
+            SELECT 'COLUMN', tp.PRIVILEGE, tp.OWNER, tp.TABLE_NAME, NULL, tp.GRANTABLE
+            FROM DBA_TAB_PRIVS tp
+            WHERE UPPER(tp.GRANTEE) = UPPER(p_grantee)
+              AND tp.TABLE_NAME LIKE 'V\_PRIV\_%' ESCAPE '\'
         )
         ORDER BY LOAI_QUYEN, CHU_SO_HUU, DOI_TUONG, COT, QUYEN;
 END USP_GET_ALL_PRIVS;
@@ -143,10 +152,10 @@ CREATE OR REPLACE PROCEDURE USP_GET_OBJECTS (
 ) AUTHID CURRENT_USER AS
 BEGIN
     OPEN p_result_cursor FOR
-        SELECT UPPER(object_name)
+        SELECT UPPER(object_name) AS OBJECT_NAME -- Add alias here
         FROM all_objects
         WHERE object_type = UPPER(p_object_type)
-          AND owner = 'HOSPITAL'
+          AND owner IN ('HOSPITAL', 'HOSPITAL_DBA')
         ORDER BY object_name;
 END USP_GET_OBJECTS;
 /
@@ -158,8 +167,8 @@ CREATE OR REPLACE PROCEDURE USP_GET_COLUMNS (
 ) AUTHID CURRENT_USER AS
 BEGIN
     OPEN p_result_cursor FOR
-        SELECT UPPER(column_name)
-        FROM all_tab_columns
+        SELECT UPPER(column_name) AS COLUMN_NAME 
+        FROM DBA_TAB_COLUMNS
         WHERE table_name = UPPER(p_table_name)
           AND owner = 'HOSPITAL'
         ORDER BY column_id;
@@ -180,6 +189,7 @@ END USP_GET_SYSTEM_PRIVILEGES;
 -- p_type: SYSTEM | ROLE | TABLE | VIEW | PROCEDURE | FUNCTION | COLUMN
 -- Note: COLUMN type raises an informative error — Oracle does not support column-level REVOKE.
 --       Instruct the user to revoke the table-level privilege instead.
+-- USP_REVOKE_PRIV: revoke a privilege from a user or role
 CREATE OR REPLACE PROCEDURE USP_REVOKE_PRIV (
     p_type      IN VARCHAR2,
     p_privilege IN VARCHAR2,
@@ -188,13 +198,14 @@ CREATE OR REPLACE PROCEDURE USP_REVOKE_PRIV (
     p_column    IN VARCHAR2,
     p_grantee   IN VARCHAR2
 ) AUTHID CURRENT_USER AS
-    v_sql       VARCHAR2(1000);
-    v_type      VARCHAR2(30)  := UPPER(TRIM(p_type));
-    v_privilege VARCHAR2(200) := UPPER(TRIM(p_privilege));
-    v_owner     VARCHAR2(128) := UPPER(TRIM(p_owner));
-    v_object    VARCHAR2(128) := UPPER(TRIM(p_object));
-    v_grantee   VARCHAR2(128) := UPPER(TRIM(p_grantee));
-    v_count     NUMBER;
+    v_sql          VARCHAR2(1000);
+    v_type         VARCHAR2(30)  := UPPER(TRIM(p_type));
+    v_privilege    VARCHAR2(200) := UPPER(TRIM(p_privilege));
+    v_owner        VARCHAR2(128) := UPPER(TRIM(p_owner));
+    v_object       VARCHAR2(128) := UPPER(TRIM(p_object));
+    v_grantee      VARCHAR2(128) := UPPER(TRIM(p_grantee));
+    v_actual_table VARCHAR2(128);
+    v_count        NUMBER;
 BEGIN
     IF v_privilege IS NULL OR v_grantee IS NULL THEN
         RAISE_APPLICATION_ERROR(-20001, 'p_privilege and p_grantee cannot be empty.');
@@ -222,17 +233,31 @@ BEGIN
         IF v_owner IS NULL OR v_object IS NULL THEN
             RAISE_APPLICATION_ERROR(-20003, 'p_owner and p_object are required for ' || v_type || ' privileges.');
         END IF;
+        
         v_sql := 'REVOKE ' || v_privilege ||
                  ' ON '    || DBMS_ASSERT.ENQUOTE_NAME(v_owner,  FALSE) || '.' ||
-                               DBMS_ASSERT.ENQUOTE_NAME(v_object, FALSE) ||
+                              DBMS_ASSERT.ENQUOTE_NAME(v_object, FALSE) ||
                  ' FROM '  || DBMS_ASSERT.ENQUOTE_NAME(v_grantee, FALSE);
 
     ELSIF v_type = 'COLUMN' THEN
-        -- Oracle does not support column-level REVOKE natively.
-        -- Revoke the privilege at table level using the TABLE type instead.
-        RAISE_APPLICATION_ERROR(-20004,
-            'Column-level REVOKE is not supported by Oracle. ' ||
-            'Use p_type = ''TABLE'' to revoke the privilege on the entire table.');
+        IF v_owner IS NULL OR v_object IS NULL THEN
+            RAISE_APPLICATION_ERROR(-20003, 'p_owner and p_object are required for COLUMN privileges.');
+        END IF;
+        
+        -- THE FIX: Check if this "COLUMN" privilege is actually one of our dynamic views
+        IF v_object LIKE 'V\_PRIV\_%' ESCAPE '\' THEN
+            v_sql := 'DROP VIEW ' || DBMS_ASSERT.ENQUOTE_NAME(v_owner, FALSE) || '.' || 
+                                     DBMS_ASSERT.ENQUOTE_NAME(v_object, FALSE);
+        ELSE
+            -- Normal native column privilege (like UPDATE on a specific column)
+            -- Extracts "PATIENT" from "PATIENT (BIRTHDATE)"
+            v_actual_table := TRIM(REGEXP_SUBSTR(v_object, '^[^\(]+'));
+            
+            v_sql := 'REVOKE ' || v_privilege || 
+                     ' ON ' || DBMS_ASSERT.ENQUOTE_NAME(v_owner, FALSE) || '.' || 
+                               DBMS_ASSERT.ENQUOTE_NAME(v_actual_table, FALSE) || 
+                     ' FROM ' || DBMS_ASSERT.ENQUOTE_NAME(v_grantee, FALSE);
+        END IF;
 
     ELSE
         RAISE_APPLICATION_ERROR(-20005,
@@ -292,9 +317,13 @@ BEGIN
     IF v_priv = 'SELECT' AND v_cols IS NOT NULL THEN
         -- Column-level SELECT is implemented via a restricted view owned by hospital_dba
         v_view_name := 'V_PRIV_' || SUBSTR(v_object, 1, 15) || '_' || SUBSTR(v_grantee, 1, 10);
-        EXECUTE IMMEDIATE 'CREATE OR REPLACE VIEW ' || v_view_name ||
+        
+        -- FIX 1: Added "hospital." right after VIEW
+        EXECUTE IMMEDIATE 'CREATE OR REPLACE VIEW hospital.' || v_view_name ||
                           ' AS SELECT ' || v_cols || ' FROM hospital.' || v_object;
-        v_sql := 'GRANT SELECT ON ' || v_view_name || ' TO ' || v_grantee || v_option;
+                          
+        -- FIX 2: Added "hospital." right after ON
+        v_sql := 'GRANT SELECT ON hospital.' || v_view_name || ' TO ' || v_grantee || v_option;
 
     ELSIF v_priv = 'UPDATE' AND v_cols IS NOT NULL THEN
         v_sql := 'GRANT UPDATE (' || v_cols || ') ON hospital.' || v_object ||
@@ -391,4 +420,18 @@ EXCEPTION
     WHEN OTHERS THEN
         RAISE_APPLICATION_ERROR(-20003, 'USP_GRANT_SYSTEM_PRIVILEGE: ' || SQLERRM);
 END USP_GRANT_SYSTEM_PRIVILEGE;
+/
+
+CREATE OR REPLACE PROCEDURE USP_GET_BUSINESS_OBJECTS (
+    p_cursor OUT SYS_REFCURSOR
+) AUTHID CURRENT_USER AS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT object_name 
+        FROM ALL_OBJECTS 
+        WHERE OWNER = 'HOSPITAL' 
+          AND object_type IN ('TABLE', 'VIEW')
+          AND object_name NOT LIKE 'V\_PRIV\_%' ESCAPE '\'
+        ORDER BY object_name;
+END USP_GET_BUSINESS_OBJECTS;
 /
