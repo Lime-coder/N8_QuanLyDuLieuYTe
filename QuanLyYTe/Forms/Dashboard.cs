@@ -26,7 +26,7 @@ namespace QuanLyYTe.Forms
 
             _features = new (string Badge, string Title, string Desc, Func<Form> Factory)[]
             {
-                ("USR", "Quản lý User",  "Tạo, sửa, xóa tài khoản người dùng Oracle", () => new frmUserManagement()),
+                ("USR", "Quản lý user và role",  "Tạo, sửa, xóa tài khoản người dùng Oracle", () => new frmUserManagement()),
                 // ("ROL", "Quản lý Role",  "Tạo, sửa, xóa role trong hệ thống Oracle",  () => new frmRoleManagement()),
                 ("GRT", "Cấp Quyền",     "Cấp quyền cho user / role",                  () => new frmGrantPermission()),
                 ("REV", "Xem và thu hồi quyền", "Xem và thu hồi quyền đã cấp",                       () => new frmRevokePermission()),
