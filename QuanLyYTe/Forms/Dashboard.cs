@@ -56,6 +56,13 @@ namespace QuanLyYTe.Forms
         private void LoadUserInfo()
         {
             string role = GetUserRole(_username);
+
+            // If the role starts with "RL_", remove the first 3 characters
+            if (role != null && role.StartsWith("RL_"))
+            {
+                role = role.Substring(3);
+            }
+
             lblUserInfo.Text = $"{_username.ToUpper()}  ·  {role}";
         }
 

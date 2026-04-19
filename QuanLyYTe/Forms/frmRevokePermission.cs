@@ -51,14 +51,13 @@ namespace QuanLyYTe.Forms
                 else if (type == "Đối tượng")
                 {
                     lblSearchName.Text = "Tên Đối tượng";
-                    string sql = "SELECT object_name FROM ALL_OBJECTS WHERE OWNER = 'HOSPITAL' " +
-                                 "AND object_type IN ('TABLE', 'VIEW') ORDER BY object_name";
-                    DataTable dtObj = OracleHelper.ExecuteQuery(sql);
+                    DataTable dtObj = _repo.GetBusinessObjects();
+
                     if (dtObj != null && dtObj.Rows.Count > 0)
                     {
                         cbSearchName.DataSource = dtObj;
-                        cbSearchName.DisplayMember = "object_name";
-                        cbSearchName.ValueMember = "object_name";
+                        cbSearchName.DisplayMember = "OBJECT_NAME";
+                        cbSearchName.ValueMember = "OBJECT_NAME";
                     }
                 }
             }
@@ -312,28 +311,28 @@ namespace QuanLyYTe.Forms
 
         private void RenameColumns_ByGrantee()
         {
-            Rename("LOAI_QUYEN",     "Kiểu");
-            Rename("QUYEN",          "Quyền");
-            Rename("CHU_SO_HUU",     "Schema");
-            Rename("DOI_TUONG",      "Đối tượng");
-            
+            Rename("LOAI_QUYEN", "Kiểu");
+            Rename("QUYEN", "Quyền");
+            Rename("CHU_SO_HUU", "Schema");
+            Rename("DOI_TUONG", "Đối tượng");
+            Rename("CO_THE_CAP_LAI", "Có thể cấp lại (Option)");
+
             // Ẩn các cột thừa theo yêu cầu
             if (dgvPrivilege.Columns.Contains("COT")) dgvPrivilege.Columns["COT"].Visible = false;
-            if (dgvPrivilege.Columns.Contains("CO_THE_CAP_LAI")) dgvPrivilege.Columns["CO_THE_CAP_LAI"].Visible = false;
             if (dgvPrivilege.Columns.Contains("CO_THE_HIERARCHY")) dgvPrivilege.Columns["CO_THE_HIERARCHY"].Visible = false;
         }
 
         private void RenameColumns_ByObject()
         {
-            Rename("NGUOI_NHAN",       "User / Role nhận");
-            Rename("CHU_SO_HUU",       "Schema");
-            Rename("DOI_TUONG",        "Đối tượng");
-            Rename("QUYEN",            "Quyền");
-            Rename("LOAI_QUYEN",       "Kiểu");
+            Rename("NGUOI_NHAN", "User / Role nhận");
+            Rename("CHU_SO_HUU", "Schema");
+            Rename("DOI_TUONG", "Đối tượng");
+            Rename("QUYEN", "Quyền");
+            Rename("LOAI_QUYEN", "Kiểu");
+            Rename("CO_THE_CAP_LAI", "Có thể cấp lại (Option)");
 
             // Ẩn các cột thừa theo yêu cầu
             if (dgvPrivilege.Columns.Contains("COT")) dgvPrivilege.Columns["COT"].Visible = false;
-            if (dgvPrivilege.Columns.Contains("CO_THE_CAP_LAI")) dgvPrivilege.Columns["CO_THE_CAP_LAI"].Visible = false;
             if (dgvPrivilege.Columns.Contains("CO_THE_HIERARCHY")) dgvPrivilege.Columns["CO_THE_HIERARCHY"].Visible = false;
         }
 

@@ -92,28 +92,47 @@ CREATE OR REPLACE PROCEDURE USP_GET_PRIVS_ON_OBJ (
 ) AUTHID CURRENT_USER AS
 BEGIN
     OPEN p_cursor FOR
-        SELECT tp.GRANTEE, tp.TABLE_SCHEMA AS owner, tp.TABLE_NAME AS object_name,
-               NULL AS column_name, tp.PRIVILEGE, tp.GRANTABLE, tp.HIERARCHY
-        FROM ALL_TAB_PRIVS tp
-        WHERE UPPER(tp.TABLE_SCHEMA) = UPPER(p_owner)
-          AND UPPER(tp.TABLE_NAME)   = UPPER(p_object_name)
+        -- 1. TABLE LEVEL PRIVILEGES
+        SELECT 'TABLE' AS LOAI_QUYEN, tp.PRIVILEGE AS QUYEN, 
+               tp.OWNER AS CHU_SO_HUU, tp.TABLE_NAME AS DOI_TUONG,
+               tp.GRANTEE AS NGUOI_NHAN, 
+               tp.GRANTABLE AS CO_THE_CAP_LAI -- Added
+        FROM DBA_TAB_PRIVS tp
+        WHERE UPPER(tp.OWNER) = UPPER(p_owner)
+          AND UPPER(tp.TABLE_NAME) = UPPER(p_object_name)
           AND NOT EXISTS (
-              SELECT 1 FROM ALL_COL_PRIVS cp
+              SELECT 1 FROM DBA_COL_PRIVS cp
               WHERE UPPER(cp.GRANTEE) = UPPER(tp.GRANTEE)
-                AND cp.TABLE_SCHEMA   = tp.TABLE_SCHEMA
-                AND cp.TABLE_NAME     = tp.TABLE_NAME
-                AND cp.PRIVILEGE      = tp.PRIVILEGE
+                AND cp.OWNER = tp.OWNER
+                AND cp.TABLE_NAME = tp.TABLE_NAME
+                AND cp.PRIVILEGE = tp.PRIVILEGE
           )
 
         UNION ALL
 
-        SELECT cp.GRANTEE, cp.TABLE_SCHEMA, cp.TABLE_NAME,
-               cp.COLUMN_NAME, cp.PRIVILEGE, cp.GRANTABLE, 'NO'
-        FROM ALL_COL_PRIVS cp
-        WHERE UPPER(cp.TABLE_SCHEMA) = UPPER(p_owner)
-          AND UPPER(cp.TABLE_NAME)   = UPPER(p_object_name)
+        -- 2. NATIVE COLUMN LEVEL PRIVILEGES
+        SELECT 'COLUMN' AS LOAI_QUYEN, cp.PRIVILEGE AS QUYEN, 
+               cp.OWNER AS CHU_SO_HUU, 
+               cp.TABLE_NAME || ' (' || cp.COLUMN_NAME || ')' AS DOI_TUONG,
+               cp.GRANTEE AS NGUOI_NHAN, 
+               cp.GRANTABLE AS CO_THE_CAP_LAI -- Added
+        FROM DBA_COL_PRIVS cp
+        WHERE UPPER(cp.OWNER) = UPPER(p_owner)
+          AND UPPER(cp.TABLE_NAME) = UPPER(p_object_name)
 
-        ORDER BY 1, 4, 5;
+        UNION ALL
+
+        -- 3. DYNAMIC COLUMN-SELECT VIEWS
+        SELECT 'COLUMN' AS LOAI_QUYEN, tp.PRIVILEGE AS QUYEN, 
+               tp.OWNER AS CHU_SO_HUU, tp.TABLE_NAME AS DOI_TUONG,
+               tp.GRANTEE AS NGUOI_NHAN, 
+               tp.GRANTABLE AS CO_THE_CAP_LAI -- Added
+        FROM DBA_TAB_PRIVS tp
+        WHERE UPPER(tp.OWNER) = UPPER(p_owner)
+          -- Dynamically fetch views starting with V_PRIV_ + Object Name
+          AND UPPER(tp.TABLE_NAME) LIKE 'V\_PRIV\_' || UPPER(p_object_name) || '\_%' ESCAPE '\'
+
+        ORDER BY LOAI_QUYEN, NGUOI_NHAN, QUYEN;
 END USP_GET_PRIVS_ON_OBJ;
 /
 
