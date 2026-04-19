@@ -5,10 +5,6 @@
 -- 1. SESSION & ROLE UTILITIES (Preserved from original AIO_4)
 -- ==============================================================================
 
--- ==============================================================================
--- 1. SESSION & ROLE UTILITIES (Preserved from original AIO_4)
--- ==============================================================================
-
 -- Returns the granted role for a user (assumes one active role per user)
 CREATE OR REPLACE PROCEDURE USP_GET_GRANTED_ROLE (
     p_user   IN  VARCHAR2,
