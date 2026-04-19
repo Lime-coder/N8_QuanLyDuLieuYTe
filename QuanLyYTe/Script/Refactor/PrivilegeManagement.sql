@@ -1,5 +1,5 @@
 -- Run as: hospital_dba | Container: PDB_QLYT
-ALTER SESSION SET CONTAINER = PDB_QLYT;
+-- ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 -- USP_GET_USERS: project-scoped user list for the revoke form
 -- Returns hospital_dba + all staff/patient username_db values
@@ -94,20 +94,28 @@ END USP_GET_ALL_PRIVS;
 /   
 
 -- USP_GET_PRIVS_ON_OBJ: all grantees and their privileges on a specific object
+-- USP_GET_PRIVS_ON_OBJ: all grantees and their privileges on a specific object
 CREATE OR REPLACE PROCEDURE USP_GET_PRIVS_ON_OBJ (
-    p_owner       IN  VARCHAR2,
+    p_owner       IN  VARCHAR2, -- Kept to not break your C# method signature
     p_object_name IN  VARCHAR2,
     p_cursor      OUT SYS_REFCURSOR
 ) AUTHID CURRENT_USER AS
 BEGIN
     OPEN p_cursor FOR
-        -- 1. TABLE LEVEL PRIVILEGES
-        SELECT 'TABLE' AS LOAI_QUYEN, tp.PRIVILEGE AS QUYEN, 
-               tp.OWNER AS CHU_SO_HUU, tp.TABLE_NAME AS DOI_TUONG,
-               tp.GRANTEE AS NGUOI_NHAN, 
-               tp.GRANTABLE AS CO_THE_CAP_LAI -- Added
+        -- 1. STANDARD OBJECT PRIVILEGES (Dynamically detects Table/View/Proc/Func)
+        SELECT 
+            CASE ao.OBJECT_TYPE 
+                WHEN 'TABLE' THEN 'TABLE' WHEN 'VIEW' THEN 'VIEW'
+                WHEN 'PROCEDURE' THEN 'PROCEDURE' WHEN 'FUNCTION' THEN 'FUNCTION'
+                ELSE ao.OBJECT_TYPE 
+            END AS LOAI_QUYEN, 
+            tp.PRIVILEGE AS QUYEN, 
+            tp.OWNER AS CHU_SO_HUU, tp.TABLE_NAME AS DOI_TUONG,
+            tp.GRANTEE AS NGUOI_NHAN, 
+            tp.GRANTABLE AS CO_THE_CAP_LAI
         FROM DBA_TAB_PRIVS tp
-        WHERE UPPER(tp.OWNER) = UPPER(p_owner)
+        JOIN DBA_OBJECTS ao ON ao.OWNER = tp.OWNER AND ao.OBJECT_NAME = tp.TABLE_NAME
+        WHERE tp.OWNER IN ('HOSPITAL', 'HOSPITAL_DBA') -- Search both schemas
           AND UPPER(tp.TABLE_NAME) = UPPER(p_object_name)
           AND NOT EXISTS (
               SELECT 1 FROM DBA_COL_PRIVS cp
@@ -124,9 +132,9 @@ BEGIN
                cp.OWNER AS CHU_SO_HUU, 
                cp.TABLE_NAME || ' (' || cp.COLUMN_NAME || ')' AS DOI_TUONG,
                cp.GRANTEE AS NGUOI_NHAN, 
-               cp.GRANTABLE AS CO_THE_CAP_LAI -- Added
+               cp.GRANTABLE AS CO_THE_CAP_LAI
         FROM DBA_COL_PRIVS cp
-        WHERE UPPER(cp.OWNER) = UPPER(p_owner)
+        WHERE cp.OWNER IN ('HOSPITAL', 'HOSPITAL_DBA')
           AND UPPER(cp.TABLE_NAME) = UPPER(p_object_name)
 
         UNION ALL
@@ -135,9 +143,9 @@ BEGIN
         SELECT 'COLUMN' AS LOAI_QUYEN, tp.PRIVILEGE AS QUYEN, 
                tp.OWNER AS CHU_SO_HUU, tp.TABLE_NAME AS DOI_TUONG,
                tp.GRANTEE AS NGUOI_NHAN, 
-               tp.GRANTABLE AS CO_THE_CAP_LAI -- Added
+               tp.GRANTABLE AS CO_THE_CAP_LAI
         FROM DBA_TAB_PRIVS tp
-        WHERE UPPER(tp.OWNER) = UPPER(p_owner)
+        WHERE tp.OWNER IN ('HOSPITAL', 'HOSPITAL_DBA')
           -- Dynamically fetch views starting with V_PRIV_ + Object Name
           AND UPPER(tp.TABLE_NAME) LIKE 'V\_PRIV\_' || UPPER(p_object_name) || '\_%' ESCAPE '\'
 
@@ -277,11 +285,11 @@ END USP_REVOKE_PRIV;
 -- USP_GRANT_OBJECT_PRIVILEGE: grant an object or column-level privilege to a user or role
 -- Column SELECT uses a dynamic view; column UPDATE uses native column-level grant
 CREATE OR REPLACE PROCEDURE USP_GRANT_OBJECT_PRIVILEGE (
-    p_grantee     IN VARCHAR2,
-    p_privilege   IN VARCHAR2,  -- SELECT, INSERT, UPDATE, DELETE, EXECUTE
-    p_object_name IN VARCHAR2,
-    p_column_list IN VARCHAR2 DEFAULT NULL,
-    p_with_grant  IN NUMBER   DEFAULT 0
+    p_grantee      IN VARCHAR2,
+    p_privilege    IN VARCHAR2,  -- SELECT, INSERT, UPDATE, DELETE, EXECUTE
+    p_object_name  IN VARCHAR2,
+    p_column_list  IN VARCHAR2 DEFAULT NULL,
+    p_with_grant   IN NUMBER   DEFAULT 0
 ) AUTHID CURRENT_USER AS
     v_sql       VARCHAR2(2000);
     v_option    VARCHAR2(50)  := '';
@@ -291,6 +299,7 @@ CREATE OR REPLACE PROCEDURE USP_GRANT_OBJECT_PRIVILEGE (
     v_object    VARCHAR2(128) := UPPER(p_object_name);
     v_cols      VARCHAR2(1000) := UPPER(p_column_list);
     v_count     NUMBER;
+    v_owner     VARCHAR2(128); -- FIXED 1: Declared the variable here
 BEGIN
     IF v_object IS NULL THEN
         RAISE_APPLICATION_ERROR(-20001, 'Object name is required.');
@@ -304,10 +313,12 @@ BEGIN
         END IF;
     END IF;
 
-    SELECT COUNT(*) INTO v_count FROM ALL_OBJECTS
-    WHERE OBJECT_NAME = v_object AND OWNER = 'HOSPITAL';
+    -- FIXED 2: Added MIN(OWNER) to fetch the owner into v_owner
+    SELECT COUNT(*), MIN(OWNER) INTO v_count, v_owner FROM ALL_OBJECTS
+    WHERE OBJECT_NAME = v_object AND OWNER IN ('HOSPITAL', 'HOSPITAL_DBA');
+    
     IF v_count = 0 THEN
-        RAISE_APPLICATION_ERROR(-20003, 'Object "' || p_object_name || '" not found in hospital schema.');
+        RAISE_APPLICATION_ERROR(-20003, 'Object "' || p_object_name || '" not found in allowed schemas.');
     END IF;
 
     IF p_with_grant = 1 THEN
@@ -318,11 +329,9 @@ BEGIN
         -- Column-level SELECT is implemented via a restricted view owned by hospital_dba
         v_view_name := 'V_PRIV_' || SUBSTR(v_object, 1, 15) || '_' || SUBSTR(v_grantee, 1, 10);
         
-        -- FIX 1: Added "hospital." right after VIEW
         EXECUTE IMMEDIATE 'CREATE OR REPLACE VIEW hospital.' || v_view_name ||
                           ' AS SELECT ' || v_cols || ' FROM hospital.' || v_object;
                           
-        -- FIX 2: Added "hospital." right after ON
         v_sql := 'GRANT SELECT ON hospital.' || v_view_name || ' TO ' || v_grantee || v_option;
 
     ELSIF v_priv = 'UPDATE' AND v_cols IS NOT NULL THEN
@@ -330,10 +339,12 @@ BEGIN
                  ' TO ' || v_grantee || v_option;
 
     ELSIF v_priv = 'EXECUTE' THEN
-        v_sql := 'GRANT EXECUTE ON hospital.' || v_object || ' TO ' || v_grantee || v_option;
+        -- Now uses the successfully fetched v_owner
+        v_sql := 'GRANT EXECUTE ON ' || v_owner || '.' || v_object || ' TO ' || v_grantee || v_option;
 
     ELSE
-        v_sql := 'GRANT ' || v_priv || ' ON hospital.' || v_object ||
+        -- FIXED 3: Changed 'hospital.' to v_owner so standard grants work on both schemas
+        v_sql := 'GRANT ' || v_priv || ' ON ' || v_owner || '.' || v_object ||
                  ' TO ' || v_grantee || v_option;
     END IF;
 
@@ -429,8 +440,13 @@ BEGIN
     OPEN p_cursor FOR
         SELECT object_name 
         FROM ALL_OBJECTS 
-        WHERE OWNER = 'HOSPITAL' 
-          AND object_type IN ('TABLE', 'VIEW')
+        WHERE (
+                -- Tables and Views strictly from HOSPITAL schema
+                (OWNER = 'HOSPITAL' AND object_type IN ('TABLE', 'VIEW'))
+                OR 
+                -- Procedures and Functions from either HOSPITAL or HOSPITAL_DBA schema
+                (OWNER IN ('HOSPITAL', 'HOSPITAL_DBA') AND object_type IN ('PROCEDURE', 'FUNCTION'))
+              )
           AND object_name NOT LIKE 'V\_PRIV\_%' ESCAPE '\'
         ORDER BY object_name;
 END USP_GET_BUSINESS_OBJECTS;
