@@ -97,6 +97,19 @@ namespace QuanLyYTe.DAL
             OracleHelper.ExecuteNonQuerySP("USP_REVOKE_PRIV", parameters);
         }
 
+        // ----------------------------------------------------------------
+        // Lấy danh sách các đối tượng nghiệp vụ (Bỏ qua View phân quyền)
+        // ----------------------------------------------------------------
+        public DataTable GetBusinessObjects()
+        {
+            OracleParameter[] parameters = new OracleParameter[]
+            {
+                new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
+            };
+
+            return OracleHelper.ExecuteQuerySP("USP_GET_BUSINESS_OBJECTS", parameters);
+        }
+
         /// <summary>
         /// Lấy danh sách Người dùng hoặc Vai trò (User/Role)
         /// Sử dụng SP: usp_GetGrantees
