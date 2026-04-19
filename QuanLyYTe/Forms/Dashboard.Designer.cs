@@ -91,10 +91,10 @@
             // pnlNavItems.Controls.Add(btnNavPermView);
 
             // Setup each nav button with proper position/style
-            SetupNavButton(btnNavUsers, "  Quản lý User", 0);
+            SetupNavButton(btnNavUsers, "  Quản lý user và role", 0);
             // SetupNavButton(btnNavRoles, "  Quản lý Role", 1);
             SetupNavButton(btnNavGrant, "  Cấp Quyền", 1);
-            SetupNavButton(btnNavRevoke, "  Xem và thu Hồi Quyền", 2);
+            SetupNavButton(btnNavRevoke, "  Xem và thu hồi quyền", 2);
             // SetupNavButton(btnNavPermView, "  Xem Quyền", 4);
 
             btnNavUsers.Name = "btnNavUsers"; btnNavUsers.TabIndex = 0;
