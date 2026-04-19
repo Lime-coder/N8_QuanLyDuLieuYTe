@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DAL;
 
@@ -19,10 +20,14 @@ namespace QuanLyYTe.Forms
             txtUsername.Focus();
         }
 
+
         private void btnConnect_Click(object sender, EventArgs e)
         {
             string user = txtUsername.Text.Trim();
             string password = txtPassword.Text;
+
+            // Grab the full data source string directly from the UI
+            string dataSource = txtDataSource.Text.Trim();
 
             if (string.IsNullOrEmpty(user))
             {
@@ -30,14 +35,20 @@ namespace QuanLyYTe.Forms
                 return;
             }
 
-            // Read address only — no credentials in config anymore
-            string dataSource = ConfigurationManager.AppSettings["DataSource"];
+            if (string.IsNullOrEmpty(dataSource))
+            {
+                ShowError("Vui lòng nhập Data Source.");
+                return;
+            }
+
+            // Drop the UI input directly into the Data Source parameter
             string connStr = $"User Id={user}; Password={password}; Data Source={dataSource};";
 
             try
             {
                 btnConnect.Enabled = false;
                 btnConnect.Text = "Đang kết nối...";
+                lblError.Visible = false;
 
                 OracleHelper.TestConnection(connStr);
                 OracleHelper.SetConnectionString(connStr);
@@ -55,6 +66,16 @@ namespace QuanLyYTe.Forms
             {
                 btnConnect.Enabled = true;
                 btnConnect.Text = "Kết nối";
+            }
+        }
+
+        // Ensure the Enter key logic points to the right textbox
+        private void txtDataSource_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                btnConnect_Click(sender, e);
             }
         }
 
