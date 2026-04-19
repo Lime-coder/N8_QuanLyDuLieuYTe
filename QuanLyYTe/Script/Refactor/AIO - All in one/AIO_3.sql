@@ -1,5 +1,5 @@
 -- Run as: SYSDBA | Container: PDB_QLYT
-ALTER SESSION SET CONTAINER = PDB_QLYT;
+-- ALTER SESSION SET CONTAINER = PDB_QLYT;
 -- Only run after executed the table
 GRANT SELECT ON hospital.department     TO hospital_dba WITH GRANT OPTION;
 GRANT SELECT ON hospital.staff          TO hospital_dba WITH GRANT OPTION;

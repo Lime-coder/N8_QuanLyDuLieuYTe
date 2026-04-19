@@ -1,6 +1,6 @@
 -- Run as: SYSDBA | Container: PDB_QLYT
 -- Description: Completely resets the QLYT database environment by dropping all related users, roles, schemas, and objects.
-ALTER SESSION SET CONTAINER = PDB_QLYT;
+-- ALTER SESSION SET CONTAINER = PDB_QLYT;
 SET SERVEROUTPUT ON;
 
 DECLARE

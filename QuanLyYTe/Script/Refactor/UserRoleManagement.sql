@@ -1,5 +1,5 @@
 -- Run as: hospital_dba | Container: PDB_QLYT
-ALTER SESSION SET CONTAINER = PDB_QLYT;
+-- ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 -- Returns all database users including Oracle-maintained ones
 -- The UI layer is responsible for restricting modification of ORACLE_MAINTAINED = 'Y' accounts

@@ -1,5 +1,5 @@
 -- Run as: SYSDBA | Container: PDB_QLYT
-ALTER SESSION SET CONTAINER = PDB_QLYT;
+-- ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 -- Schema owner: holds all business tables and views
 -- Account is locked — no direct login, hospital_dba manages everything

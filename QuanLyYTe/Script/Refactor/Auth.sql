@@ -1,5 +1,5 @@
 -- Run as: hospital_dba | Container: PDB_QLYT
-ALTER SESSION SET CONTAINER = PDB_QLYT;
+-- ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 -- Returns the granted role for a user (assumes one active role per user)
 CREATE OR REPLACE PROCEDURE USP_GET_GRANTED_ROLE (

@@ -1,6 +1,6 @@
 -- Run as: hospital_dba | Container: PDB_QLYT
 -- Tables are created under the hospital schema
-ALTER SESSION SET CONTAINER = PDB_QLYT;
+-- ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 SET SERVEROUTPUT ON;

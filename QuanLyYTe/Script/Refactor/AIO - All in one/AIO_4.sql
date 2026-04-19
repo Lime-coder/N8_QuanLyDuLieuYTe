@@ -1,5 +1,5 @@
 -- Run as: hospital_dba | Container: PDB_QLYT
-ALTER SESSION SET CONTAINER = PDB_QLYT;
+-- ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 -- ==============================================================================
 -- 1. SESSION & ROLE UTILITIES (Preserved from original AIO_4)
