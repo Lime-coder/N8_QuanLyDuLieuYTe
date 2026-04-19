@@ -5,6 +5,10 @@
 -- 1. SESSION & ROLE UTILITIES (Preserved from original AIO_4)
 -- ==============================================================================
 
+-- ==============================================================================
+-- 1. SESSION & ROLE UTILITIES (Preserved from original AIO_4)
+-- ==============================================================================
+
 -- Returns the granted role for a user (assumes one active role per user)
 CREATE OR REPLACE PROCEDURE USP_GET_GRANTED_ROLE (
     p_user   IN  VARCHAR2,
@@ -76,7 +80,6 @@ COMMIT;
 -- ==============================================================================
 
 -- USP_GET_USERS: project-scoped user list for the revoke form
--- Returns hospital_dba + all staff/patient username_db values
 CREATE OR REPLACE PROCEDURE USP_GET_USERS (
     p_cursor OUT SYS_REFCURSOR
 ) AUTHID CURRENT_USER AS
@@ -137,7 +140,7 @@ BEGIN
             FROM DBA_TAB_PRIVS tp
             JOIN DBA_OBJECTS ao ON ao.OWNER = tp.OWNER AND ao.OBJECT_NAME = tp.TABLE_NAME
             WHERE UPPER(tp.GRANTEE) = UPPER(p_grantee)
-              AND tp.TABLE_NAME NOT LIKE 'V\_PRIV\_%' ESCAPE '\' -- Ignore dynamic views here
+              AND tp.TABLE_NAME NOT LIKE 'V\_PRIV\_%' ESCAPE '\' 
               AND NOT EXISTS (
                   SELECT 1 FROM DBA_COL_PRIVS cp
                   WHERE UPPER(cp.GRANTEE) = UPPER(p_grantee)
@@ -157,7 +160,7 @@ BEGIN
             
             UNION ALL
             
-            -- 5. DYNAMIC COLUMN-SELECT VIEWS (Format as COLUMN to match UI)
+            -- 5. DYNAMIC COLUMN-SELECT VIEWS
             SELECT 'COLUMN', tp.PRIVILEGE, tp.OWNER, tp.TABLE_NAME, NULL, tp.GRANTABLE
             FROM DBA_TAB_PRIVS tp
             WHERE UPPER(tp.GRANTEE) = UPPER(p_grantee)
@@ -226,14 +229,14 @@ BEGIN
 END USP_GET_PRIVS_ON_OBJ;
 /
 
--- USP_GET_OBJECTS: objects of a given type owned by the hospital schema
+-- USP_GET_OBJECTS: objects of a given type
 CREATE OR REPLACE PROCEDURE USP_GET_OBJECTS (
     p_object_type   IN  VARCHAR2,
     p_result_cursor OUT SYS_REFCURSOR
 ) AUTHID CURRENT_USER AS
 BEGIN
     OPEN p_result_cursor FOR
-        SELECT UPPER(object_name) AS OBJECT_NAME -- Add alias here
+        SELECT UPPER(object_name) AS OBJECT_NAME 
         FROM all_objects
         WHERE object_type = UPPER(p_object_type)
           AND owner IN ('HOSPITAL', 'HOSPITAL_DBA')
@@ -256,7 +259,7 @@ BEGIN
 END USP_GET_COLUMNS;
 /
 
--- USP_GET_SYSTEM_PRIVILEGES: all Oracle system privilege names for the grant form dropdown
+-- USP_GET_SYSTEM_PRIVILEGES: all Oracle system privilege names
 CREATE OR REPLACE PROCEDURE USP_GET_SYSTEM_PRIVILEGES (
     p_result_cursor OUT SYS_REFCURSOR
 ) AUTHID CURRENT_USER AS
@@ -267,9 +270,6 @@ END USP_GET_SYSTEM_PRIVILEGES;
 /
 
 -- USP_REVOKE_PRIV: revoke a privilege from a user or role
--- p_type: SYSTEM | ROLE | TABLE | VIEW | PROCEDURE | FUNCTION | COLUMN
--- Note: COLUMN type raises an informative error — Oracle does not support column-level REVOKE.
---       Instruct the user to revoke the table-level privilege instead.
 CREATE OR REPLACE PROCEDURE USP_REVOKE_PRIV (
     p_type      IN VARCHAR2,
     p_privilege IN VARCHAR2,
@@ -324,7 +324,7 @@ BEGIN
             RAISE_APPLICATION_ERROR(-20003, 'p_owner and p_object are required for COLUMN privileges.');
         END IF;
         
-        -- THE FIX: Check if this "COLUMN" privilege is actually one of our dynamic views
+        -- Check if this "COLUMN" privilege is actually one of our dynamic views
         IF v_object LIKE 'V\_PRIV\_%' ESCAPE '\' THEN
             v_sql := 'DROP VIEW ' || DBMS_ASSERT.ENQUOTE_NAME(v_owner, FALSE) || '.' || 
                                      DBMS_ASSERT.ENQUOTE_NAME(v_object, FALSE);
@@ -354,8 +354,7 @@ EXCEPTION
 END USP_REVOKE_PRIV;
 /
 
--- USP_GRANT_OBJECT_PRIVILEGE: grant an object or column-level privilege to a user or role
--- Column SELECT uses a dynamic view; column UPDATE uses native column-level grant
+-- USP_GRANT_OBJECT_PRIVILEGE: grant an object or column-level privilege
 CREATE OR REPLACE PROCEDURE USP_GRANT_OBJECT_PRIVILEGE (
     p_grantee      IN VARCHAR2,
     p_privilege    IN VARCHAR2,  -- SELECT, INSERT, UPDATE, DELETE, EXECUTE
@@ -398,7 +397,7 @@ BEGIN
     END IF;
 
     IF v_priv = 'SELECT' AND v_cols IS NOT NULL THEN
-        -- Column-level SELECT is implemented via a restricted view owned by hospital_dba
+        -- Column-level SELECT via restricted view
         v_view_name := 'V_PRIV_' || SUBSTR(v_object, 1, 15) || '_' || SUBSTR(v_grantee, 1, 10);
         
         EXECUTE IMMEDIATE 'CREATE OR REPLACE VIEW hospital.' || v_view_name ||
@@ -432,7 +431,7 @@ EXCEPTION
 END USP_GRANT_OBJECT_PRIVILEGE;
 /
 
--- USP_GRANT_ROLE_TO_USER: assign a role to a user and activate it as a default role
+-- USP_GRANT_ROLE_TO_USER: assign a role to a user and activate it
 CREATE OR REPLACE PROCEDURE USP_GRANT_ROLE_TO_USER (
     p_user       IN VARCHAR2,
     p_role       IN VARCHAR2,
@@ -525,7 +524,7 @@ END USP_GET_BUSINESS_OBJECTS;
 /
 
 -- ==============================================================================
--- 4. USER & ROLE MANAGEMENT PROCEDURES (Preserved from original AIO_4)
+-- 4. USER & ROLE MANAGEMENT PROCEDURES
 -- ==============================================================================
 
 -- Returns all database users including Oracle-maintained ones
