@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DAL;
+using QuanLyYTe.Helper;
 
 namespace QuanLyYTe.Forms
 {
@@ -25,8 +26,6 @@ namespace QuanLyYTe.Forms
         {
             string user = txtUsername.Text.Trim();
             string password = txtPassword.Text;
-
-            // Grab the full data source string directly from the UI
             string dataSource = txtDataSource.Text.Trim();
 
             if (string.IsNullOrEmpty(user))
@@ -34,16 +33,13 @@ namespace QuanLyYTe.Forms
                 ShowError("Vui lòng nhập tên người dùng.");
                 return;
             }
-
             if (string.IsNullOrEmpty(dataSource))
             {
                 ShowError("Vui lòng nhập Data Source.");
                 return;
             }
 
-            // Drop the UI input directly into the Data Source parameter
             string connStr = $"User Id={user}; Password={password}; Data Source={dataSource};";
-
             try
             {
                 btnConnect.Enabled = false;
@@ -53,14 +49,19 @@ namespace QuanLyYTe.Forms
                 OracleHelper.TestConnection(connStr);
                 OracleHelper.SetConnectionString(connStr);
 
-                var dashboard = new Dashboard(user);
-                dashboard.Show();
+                // ↓ replaces: var dashboard = new Dashboard(user);
+                Form mainForm = RoleRouter.Resolve(user);
+                mainForm.Show();
                 this.Hide();
-                dashboard.FormClosed += (s, args) => this.Close();
+                mainForm.FormClosed += (s, args) => this.Close();
             }
             catch (OracleException ex)
             {
                 ShowError(OraErrToVietnamese(ex.Number, ex.Message));
+            }
+            catch (InvalidOperationException ex)   // unknown / null role from RoleRouter
+            {
+                ShowError(ex.Message);
             }
             finally
             {
