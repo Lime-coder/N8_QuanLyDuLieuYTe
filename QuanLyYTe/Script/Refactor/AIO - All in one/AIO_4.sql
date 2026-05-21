@@ -1,10 +1,5 @@
 -- Run as: hospital_dba | Container: PDB_QLYT
 -- ALTER SESSION SET CONTAINER = PDB_QLYT;
-
--- ==============================================================================
--- 1. SESSION & ROLE UTILITIES (Preserved from original AIO_4)
--- ==============================================================================
-
 -- ==============================================================================
 -- 1. SESSION & ROLE UTILITIES (Preserved from original AIO_4)
 -- ==============================================================================
@@ -26,6 +21,7 @@ BEGIN
 END USP_GET_GRANTED_ROLE;
 /
 
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 -- Returns the active role for the current database session
 CREATE OR REPLACE PROCEDURE USP_GET_SESSION_ROLE (
     p_cursor OUT SYS_REFCURSOR
@@ -35,7 +31,6 @@ BEGIN
         SELECT ROLE FROM SESSION_ROLES WHERE ROWNUM = 1;
 END USP_GET_SESSION_ROLE;
 /
-
 -- ==============================================================================
 -- 2. MOCK STAFF & TEST GRANTS 
 -- ==============================================================================
@@ -54,6 +49,11 @@ CREATE USER NV002 IDENTIFIED BY Abc123456;
 CREATE USER NV003 IDENTIFIED BY Abc123456;
 CREATE USER NV004 IDENTIFIED BY Abc123456;
 
+GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV001;
+GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV002;
+GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV003;
+GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV004;
+
 -- System privileges
 GRANT CREATE SESSION                   TO NV001;
 GRANT CREATE SESSION, CREATE VIEW      TO NV002;
@@ -61,10 +61,10 @@ GRANT CREATE SESSION                   TO NV003;
 GRANT CREATE SESSION, CREATE SEQUENCE  TO NV004;
 
 -- Business role assignments
-GRANT rl_doctor      TO NV001;
+GRANT rl_patient    TO NV001;
 GRANT rl_coordinator TO NV002;
 GRANT rl_technician  TO NV003;
-GRANT rl_doctor      TO NV004;
+GRANT rl_doctor    TO NV004;
 
 -- Column-level privileges
 GRANT UPDATE (patient_id, full_name, gender, birthdate) ON hospital.patient TO NV002;

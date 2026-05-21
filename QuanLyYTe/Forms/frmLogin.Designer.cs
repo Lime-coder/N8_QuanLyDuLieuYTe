@@ -37,6 +37,8 @@
             lblSubtitle = new Label();
             lblTitle = new Label();
             pnlDivider = new Panel();
+            lblDataSource = new System.Windows.Forms.Label();
+            txtDataSource = new System.Windows.Forms.TextBox();
             pnlSidebar.SuspendLayout();
             pnlVersion.SuspendLayout();
             pnlLogo.SuspendLayout();
@@ -149,10 +151,12 @@
             pnlCard.Controls.Add(lblUsername);
             pnlCard.Controls.Add(lblSubtitle);
             pnlCard.Controls.Add(lblTitle);
+            pnlCard.Controls.Add(lblDataSource);
+            pnlCard.Controls.Add(txtDataSource);
             pnlCard.Location = new Point(0, 0);
             pnlCard.Margin = new Padding(3, 4, 3, 4);
             pnlCard.Name = "pnlCard";
-            pnlCard.Size = new Size(365, 370);
+            pnlCard.Size = new Size(365, 445);
             pnlCard.TabIndex = 0;
             // 
             // btnConnect
@@ -164,20 +168,43 @@
             btnConnect.FlatStyle = FlatStyle.Flat;
             btnConnect.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             btnConnect.ForeColor = Color.White;
-            btnConnect.Location = new Point(32, 299);
             btnConnect.Margin = new Padding(3, 4, 3, 4);
             btnConnect.Name = "btnConnect";
             btnConnect.Size = new Size(302, 51);
-            btnConnect.TabIndex = 3;
+            btnConnect.Location = new Point(32, 374);
+            btnConnect.TabIndex = 4;
             btnConnect.Text = "Kết nối";
             btnConnect.UseVisualStyleBackColor = false;
             btnConnect.Click += btnConnect_Click;
+            // 
+            // lblDataSource
+            // 
+            this.lblDataSource.AutoSize = true;
+            this.lblDataSource.Font = new System.Drawing.Font("Segoe UI", 8.5F);
+            this.lblDataSource.ForeColor = System.Drawing.Color.FromArgb(100, 100, 110);
+            this.lblDataSource.Location = new System.Drawing.Point(32, 270);
+            this.lblDataSource.Name = "lblDataSource";
+            this.lblDataSource.Size = new System.Drawing.Size(200, 20);
+            this.lblDataSource.TabIndex = 9;
+            this.lblDataSource.Text = "Data Source (Host:Port/PDB)";
+            // 
+            // txtDataSource
+            // 
+            this.txtDataSource.BackColor = System.Drawing.Color.FromArgb(250, 249, 248);
+            this.txtDataSource.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtDataSource.Font = new System.Drawing.Font("Segoe UI", 9.5F);
+            this.txtDataSource.Location = new System.Drawing.Point(32, 294);
+            this.txtDataSource.Name = "txtDataSource";
+            this.txtDataSource.Size = new System.Drawing.Size(301, 29);
+            this.txtDataSource.TabIndex = 3;
+            this.txtDataSource.Text = "localhost:1521/PDB_QLYT";
+            this.txtDataSource.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtDataSource_KeyDown);
             // 
             // lblError
             // 
             lblError.Font = new Font("Segoe UI", 8F);
             lblError.ForeColor = Color.FromArgb(180, 40, 40);
-            lblError.Location = new Point(32, 264);
+            lblError.Location = new Point(32, 339);
             lblError.Name = "lblError";
             lblError.Size = new Size(302, 27);
             lblError.TabIndex = 4;
@@ -297,5 +324,7 @@
         private System.Windows.Forms.Label lblUsername, lblPassword, lblError;
         private System.Windows.Forms.TextBox txtUsername, txtPassword;
         private System.Windows.Forms.Button btnConnect;
+        private System.Windows.Forms.Label lblDataSource;
+        private System.Windows.Forms.TextBox txtDataSource;
     }
 }

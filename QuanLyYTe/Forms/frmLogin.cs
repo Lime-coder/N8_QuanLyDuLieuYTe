@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Configuration;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DAL;
+using QuanLyYTe.Helper;
 
 namespace QuanLyYTe.Forms
 {
@@ -19,42 +21,62 @@ namespace QuanLyYTe.Forms
             txtUsername.Focus();
         }
 
+
         private void btnConnect_Click(object sender, EventArgs e)
         {
             string user = txtUsername.Text.Trim();
             string password = txtPassword.Text;
+            string dataSource = txtDataSource.Text.Trim();
 
             if (string.IsNullOrEmpty(user))
             {
                 ShowError("Vui lòng nhập tên người dùng.");
                 return;
             }
+            if (string.IsNullOrEmpty(dataSource))
+            {
+                ShowError("Vui lòng nhập Data Source.");
+                return;
+            }
 
-            // Read address only — no credentials in config anymore
-            string dataSource = ConfigurationManager.AppSettings["DataSource"];
             string connStr = $"User Id={user}; Password={password}; Data Source={dataSource};";
-
             try
             {
                 btnConnect.Enabled = false;
                 btnConnect.Text = "Đang kết nối...";
+                lblError.Visible = false;
 
                 OracleHelper.TestConnection(connStr);
                 OracleHelper.SetConnectionString(connStr);
 
-                var dashboard = new Dashboard(user);
-                dashboard.Show();
+                // ↓ replaces: var dashboard = new Dashboard(user);
+                Form mainForm = RoleRouter.Resolve(user);
+                mainForm.Show();
                 this.Hide();
-                dashboard.FormClosed += (s, args) => this.Close();
+                mainForm.FormClosed += (s, args) => this.Close();
             }
             catch (OracleException ex)
             {
                 ShowError(OraErrToVietnamese(ex.Number, ex.Message));
             }
+            catch (InvalidOperationException ex)   // unknown / null role from RoleRouter
+            {
+                ShowError(ex.Message);
+            }
             finally
             {
                 btnConnect.Enabled = true;
                 btnConnect.Text = "Kết nối";
+            }
+        }
+
+        // Ensure the Enter key logic points to the right textbox
+        private void txtDataSource_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                btnConnect_Click(sender, e);
             }
         }
 
