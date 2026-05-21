@@ -16,6 +16,11 @@ CREATE USER NV002 IDENTIFIED BY Abc123456;
 CREATE USER NV003 IDENTIFIED BY Abc123456;
 CREATE USER NV004 IDENTIFIED BY Abc123456;
 
+GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV001;
+GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV002;
+GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV003;
+GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV004;
+
 -- System privileges
 GRANT CREATE SESSION                   TO NV001;
 GRANT CREATE SESSION, CREATE VIEW      TO NV002;
@@ -23,10 +28,10 @@ GRANT CREATE SESSION                   TO NV003;
 GRANT CREATE SESSION, CREATE SEQUENCE  TO NV004;
 
 -- Business role assignments
-GRANT rl_doctor      TO NV001;
+GRANT rl_patient      TO NV001;
 GRANT rl_coordinator TO NV002;
 GRANT rl_technician  TO NV003;
-GRANT rl_doctor      TO NV004;
+GRANT rl_doctor    TO NV004;
 
 -- Column-level privileges
 GRANT UPDATE (patient_id, full_name, gender, birthdate) ON hospital.patient TO NV002;
