@@ -1,22 +1,22 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
-using QuanLyYTe.DAL;
+using QuanLyYTe.Services;
 
 namespace QuanLyYTe.Forms
 {
     public partial class Dashboard : Form
     {
-        // ── Theme ─────────────────────────────────────────────────────
+
         private static readonly Color Orange = Color.FromArgb(255, 140, 40);
         private static readonly Color OrangeHov = Color.FromArgb(255, 165, 80);
         private static readonly Color ActiveBg = Color.FromArgb(45, 255, 140, 40);
 
         private Button _activeNavBtn = null;
         private readonly string _username;
-        private readonly AuthRepository _authRepo = new AuthRepository();
+        private readonly AuthService _authService = new AuthService();
 
-        // ── Feature definitions ───────────────────────────────────────
+
         private (string Badge, string Title, string Desc, Func<Form> Factory)[] _features;
 
         public Dashboard(string username)
@@ -27,16 +27,14 @@ namespace QuanLyYTe.Forms
             _features = new (string Badge, string Title, string Desc, Func<Form> Factory)[]
             {
                 ("USR", "Quản lý user và role",  "Tạo, sửa, xóa tài khoản người dùng Oracle", () => new frmUserManagement()),
-                // ("ROL", "Quản lý Role",  "Tạo, sửa, xóa role trong hệ thống Oracle",  () => new frmRoleManagement()),
                 ("GRT", "Cấp Quyền",     "Cấp quyền cho user / role",                  () => new frmGrantPermission()),
                 ("REV", "Xem và thu hồi quyền", "Xem và thu hồi quyền đã cấp",                       () => new frmRevokePermission()),
-                // ("VIW", "Xem Quyền",     "Xem chi tiết quyền của mỗi user / role",     () => new frmViewPermissions()),
             };
 
             WireNavButtons();
         }
 
-        // ── Load ──────────────────────────────────────────────────────
+
         private void Dashboard_Load(object sender, EventArgs e)
         {
             PositionUserInfo();
@@ -52,12 +50,11 @@ namespace QuanLyYTe.Forms
                 (pnlTopbar.Height - lblUserInfo.Height) / 2);
         }
 
-        // ── User info ─────────────────────────────────────────────────
+
         private void LoadUserInfo()
         {
             string role = GetUserRole(_username);
 
-            // If the role starts with "RL_", remove the first 3 characters
             if (role != null && role.StartsWith("RL_"))
             {
                 role = role.Substring(3);
@@ -70,18 +67,18 @@ namespace QuanLyYTe.Forms
         {
             try
             {
-                string role = _authRepo.GetGrantedRole(username);
+                string role = _authService.GetGrantedRole(username);
                 if (role != null) return role;
-                return _authRepo.GetSessionRole() ?? "User";
+                return _authService.GetSessionRole() ?? "User";
             }
             catch
             {
-                try { return _authRepo.GetSessionRole() ?? "User"; }
+                try { return _authService.GetSessionRole() ?? "User"; }
                 catch { return "User"; }
             }
         }
 
-        // ── Cards ─────────────────────────────────────────────────────
+
         private void BuildCards()
         {
             pnlCards.Controls.Clear();
@@ -178,16 +175,14 @@ namespace QuanLyYTe.Forms
             return card;
         }
 
-        // ── Nav buttons ───────────────────────────────────────────────
+
         private void WireNavButtons()
         {
             var map = new (Button Btn, int Index)[]
             {
                 (btnNavUsers,    0),
-                // (btnNavRoles,    1),
                 (btnNavGrant,    1),
                 (btnNavRevoke,   2),
-                // (btnNavPermView, 4),
             };
 
             foreach (var (btn, idx) in map)
@@ -211,9 +206,8 @@ namespace QuanLyYTe.Forms
 
             if (confirm != DialogResult.Yes) return;
 
-            OracleHelper.SetConnectionString(null); // clear session
+            _authService.Logout(); // clear session
 
-            // Taking you back to the initial startup screen
             Application.Restart();
         }
 
@@ -229,7 +223,7 @@ namespace QuanLyYTe.Forms
             _activeNavBtn = btn;
         }
 
-        // ── Open feature ──────────────────────────────────────────────
+
         private void OpenFeature(string title, string breadcrumb, Func<Form> factory)
         {
             SetActivePage(title, breadcrumb);
@@ -291,7 +285,7 @@ namespace QuanLyYTe.Forms
             lblPageBreadcrumb.Text = breadcrumb;
         }
 
-        // ── Logo click → home ─────────────────────────────────────────
+
         private void lblAppTitle_Click(object sender, EventArgs e)
         {
             SetActivePage("Dashboard", "Trang chủ");

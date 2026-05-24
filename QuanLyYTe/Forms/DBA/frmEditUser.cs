@@ -6,7 +6,7 @@ namespace QuanLyYTe.Forms.DBA
         EditPassword
     }
 
-    public class EditUserDialog : Form
+    public class frmEditUser : Form
     {
         private readonly EditUserDialogMode _mode;
 
@@ -19,7 +19,12 @@ namespace QuanLyYTe.Forms.DBA
         public string Username => txtUsername.Text;
         public string Password => txtPassword.Text;
 
-        public EditUserDialog(EditUserDialogMode mode, string? presetUsername = null)
+        public frmEditUser()
+        {
+            InitializeComponent();
+        }
+
+        public frmEditUser(EditUserDialogMode mode, string? presetUsername = null)
         {
             _mode = mode;
             InitializeComponent();
@@ -77,27 +82,7 @@ namespace QuanLyYTe.Forms.DBA
             btnOk.Location = new Point(214, 146);
             btnOk.Size = new Size(75, 30);
             btnOk.Text = "Đồng ý";
-            btnOk.Click += (_, __) =>
-            {
-                // Require confirm password when setting/changing password
-                if (string.IsNullOrWhiteSpace(txtPassword.Text))
-                {
-                    MessageBox.Show(this, "Mật khẩu không được để trống.", "Kiểm tra");
-                    txtPassword.Focus();
-                    return;
-                }
-
-                if (!string.Equals(txtPassword.Text, txtConfirmPassword.Text, StringComparison.Ordinal))
-                {
-                    MessageBox.Show(this, "Hai lần nhập mật khẩu không khớp.", "Kiểm tra");
-                    txtConfirmPassword.Focus();
-                    txtConfirmPassword.SelectAll();
-                    return;
-                }
-
-                DialogResult = DialogResult.OK;
-                Close();
-            };
+            btnOk.Click += new System.EventHandler(this.btnOk_Click);
 
             btnCancel.Location = new Point(295, 146);
             btnCancel.Size = new Size(75, 30);
@@ -120,10 +105,29 @@ namespace QuanLyYTe.Forms.DBA
             MinimizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
 
-            // Keep confirm password visible for both Create and EditPassword
-
             ResumeLayout(false);
             PerformLayout();
+        }
+
+        private void btnOk_Click(object? sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtPassword.Text))
+            {
+                MessageBox.Show(this, "Mật khẩu không được để trống.", "Kiểm tra");
+                txtPassword.Focus();
+                return;
+            }
+
+            if (!string.Equals(txtPassword.Text, txtConfirmPassword.Text, StringComparison.Ordinal))
+            {
+                MessageBox.Show(this, "Hai lần nhập mật khẩu không khớp.", "Kiểm tra");
+                txtConfirmPassword.Focus();
+                txtConfirmPassword.SelectAll();
+                return;
+            }
+
+            DialogResult = DialogResult.OK;
+            Close();
         }
     }
 }

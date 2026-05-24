@@ -1,17 +1,19 @@
 using Oracle.ManagedDataAccess.Client;
-using QuanLyYTe.DAL;
+using QuanLyYTe.DataProvider;
 using System.Data;
 
-namespace QuanLyYTe.DAL
+namespace QuanLyYTe.Repositories
 {
     /// <summary>
     /// Repository xử lý các nghiệp vụ liên quan đến quản lý quyền (Privilege).
     /// </summary>
     public class PrivilegeRepository
     {
-        // ----------------------------------------------------------------
-        // 1. Lấy danh sách User trong database
-        // ----------------------------------------------------------------
+        private readonly OracleDbProvider _dbProvider = new OracleDbProvider();
+        /// <summary>
+        /// Lấy danh sách User trong database
+        /// Sử dụng SP: USP_GET_USERS
+        /// </summary>
         public DataTable GetUsers()
         {
             OracleParameter[] parameters = new OracleParameter[]
@@ -19,12 +21,13 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
             };
 
-            return OracleHelper.ExecuteQuerySP("USP_GET_USERS", parameters);
+            return _dbProvider.ExecuteQuerySP("USP_GET_USERS", parameters);
         }
 
-        // ----------------------------------------------------------------
-        // 2. Lấy danh sách Role trong database
-        // ----------------------------------------------------------------
+        /// <summary>
+        /// Lấy danh sách Role trong database
+        /// Sử dụng SP: USP_GET_ROLES
+        /// </summary>
         public DataTable GetRoles()
         {
             OracleParameter[] parameters = new OracleParameter[]
@@ -32,13 +35,13 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
             };
 
-            return OracleHelper.ExecuteQuerySP("USP_GET_ROLES", parameters);
+            return _dbProvider.ExecuteQuerySP("USP_GET_ROLES", parameters);
         }
 
-        // ----------------------------------------------------------------
-        // 3. Xem toàn bộ quyền của một User hoặc Role
-        //    grantee: tên user hoặc tên role
-        // ----------------------------------------------------------------
+        /// <summary>
+        /// Xem toàn bộ quyền của một User hoặc Role
+        /// Sử dụng SP: USP_GET_ALL_PRIVS
+        /// </summary>
         public DataTable GetAllPrivileges(string grantee)
         {
             OracleParameter[] parameters = new OracleParameter[]
@@ -50,14 +53,13 @@ namespace QuanLyYTe.DAL
                 }
             };
 
-            return OracleHelper.ExecuteQuerySP("USP_GET_ALL_PRIVS", parameters);
+            return _dbProvider.ExecuteQuerySP("USP_GET_ALL_PRIVS", parameters);
         }
 
-        // ----------------------------------------------------------------
-        // 4. Xem quyền trên một đối tượng cụ thể (ai có quyền gì trên bảng/view/...)
-        //    owner      : schema sở hữu đối tượng (ví dụ: HOSPITAL_DBA)
-        //    objectName : tên đối tượng (ví dụ: PATIENT)
-        // ----------------------------------------------------------------
+        /// <summary>
+        /// Xem quyền trên một đối tượng cụ thể (ai có quyền gì trên bảng/view/...)
+        /// Sử dụng SP: USP_GET_PRIVS_ON_OBJ
+        /// </summary>
         public DataTable GetPrivsOnObject(string owner, string objectName)
         {
             OracleParameter[] parameters = new OracleParameter[]
@@ -70,18 +72,13 @@ namespace QuanLyYTe.DAL
                 }
             };
 
-            return OracleHelper.ExecuteQuerySP("USP_GET_PRIVS_ON_OBJ", parameters);
+            return _dbProvider.ExecuteQuerySP("USP_GET_PRIVS_ON_OBJ", parameters);
         }
 
-        // ----------------------------------------------------------------
-        // 5. Thu hồi quyền từ User hoặc Role
-        //    type      : 'SYSTEM' | 'ROLE' | 'TABLE' | 'VIEW' | 'PROCEDURE' | 'FUNCTION' | 'COLUMN'
-        //    privilege : Tên quyền hoặc tên role được cấp
-        //    owner     : Schema sở hữu object (NULL nếu SYSTEM/ROLE)
-        //    obj       : Tên object            (NULL nếu SYSTEM/ROLE)
-        //    column    : Tên cột               (chỉ dùng khi type='COLUMN')
-        //    grantee   : User hoặc role cần thu hồi
-        // ----------------------------------------------------------------
+        /// <summary>
+        /// Thu hồi quyền từ User hoặc Role
+        /// Sử dụng SP: USP_REVOKE_PRIV
+        /// </summary>
         public void RevokePrivilege(string type, string privilege, string owner, string obj, string column, string grantee)
         {
             OracleParameter[] parameters = new OracleParameter[]
@@ -94,12 +91,13 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_grantee",   grantee)
             };
 
-            OracleHelper.ExecuteNonQuerySP("USP_REVOKE_PRIV", parameters);
+            _dbProvider.ExecuteNonQuerySP("USP_REVOKE_PRIV", parameters);
         }
 
-        // ----------------------------------------------------------------
-        // Lấy danh sách các đối tượng nghiệp vụ (Bỏ qua View phân quyền)
-        // ----------------------------------------------------------------
+        /// <summary>
+        /// Lấy danh sách các đối tượng nghiệp vụ (Bỏ qua View phân quyền)
+        /// Sử dụng SP: USP_GET_BUSINESS_OBJECTS
+        /// </summary>
         public DataTable GetBusinessObjects()
         {
             OracleParameter[] parameters = new OracleParameter[]
@@ -107,12 +105,12 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
             };
 
-            return OracleHelper.ExecuteQuerySP("USP_GET_BUSINESS_OBJECTS", parameters);
+            return _dbProvider.ExecuteQuerySP("USP_GET_BUSINESS_OBJECTS", parameters);
         }
 
         /// <summary>
         /// Lấy danh sách Người dùng hoặc Vai trò (User/Role)
-        /// Sử dụng SP: usp_GetGrantees
+        /// Sử dụng SP: USP_GET_GRANTEES
         /// </summary>
         public DataTable GetGrantees(string granteeType)
         {
@@ -122,12 +120,12 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
 
-            return OracleHelper.ExecuteQuerySP("USP_GET_GRANTEES", parameters);
+            return _dbProvider.ExecuteQuerySP("USP_GET_GRANTEES", parameters);
         }
 
         /// <summary>
         /// Lấy danh sách các đối tượng (TABLE, VIEW, PROCEDURE, FUNCTION)
-        /// Sử dụng SP: usp_GetObjects
+        /// Sử dụng SP: USP_GET_OBJECTS
         /// </summary>
         public DataTable GetObjects(string objectType)
         {
@@ -137,12 +135,12 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
 
-            return OracleHelper.ExecuteQuerySP("USP_GET_OBJECTS", parameters);
+            return _dbProvider.ExecuteQuerySP("USP_GET_OBJECTS", parameters);
         }
 
         /// <summary>
         /// Lấy danh sách cột cho một bảng hoặc view cụ thể
-        /// Sử dụng SP: usp_GetColumns
+        /// Sử dụng SP: USP_GET_COLUMNS
         /// </summary>
         public DataTable GetColumns(string tableName)
         {
@@ -152,12 +150,12 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
 
-            return OracleHelper.ExecuteQuerySP("USP_GET_COLUMNS", parameters);
+            return _dbProvider.ExecuteQuerySP("USP_GET_COLUMNS", parameters);
         }
 
         /// <summary>
         /// Lấy danh sách các quyền hệ thống có sẵn
-        /// Sử dụng SP: usp_GetAllSystemPrivileges
+        /// Sử dụng SP: USP_GET_SYSTEM_PRIVILEGES
         /// </summary>
         public DataTable GetAllSystemPrivileges()
         {
@@ -165,13 +163,13 @@ namespace QuanLyYTe.DAL
             {
                 new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return OracleHelper.ExecuteQuerySP("USP_GET_SYSTEM_PRIVILEGES", parameters);
+            return _dbProvider.ExecuteQuerySP("USP_GET_SYSTEM_PRIVILEGES", parameters);
         }
 
 
         /// <summary>
         /// Thực thi cấp quyền trên đối tượng
-        /// Sử dụng SP: USP_GRANT_OBJECT_PRIV
+        /// Sử dụng SP: USP_GRANT_OBJECT_PRIVILEGE
         /// </summary>
         public void GrantObjectPrivilege(string grantee, string priv, string obj, string cols, int withGrant)
         {
@@ -187,7 +185,7 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_with_grant", OracleDbType.Int32) { Value = withGrant }
             };
 
-            OracleHelper.ExecuteNonQuerySP("USP_GRANT_OBJECT_PRIVILEGE", parameters);
+            _dbProvider.ExecuteNonQuerySP("USP_GRANT_OBJECT_PRIVILEGE", parameters);
         }
 
         /// <summary>
@@ -202,7 +200,7 @@ namespace QuanLyYTe.DAL
                 new OracleParameter("p_role", OracleDbType.Varchar2) { Value = role },
                 new OracleParameter("p_with_admin", OracleDbType.Int32) { Value = withAdmin }
             };
-            OracleHelper.ExecuteNonQuerySP("USP_GRANT_ROLE_TO_USER", parameters);
+            _dbProvider.ExecuteNonQuerySP("USP_GRANT_ROLE_TO_USER", parameters);
         }
 
         /// <summary>
@@ -217,7 +215,7 @@ namespace QuanLyYTe.DAL
                     new OracleParameter("p_privilege", OracleDbType.Varchar2) { Value = priv },
                     new OracleParameter("p_with_admin", OracleDbType.Int32) { Value = withAdmin }
             };
-            OracleHelper.ExecuteNonQuerySP("USP_GRANT_SYSTEM_PRIVILEGE", parameters);
+            _dbProvider.ExecuteNonQuerySP("USP_GRANT_SYSTEM_PRIVILEGE", parameters);
         }
     }
 }

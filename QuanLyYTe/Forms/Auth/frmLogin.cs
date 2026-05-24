@@ -3,13 +3,15 @@ using System.Configuration;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using Oracle.ManagedDataAccess.Client;
-using QuanLyYTe.DAL;
-using QuanLyYTe.Helper;
+using QuanLyYTe.Helpers;
+using QuanLyYTe.Services;
 
 namespace QuanLyYTe.Forms
 {
     public partial class frmLogin : Form
     {
+        private readonly AuthService _authService = new AuthService();
+
         public frmLogin()
         {
             InitializeComponent();
@@ -28,38 +30,26 @@ namespace QuanLyYTe.Forms
             string password = txtPassword.Text;
             string dataSource = txtDataSource.Text.Trim();
 
-            if (string.IsNullOrEmpty(user))
+            if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(dataSource))
             {
-                ShowError("Vui lòng nhập tên người dùng.");
-                return;
-            }
-            if (string.IsNullOrEmpty(dataSource))
-            {
-                ShowError("Vui lòng nhập Data Source.");
+                ShowError("Vui lòng nhập đầy đủ thông tin.");
                 return;
             }
 
-            string connStr = $"User Id={user}; Password={password}; Data Source={dataSource};";
             try
             {
                 btnConnect.Enabled = false;
                 btnConnect.Text = "Đang kết nối...";
                 lblError.Visible = false;
 
-                OracleHelper.TestConnection(connStr);
-                OracleHelper.SetConnectionString(connStr);
+                _authService.Login(user, password, dataSource);
 
-                // ↓ replaces: var dashboard = new Dashboard(user);
                 Form mainForm = RoleRouter.Resolve(user);
                 mainForm.Show();
                 this.Hide();
                 mainForm.FormClosed += (s, args) => this.Close();
             }
-            catch (OracleException ex)
-            {
-                ShowError(OraErrToVietnamese(ex.Number, ex.Message));
-            }
-            catch (InvalidOperationException ex)   // unknown / null role from RoleRouter
+            catch (Exception ex)
             {
                 ShowError(ex.Message);
             }
@@ -70,7 +60,6 @@ namespace QuanLyYTe.Forms
             }
         }
 
-        // Ensure the Enter key logic points to the right textbox
         private void txtDataSource_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
@@ -89,20 +78,6 @@ namespace QuanLyYTe.Forms
         {
             lblError.Text = message;
             lblError.Visible = true;
-        }
-
-        // Map common Oracle error codes to friendly Vietnamese messages
-        private string OraErrToVietnamese(int code, string fallback)
-        {
-            return code switch
-            {
-                1017 => "Sai tên người dùng hoặc mật khẩu.",
-                28000 => "Tài khoản đã bị khóa.",
-                28001 => "Mật khẩu đã hết hạn, vui lòng đổi mật khẩu.",
-                12541 => "Không thể kết nối đến Oracle Listener.",
-                12514 => "Service name không tồn tại trên server.",
-                _ => $"Lỗi Oracle ({code}): {fallback}"
-            };
         }
     }
 }

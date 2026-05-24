@@ -1,13 +1,14 @@
-﻿using System.Data;
+using System.Data;
 using System.Text.RegularExpressions;
-using QuanLyYTe.DAL;
 using QuanLyYTe.Forms.DBA;
+using QuanLyYTe.Services;
+using QuanLyYTe.Helpers;
 
 namespace QuanLyYTe.Forms
 {
     public partial class frmUserManagement : Form
     {
-        private readonly SecurityAdminRepository _repo = new SecurityAdminRepository();
+        private readonly SecurityAdminService _service = new SecurityAdminService();
         private DataTable? _usersDt;
         private DataTable? _rolesDt;
 
@@ -24,9 +25,6 @@ namespace QuanLyYTe.Forms
             RefreshRoles();
         }
 
-        /// <summary>
-        /// Hiển thị tiêu đề cột tiếng Việt; giữ nguyên các từ user, ORACLE_MAINTAINED theo yêu cầu.
-        /// </summary>
         private void ApplyUsersGridColumnHeaders()
         {
             void Set(string columnName, string headerText)
@@ -42,9 +40,6 @@ namespace QuanLyYTe.Forms
             Set("CREATED", "Ngày tạo");
         }
 
-        /// <summary>
-        /// Hiển thị tiêu đề cột tiếng Việt; giữ nguyên các từ role, ORACLE_MAINTAINED theo yêu cầu.
-        /// </summary>
         private void ApplyRolesGridColumnHeaders()
         {
             void Set(string columnName, string headerText)
@@ -150,10 +145,10 @@ namespace QuanLyYTe.Forms
         {
             try
             {
-                _usersDt = _repo.GetAllUsers();
+                _usersDt = _service.GetAllUsers();
                 _usersDt.CaseSensitive = false;
                 dgvUsers.DataSource = _usersDt;
-                OracleHelper.FormatGridView(dgvUsers);
+                GridViewStyler.Format(dgvUsers);
                 ApplyUsersGridColumnHeaders();
 
                 if (_usersDt.Columns.Count == 0)
@@ -177,10 +172,10 @@ namespace QuanLyYTe.Forms
         {
             try
             {
-                _rolesDt = _repo.GetAllRoles();
+                _rolesDt = _service.GetAllRoles();
                 _rolesDt.CaseSensitive = false;
                 dgvRoles.DataSource = _rolesDt;
-                OracleHelper.FormatGridView(dgvRoles);
+                GridViewStyler.Format(dgvRoles);
                 ApplyRolesGridColumnHeaders();
 
                 if (_rolesDt.Columns.Count == 0)
@@ -351,7 +346,7 @@ namespace QuanLyYTe.Forms
 
         private void btnUserCreate_Click(object sender, EventArgs e)
         {
-            using var dlg = new EditUserDialog(mode: EditUserDialogMode.Create);
+            using var dlg = new frmEditUser(mode: EditUserDialogMode.Create);
             if (dlg.ShowDialog(this) != DialogResult.OK) return;
 
             string username = dlg.Username.Trim().ToUpperInvariant();
@@ -365,7 +360,7 @@ namespace QuanLyYTe.Forms
 
             try
             {
-                _repo.CreateUser(username, password);
+                _service.CreateUser(username, password);
                 MessageBox.Show("Tạo user thành công.", "Thông báo");
                 RefreshUsers();
             }
@@ -386,12 +381,12 @@ namespace QuanLyYTe.Forms
             string? username = GetSelectedUsername();
             if (string.IsNullOrWhiteSpace(username)) return;
 
-            using var dlg = new EditUserDialog(mode: EditUserDialogMode.EditPassword, presetUsername: username);
+            using var dlg = new frmEditUser(mode: EditUserDialogMode.EditPassword, presetUsername: username);
             if (dlg.ShowDialog(this) != DialogResult.OK) return;
 
             try
             {
-                _repo.ChangeUserPassword(username, dlg.Password);
+                _service.ChangeUserPassword(username, dlg.Password);
                 MessageBox.Show("Cập nhật user thành công.", "Thông báo");
                 RefreshUsers();
             }
@@ -422,7 +417,7 @@ namespace QuanLyYTe.Forms
 
             try
             {
-                _repo.DropUser(username, cascade: true);
+                _service.DropUser(username, cascade: true);
                 MessageBox.Show("Xóa user thành công.", "Thông báo");
                 RefreshUsers();
             }
@@ -453,7 +448,7 @@ namespace QuanLyYTe.Forms
 
             try
             {
-                _repo.LockUser(username);
+                _service.LockUser(username);
                 RefreshUsers();
             }
             catch (Exception ex)
@@ -483,7 +478,7 @@ namespace QuanLyYTe.Forms
 
             try
             {
-                _repo.UnlockUser(username);
+                _service.UnlockUser(username);
                 RefreshUsers();
             }
             catch (Exception ex)
@@ -494,7 +489,7 @@ namespace QuanLyYTe.Forms
 
         private void btnRoleCreate_Click(object sender, EventArgs e)
         {
-            using var dlg = new EditRoleDialog(mode: EditRoleDialogMode.Create);
+            using var dlg = new frmEditRole(mode: EditRoleDialogMode.Create);
             if (dlg.ShowDialog(this) != DialogResult.OK) return;
 
             string roleName = dlg.RoleName.Trim().ToUpperInvariant();
@@ -506,7 +501,7 @@ namespace QuanLyYTe.Forms
 
             try
             {
-                _repo.CreateRole(roleName, dlg.PasswordOrNullForNotIdentified);
+                _service.CreateRole(roleName, dlg.PasswordOrNullForNotIdentified);
                 MessageBox.Show("Tạo role thành công.", "Thông báo");
                 RefreshRoles();
             }
@@ -527,12 +522,12 @@ namespace QuanLyYTe.Forms
             string? roleName = GetSelectedRoleName();
             if (string.IsNullOrWhiteSpace(roleName)) return;
 
-            using var dlg = new EditRoleDialog(mode: EditRoleDialogMode.Edit, presetRoleName: roleName);
+            using var dlg = new frmEditRole(mode: EditRoleDialogMode.Edit, presetRoleName: roleName);
             if (dlg.ShowDialog(this) != DialogResult.OK) return;
 
             try
             {
-                _repo.ChangeRolePassword(roleName, dlg.PasswordOrNullForNotIdentified);
+                _service.ChangeRolePassword(roleName, dlg.PasswordOrNullForNotIdentified);
                 MessageBox.Show("Cập nhật role thành công.", "Thông báo");
                 RefreshRoles();
             }
@@ -563,7 +558,7 @@ namespace QuanLyYTe.Forms
 
             try
             {
-                _repo.DropRole(roleName);
+                _service.DropRole(roleName);
                 MessageBox.Show("Xóa role thành công.", "Thông báo");
                 RefreshRoles();
             }

@@ -3,25 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using QuanLyYTe.DAL;
+using QuanLyYTe.Services;
 using QuanLyYTe.Forms;
 using QuanLyYTe.Forms.Coordinator;
 using QuanLyYTe.Forms.Patient;
 using QuanLyYTe.Forms.Technician;
+using QuanLyYTe.Repositories;
 
 
-namespace QuanLyYTe.Helper
+namespace QuanLyYTe.Helpers
 {
     public static class RoleRouter
     {
-        /// <summary>
-        /// Reads the session role from Oracle and returns the appropriate main form.
-        /// Throws InvalidOperationException if the role is unrecognised.
-        /// </summary>
         public static Form Resolve(string username)
         {
-            var repo = new AuthRepository();
-            string role = repo.GetSessionRole();
+            var service = new AuthService();
+            string role = service.GetSessionRole();
 
             return role?.Trim().ToUpperInvariant() switch
             {

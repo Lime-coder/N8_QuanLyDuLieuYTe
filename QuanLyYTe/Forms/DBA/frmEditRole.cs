@@ -6,7 +6,7 @@ namespace QuanLyYTe.Forms.DBA
         Edit
     }
 
-    public class EditRoleDialog : Form
+    public class frmEditRole : Form
     {
         private readonly EditRoleDialogMode _mode;
 
@@ -18,12 +18,14 @@ namespace QuanLyYTe.Forms.DBA
 
         public string RoleName => txtRole.Text;
 
-        /// <summary>
-        /// Null => NOT IDENTIFIED (không password). Non-null => IDENTIFIED BY "password"
-        /// </summary>
         public string? PasswordOrNullForNotIdentified => chkNotIdentified.Checked ? null : txtPassword.Text;
 
-        public EditRoleDialog(EditRoleDialogMode mode, string? presetRoleName = null)
+        public frmEditRole()
+        {
+            InitializeComponent();
+        }
+
+        public frmEditRole(EditRoleDialogMode mode, string? presetRoleName = null)
         {
             _mode = mode;
             InitializeComponent();
@@ -67,7 +69,7 @@ namespace QuanLyYTe.Forms.DBA
             chkNotIdentified.AutoSize = true;
             chkNotIdentified.Location = new Point(110, 54);
             chkNotIdentified.Text = "NOT IDENTIFIED (không mật khẩu)";
-            chkNotIdentified.CheckedChanged += (_, __) => TogglePasswordEnabled();
+            chkNotIdentified.CheckedChanged += new System.EventHandler(this.chkNotIdentified_CheckedChanged);
 
             lblPassword.AutoSize = true;
             lblPassword.Location = new Point(16, 90);
@@ -110,6 +112,11 @@ namespace QuanLyYTe.Forms.DBA
         {
             txtPassword.Enabled = !chkNotIdentified.Checked;
             if (chkNotIdentified.Checked) txtPassword.Text = string.Empty;
+        }
+
+        private void chkNotIdentified_CheckedChanged(object? sender, EventArgs e)
+        {
+            TogglePasswordEnabled();
         }
     }
 }
