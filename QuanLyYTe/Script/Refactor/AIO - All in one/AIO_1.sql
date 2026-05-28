@@ -32,6 +32,13 @@ GRANT DROP ANY TABLE              TO rl_dba;
 GRANT DROP ANY VIEW               TO rl_dba;
 GRANT DROP ANY PROCEDURE          TO rl_dba;
 GRANT DROP ANY INDEX              TO rl_dba;
+GRANT ALTER ANY TABLE             TO rl_dba;
+
+-- Use for creating sequence
+GRANT CREATE ANY SEQUENCE TO rl_dba;
+
+-- Use for enforcing trigger
+GRANT CREATE ANY TRIGGER TO rl_dba;
 
 -- Use for inserting mock data
 GRANT INSERT ANY TABLE            TO rl_dba;

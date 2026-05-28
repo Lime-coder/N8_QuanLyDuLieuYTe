@@ -97,6 +97,14 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20009, 'Cannot lock Oracle-maintained user: ' || v_user);
     END IF;
     EXECUTE IMMEDIATE 'ALTER USER ' || v_user || ' ACCOUNT LOCK';
+    
+    -- Sync with app tables
+    BEGIN
+        EXECUTE IMMEDIATE 'UPDATE hospital.staff SET is_active = 0 WHERE username_db = :u' USING v_user;
+        EXECUTE IMMEDIATE 'UPDATE hospital.patient SET is_active = 0 WHERE username_db = :u' USING v_user;
+        COMMIT;
+    EXCEPTION WHEN OTHERS THEN NULL;
+    END;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
         RAISE_APPLICATION_ERROR(-20009, 'User not found: ' || p_username);
@@ -121,6 +129,14 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20012, 'Cannot unlock Oracle-maintained user: ' || v_user);
     END IF;
     EXECUTE IMMEDIATE 'ALTER USER ' || v_user || ' ACCOUNT UNLOCK';
+    
+    -- Sync with app tables
+    BEGIN
+        EXECUTE IMMEDIATE 'UPDATE hospital.staff SET is_active = 1 WHERE username_db = :u' USING v_user;
+        EXECUTE IMMEDIATE 'UPDATE hospital.patient SET is_active = 1 WHERE username_db = :u' USING v_user;
+        COMMIT;
+    EXCEPTION WHEN OTHERS THEN NULL;
+    END;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
         RAISE_APPLICATION_ERROR(-20012, 'User not found: ' || p_username);

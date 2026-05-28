@@ -8,10 +8,15 @@ namespace QuanLyYTe.Common
 {
     public static class AppSession
     {
-        public static string CurrentUsername { get; set; }
+        public static string? CurrentUsername { get; set; }
+        public static string? CurrentUserId { get; set; }
+        public static string? CurrentUserRole { get; set; }
+
         public static void Clear()
         {
             CurrentUsername = null;
+            CurrentUserId = null;
+            CurrentUserRole = null;
         }
     }
 }

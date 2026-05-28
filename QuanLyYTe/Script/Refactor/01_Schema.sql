@@ -28,6 +28,8 @@ GRANT CREATE ANY TABLE            TO rl_dba;
 GRANT CREATE ANY VIEW             TO rl_dba;
 GRANT CREATE ANY PROCEDURE        TO rl_dba;
 GRANT CREATE ANY INDEX            TO rl_dba;
+GRANT CREATE ANY SEQUENCE         TO rl_dba;
+GRANT CREATE ANY TRIGGER          TO rl_dba;
 GRANT DROP ANY TABLE              TO rl_dba;
 GRANT DROP ANY VIEW               TO rl_dba;
 GRANT DROP ANY PROCEDURE          TO rl_dba;
@@ -60,6 +62,11 @@ GRANT SELECT ON hospital.patient        TO hospital_dba WITH GRANT OPTION;
 GRANT SELECT ON hospital.medical_record TO hospital_dba WITH GRANT OPTION;
 GRANT SELECT ON hospital.service_record TO hospital_dba WITH GRANT OPTION;
 GRANT SELECT ON hospital.prescription   TO hospital_dba WITH GRANT OPTION;
+
+GRANT INSERT, UPDATE, DELETE ON hospital.staff TO hospital_dba;
+GRANT INSERT, UPDATE, DELETE ON hospital.patient TO hospital_dba;
+GRANT SELECT ON hospital.SEQ_STAFF_ID TO hospital_dba;
+GRANT SELECT ON hospital.SEQ_PATIENT_ID TO hospital_dba;
 
 /*
 DROP USER hospital CASCADE;

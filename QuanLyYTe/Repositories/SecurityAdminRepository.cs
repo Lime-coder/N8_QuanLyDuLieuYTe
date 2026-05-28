@@ -54,23 +54,103 @@ public class SecurityAdminRepository
     }
 
     /// <summary>
-    /// Tạo mới một User
-    /// Sử dụng SP: USP_CREATE_USER
+    /// Lấy danh sách phòng ban
     /// </summary>
-    public void CreateUser(string username, string password)
+    public DataTable GetAllDepartments()
+    {
+        return _dbProvider.ExecuteQuery("SELECT dept_id, dept_name FROM hospital.department ORDER BY dept_id");
+    }
+
+    /// <summary>
+    /// Lấy thông tin chi tiết của user (từ staff hoặc patient)
+    /// </summary>
+    public DataTable GetUserInfo(string username)
+    {
+        OracleParameter[] p = {
+            new OracleParameter("p_username", OracleDbType.Varchar2) { Value = username },
+            new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
+        };
+        return _dbProvider.ExecuteQuerySP(Sp("USP_GET_USER_INFO"), p);
+    }
+
+    /// <summary>
+    /// Tạo mới một User liên kết với dữ liệu NV/BN
+    /// </summary>
+    public void CreateUser(string username, string password, string fullName, string gender, DateTime birthdate, string idCard, string role, 
+        string? phone = null, string? hometown = null, string? deptId = null,
+        string? houseNo = null, string? street = null, string? district = null, string? cityProvince = null,
+        string? medicalHistory = null, string? familyMedicalHistory = null, string? drugAllergies = null)
     {
         OracleParameter[] p =
         {
-            new OracleParameter("p_username", OracleDbType.Varchar2, 128) { Value = username },
-            new OracleParameter("p_password", OracleDbType.Varchar2, 4000) { Value = password },
+            new OracleParameter("p_username", OracleDbType.Varchar2) { Value = username },
+            new OracleParameter("p_password", OracleDbType.Varchar2) { Value = password },
+            new OracleParameter("p_full_name", OracleDbType.NVarchar2) { Value = fullName },
+            new OracleParameter("p_gender", OracleDbType.NVarchar2) { Value = gender },
+            new OracleParameter("p_birthdate", OracleDbType.Date) { Value = birthdate },
+            new OracleParameter("p_id_card", OracleDbType.Varchar2) { Value = idCard },
+            new OracleParameter("p_role", OracleDbType.Varchar2) { Value = role },
+            new OracleParameter("p_phone", OracleDbType.Varchar2) { Value = (object?)phone ?? DBNull.Value },
+            new OracleParameter("p_hometown", OracleDbType.NVarchar2) { Value = (object?)hometown ?? DBNull.Value },
+            new OracleParameter("p_dept_id", OracleDbType.Varchar2) { Value = (object?)deptId ?? DBNull.Value },
+            new OracleParameter("p_house_no", OracleDbType.NVarchar2) { Value = (object?)houseNo ?? DBNull.Value },
+            new OracleParameter("p_street", OracleDbType.NVarchar2) { Value = (object?)street ?? DBNull.Value },
+            new OracleParameter("p_district", OracleDbType.NVarchar2) { Value = (object?)district ?? DBNull.Value },
+            new OracleParameter("p_city_province", OracleDbType.NVarchar2) { Value = (object?)cityProvince ?? DBNull.Value },
+            new OracleParameter("p_medical_history", OracleDbType.NClob) { Value = (object?)medicalHistory ?? DBNull.Value },
+            new OracleParameter("p_family_medical_history", OracleDbType.NClob) { Value = (object?)familyMedicalHistory ?? DBNull.Value },
+            new OracleParameter("p_drug_allergies", OracleDbType.NClob) { Value = (object?)drugAllergies ?? DBNull.Value }
         };
 
-        _dbProvider.ExecuteNonQuerySP(Sp("USP_CREATE_USER"), p);
+        _dbProvider.ExecuteNonQuerySP(Sp("USP_CREATE_USER_LINKED"), p);
+    }
+
+    /// <summary>
+    /// Cập nhật thông tin User liên kết
+    /// </summary>
+    public void UpdateUser(string username, string fullName, string gender, DateTime birthdate, string idCard, string role,
+        string? phone = null, string? hometown = null, string? deptId = null,
+        string? houseNo = null, string? street = null, string? district = null, string? cityProvince = null,
+        string? medicalHistory = null, string? familyMedicalHistory = null, string? drugAllergies = null)
+    {
+        OracleParameter[] p =
+        {
+            new OracleParameter("p_username", OracleDbType.Varchar2) { Value = username },
+            new OracleParameter("p_full_name", OracleDbType.NVarchar2) { Value = fullName },
+            new OracleParameter("p_gender", OracleDbType.NVarchar2) { Value = gender },
+            new OracleParameter("p_birthdate", OracleDbType.Date) { Value = birthdate },
+            new OracleParameter("p_id_card", OracleDbType.Varchar2) { Value = idCard },
+            new OracleParameter("p_role", OracleDbType.Varchar2) { Value = role },
+            new OracleParameter("p_phone", OracleDbType.Varchar2) { Value = (object?)phone ?? DBNull.Value },
+            new OracleParameter("p_hometown", OracleDbType.NVarchar2) { Value = (object?)hometown ?? DBNull.Value },
+            new OracleParameter("p_dept_id", OracleDbType.Varchar2) { Value = (object?)deptId ?? DBNull.Value },
+            new OracleParameter("p_house_no", OracleDbType.NVarchar2) { Value = (object?)houseNo ?? DBNull.Value },
+            new OracleParameter("p_street", OracleDbType.NVarchar2) { Value = (object?)street ?? DBNull.Value },
+            new OracleParameter("p_district", OracleDbType.NVarchar2) { Value = (object?)district ?? DBNull.Value },
+            new OracleParameter("p_city_province", OracleDbType.NVarchar2) { Value = (object?)cityProvince ?? DBNull.Value },
+            new OracleParameter("p_medical_history", OracleDbType.NClob) { Value = (object?)medicalHistory ?? DBNull.Value },
+            new OracleParameter("p_family_medical_history", OracleDbType.NClob) { Value = (object?)familyMedicalHistory ?? DBNull.Value },
+            new OracleParameter("p_drug_allergies", OracleDbType.NClob) { Value = (object?)drugAllergies ?? DBNull.Value }
+        };
+
+        _dbProvider.ExecuteNonQuerySP(Sp("USP_UPDATE_USER_LINKED"), p);
+    }
+
+    /// <summary>
+    /// Xóa User (bao gồm dữ liệu liên kết)
+    /// </summary>
+    public void DropUser(string username)
+    {
+        OracleParameter[] p =
+        {
+            new OracleParameter("p_username", OracleDbType.Varchar2) { Value = username },
+        };
+
+        _dbProvider.ExecuteNonQuerySP(Sp("USP_DROP_USER_LINKED"), p);
     }
 
     /// <summary>
     /// Đổi mật khẩu của một User
-    /// Sử dụng SP: USP_UPDATE_USER_PASSWORD
     /// </summary>
     public void ChangeUserPassword(string username, string newPassword)
     {
@@ -85,7 +165,6 @@ public class SecurityAdminRepository
 
     /// <summary>
     /// Khóa tài khoản User
-    /// Sử dụng SP: USP_LOCK_USER
     /// </summary>
     public void LockUser(string username)
     {
@@ -99,7 +178,6 @@ public class SecurityAdminRepository
 
     /// <summary>
     /// Mở khóa tài khoản User
-    /// Sử dụng SP: USP_UNLOCK_USER
     /// </summary>
     public void UnlockUser(string username)
     {
@@ -109,21 +187,6 @@ public class SecurityAdminRepository
         };
 
         _dbProvider.ExecuteNonQuerySP(Sp("USP_UNLOCK_USER"), p);
-    }
-
-    /// <summary>
-    /// Xóa User khỏi hệ thống
-    /// Sử dụng SP: USP_DROP_USER
-    /// </summary>
-    public void DropUser(string username, bool cascade = true)
-    {
-        OracleParameter[] p =
-        {
-            new OracleParameter("p_username", OracleDbType.Varchar2, 128) { Value = username },
-            new OracleParameter("p_cascade", OracleDbType.Varchar2, 3) { Value = cascade ? "YES" : "NO" },
-        };
-
-        _dbProvider.ExecuteNonQuerySP(Sp("USP_DROP_USER"), p);
     }
 
     /// <summary>

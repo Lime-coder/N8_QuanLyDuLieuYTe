@@ -11,12 +11,24 @@ namespace QuanLyYTe.Forms
         private readonly SecurityAdminService _service = new SecurityAdminService();
         private DataTable? _usersDt;
         private DataTable? _rolesDt;
+        private Font? _statusFont;
 
         public frmUserManagement()
         {
             InitializeComponent();
             ApplyButtonStyles();
             dgvUsers.CellFormatting += dgvUsers_CellFormatting;
+            _statusFont = new Font(dgvUsers.Font, FontStyle.Bold);
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _statusFont?.Dispose();
+                components?.Dispose();
+            }
+            base.Dispose(disposing);
         }
 
         private void SecurityAdminForm_Load(object sender, EventArgs e)
@@ -34,8 +46,8 @@ namespace QuanLyYTe.Forms
             }
 
             Set("USERNAME", "Tên user");
-            Set("ACCOUNT_STATUS", "Trạng thái tài khoản");
-            Set("ORACLE_MAINTAINED", "ORACLE_MAINTAINED");
+            Set("ACCOUNT_STATUS", "Trạng thái hoạt động");
+            Set("ORACLE_MAINTAINED", "Hệ thống");
             Set("LOCK_DATE", "Ngày khóa");
             Set("CREATED", "Ngày tạo");
         }
@@ -52,7 +64,7 @@ namespace QuanLyYTe.Forms
             Set("PASSWORD_REQUIRED", "Yêu cầu mật khẩu");
             Set("AUTHENTICATION_TYPE", "Kiểu xác thực");
             Set("COMMON", "Chung (CDB)");
-            Set("ORACLE_MAINTAINED", "ORACLE_MAINTAINED");
+            Set("ORACLE_MAINTAINED", "Hệ thống");
         }
 
         private void ApplyButtonStyles()
@@ -127,17 +139,26 @@ namespace QuanLyYTe.Forms
             string status = Convert.ToString(e.Value) ?? string.Empty;
             string upper = status.ToUpperInvariant();
 
-            if (upper.Contains("LOCKED"))
+            if (_statusFont != null)
+                e.CellStyle.Font = _statusFont;
+
+            if (upper.Contains("OPEN"))
             {
-                e.CellStyle.ForeColor = Color.FromArgb(183, 28, 28);
-                e.CellStyle.SelectionForeColor = Color.White;
-                e.CellStyle.SelectionBackColor = Color.FromArgb(244, 67, 54);
+                e.Value = "ACTIVE";
+                e.CellStyle.ForeColor = Color.Green;
+                e.CellStyle.SelectionForeColor = Color.LightGreen;
             }
-            else if (upper.Contains("OPEN"))
+            else if (upper.Contains("LOCKED"))
             {
-                e.CellStyle.ForeColor = Color.FromArgb(27, 94, 32);
-                e.CellStyle.SelectionForeColor = Color.White;
-                e.CellStyle.SelectionBackColor = Color.FromArgb(76, 175, 80);
+                e.Value = "LOCK";
+                e.CellStyle.ForeColor = Color.Red;
+                e.CellStyle.SelectionForeColor = Color.Salmon;
+            }
+            else
+            {
+                e.Value = "INACTIVE";
+                e.CellStyle.ForeColor = Color.Gray;
+                e.CellStyle.SelectionForeColor = Color.LightGray;
             }
         }
 
@@ -346,21 +367,40 @@ namespace QuanLyYTe.Forms
 
         private void btnUserCreate_Click(object sender, EventArgs e)
         {
-            using var dlg = new frmEditUser(mode: EditUserDialogMode.Create);
+            using var selectionDlg = new Form { 
+                Text = "Chọn loại người dùng", 
+                ClientSize = new Size(320, 120), 
+                StartPosition = FormStartPosition.CenterParent, 
+                FormBorderStyle = FormBorderStyle.FixedDialog, 
+                MaximizeBox = false, 
+                MinimizeBox = false 
+            };
+            
+            var lbl = new Label { 
+                Text = "Bạn muốn tạo loại người dùng nào?", 
+                AutoSize = false, 
+                TextAlign = ContentAlignment.MiddleCenter,
+                Size = new Size(320, 30), 
+                Location = new Point(0, 15) 
+            };
+            var btnStaff = new Button { Text = "Nhân viên", Location = new Point(45, 60), Size = new Size(105, 35), DialogResult = DialogResult.Yes };
+            var btnPatient = new Button { Text = "Bệnh nhân", Location = new Point(170, 60), Size = new Size(105, 35), DialogResult = DialogResult.No };
+            selectionDlg.Controls.AddRange(new Control[] { lbl, btnStaff, btnPatient });
+            
+            var result = selectionDlg.ShowDialog(this);
+            if (result != DialogResult.Yes && result != DialogResult.No) return;
+            
+            bool isPatient = result == DialogResult.No;
+
+            using var dlg = new frmEditUser(mode: EditUserDialogMode.Create, isPatient: isPatient);
             if (dlg.ShowDialog(this) != DialogResult.OK) return;
-
-            string username = dlg.Username.Trim().ToUpperInvariant();
-            string password = dlg.Password;
-
-            if (!IsValidOracleIdentifier(username))
-            {
-                MessageBox.Show("Tên user không hợp lệ. Chỉ dùng chữ/số/_/$/#, bắt đầu bằng chữ, tối đa 30 ký tự.", "Kiểm tra");
-                return;
-            }
 
             try
             {
-                _service.CreateUser(username, password);
+                _service.CreateUser(dlg.Username, dlg.Password, dlg.FullName, dlg.Gender, dlg.Birthdate, dlg.IdCard, dlg.Role, 
+                    dlg.Phone, dlg.Hometown, dlg.DeptId, 
+                    dlg.HouseNo, dlg.Street, dlg.District, dlg.CityProvince, 
+                    dlg.MedicalHistory, dlg.FamilyMedicalHistory, dlg.DrugAllergies);
                 MessageBox.Show("Tạo user thành công.", "Thông báo");
                 RefreshUsers();
             }
@@ -381,12 +421,31 @@ namespace QuanLyYTe.Forms
             string? username = GetSelectedUsername();
             if (string.IsNullOrWhiteSpace(username)) return;
 
-            using var dlg = new frmEditUser(mode: EditUserDialogMode.EditPassword, presetUsername: username);
+            DataTable dtInfo;
+            try { dtInfo = _service.GetUserInfo(username); }
+            catch (Exception ex) { MessageBox.Show("Lỗi lấy thông tin user: " + ex.Message); return; }
+
+            if (dtInfo.Rows.Count == 0) { MessageBox.Show("Không tìm thấy thông tin user trong các bảng dữ liệu."); return; }
+            
+            string role = dtInfo.Rows[0]["ROLE"]?.ToString() ?? "";
+            bool isPatient = role == "RL_PATIENT";
+
+            using var dlg = new frmEditUser(mode: EditUserDialogMode.Edit, isPatient: isPatient, presetUsername: username);
             if (dlg.ShowDialog(this) != DialogResult.OK) return;
 
             try
             {
-                _service.ChangeUserPassword(username, dlg.Password);
+                _service.UpdateUser(username, dlg.FullName, dlg.Gender, dlg.Birthdate, dlg.IdCard, dlg.Role, 
+                    dlg.Phone, dlg.Hometown, dlg.DeptId, 
+                    dlg.HouseNo, dlg.Street, dlg.District, dlg.CityProvince, 
+                    dlg.MedicalHistory, dlg.FamilyMedicalHistory, dlg.DrugAllergies);
+                
+                // Reset password if provided
+                if (!string.IsNullOrEmpty(dlg.Password))
+                {
+                    _service.ChangeUserPassword(username, dlg.Password);
+                }
+
                 MessageBox.Show("Cập nhật user thành công.", "Thông báo");
                 RefreshUsers();
             }
@@ -407,24 +466,11 @@ namespace QuanLyYTe.Forms
             string? username = GetSelectedUsername();
             if (string.IsNullOrWhiteSpace(username)) return;
 
-            var confirm = MessageBox.Show(
-                $"Bạn có chắc muốn xóa user `{username}`?",
-                "Xác nhận",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning);
-
-            if (confirm != DialogResult.Yes) return;
-
-            try
-            {
-                _service.DropUser(username, cascade: true);
-                MessageBox.Show("Xóa user thành công.", "Thông báo");
-                RefreshUsers();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Lỗi");
-            }
+            MessageBox.Show(
+                $"Để bảo toàn toàn vẹn dữ liệu y tế lịch sử (medical records, prescriptions, etc.), bạn không thể trực tiếp xóa user `{username}` khỏi hệ thống.\n\nKhuyến nghị: Vui lòng sử dụng tính năng 'Khóa' (Lock) để vô hiệu hóa tài khoản này.",
+                "Hướng dẫn an toàn dữ liệu",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
         }
 
         private void btnUserLock_Click(object sender, EventArgs e)

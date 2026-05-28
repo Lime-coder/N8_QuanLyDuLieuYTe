@@ -27,3 +27,20 @@ BEGIN
         SELECT ROLE FROM SESSION_ROLES WHERE ROWNUM = 1;
 END USP_GET_SESSION_ROLE;
 /
+
+-- Returns the user ID based on their username and role
+CREATE OR REPLACE PROCEDURE USP_GET_USER_ID (
+    p_username IN VARCHAR2,
+    p_role     IN VARCHAR2,
+    p_cursor   OUT SYS_REFCURSOR
+) AUTHID DEFINER AS
+BEGIN
+    IF UPPER(p_role) = 'RL_PATIENT' THEN
+        OPEN p_cursor FOR
+            SELECT patient_id AS ID FROM hospital.patient WHERE username_db = UPPER(TRIM(p_username));
+    ELSE
+        OPEN p_cursor FOR
+            SELECT staff_id AS ID FROM hospital.staff WHERE username_db = UPPER(TRIM(p_username));
+    END IF;
+END USP_GET_USER_ID;
+/

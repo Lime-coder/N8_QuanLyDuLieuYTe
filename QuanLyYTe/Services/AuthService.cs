@@ -26,7 +26,16 @@ namespace QuanLyYTe.Services
                 {
                     conn.Open();
                 }
+                
                 AppSession.CurrentUsername = username;
+                string role = GetSessionRole();
+                AppSession.CurrentUserRole = role;
+                
+                if (role != null && role != "RL_DBA")
+                {
+                    AppSession.CurrentUserId = _authRepo.GetUserId(username, role);
+                }
+
                 return true;
             }
             catch (Exception ex)

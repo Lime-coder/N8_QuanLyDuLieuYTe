@@ -44,10 +44,11 @@ CREATE TABLE staff (
     birthdate   DATE           NOT NULL,
     id_card     VARCHAR2(20)   NOT NULL UNIQUE,
     hometown    NVARCHAR2(200),
-    phone       VARCHAR2(15)   NOT NULL,
-    dept_id     VARCHAR2(10)   NOT NULL,
+    phone       VARCHAR2(15),
+    dept_id     VARCHAR2(10),
     staff_role  NVARCHAR2(50)  NOT NULL,
     username_db VARCHAR2(30)   NOT NULL UNIQUE,
+    is_active   NUMBER(1)      DEFAULT 1 NOT NULL,
     CONSTRAINT fk_staff_dept   FOREIGN KEY (dept_id) REFERENCES department(dept_id),
     CONSTRAINT chk_staff_role  CHECK (staff_role IN (N'Điều phối viên', N'Bác sĩ', N'Kỹ thuật viên')),
     CONSTRAINT chk_staff_gender CHECK (gender IN (N'Nam', N'Nữ'))
@@ -59,14 +60,15 @@ CREATE TABLE patient (
     gender                 NVARCHAR2(5)   NOT NULL,
     birthdate              DATE           NOT NULL,
     id_card                VARCHAR2(20)   NOT NULL UNIQUE,
-    house_no               NVARCHAR2(50)  NOT NULL,
-    street                 NVARCHAR2(100) NOT NULL,
-    district               NVARCHAR2(100) NOT NULL,
-    city_province          NVARCHAR2(100) NOT NULL,
-    medical_history        CLOB,
-    family_medical_history CLOB,
-    drug_allergies         CLOB,
+    house_no               NVARCHAR2(50),
+    street                 NVARCHAR2(100),
+    district               NVARCHAR2(100),
+    city_province          NVARCHAR2(100),
+    medical_history        NCLOB,
+    family_medical_history NCLOB,
+    drug_allergies         NCLOB,
     username_db            VARCHAR2(30)   NOT NULL UNIQUE,
+    is_active              NUMBER(1)      DEFAULT 1 NOT NULL,
     CONSTRAINT chk_patient_gender CHECK (gender IN (N'Nam', N'Nữ'))
 );
 
@@ -103,3 +105,41 @@ CREATE TABLE prescription (
     PRIMARY KEY (record_id, prescription_date, medicine_name),
     CONSTRAINT fk_presc_record FOREIGN KEY (record_id) REFERENCES medical_record(record_id)
 );
+
+CREATE SEQUENCE SEQ_STAFF_ID START WITH 5 INCREMENT BY 1;
+CREATE SEQUENCE SEQ_PATIENT_ID START WITH 14 INCREMENT BY 1;
+
+-- Validation Triggers (Safety Guards)
+-- Prevent creating medical records with inactive doctors or patients
+CREATE OR REPLACE TRIGGER TRG_VALIDATE_MEDICAL_RECORD
+BEFORE INSERT ON hospital.medical_record
+FOR EACH ROW
+DECLARE
+    v_patient_active NUMBER(1);
+    v_doctor_active NUMBER(1);
+BEGIN
+    SELECT is_active INTO v_patient_active FROM hospital.patient WHERE patient_id = :NEW.patient_id;
+    IF v_patient_active = 0 THEN
+        RAISE_APPLICATION_ERROR(-20010, 'Không thể tạo hồ sơ: Bệnh nhân này đã bị khóa (Không hoạt động).');
+    END IF;
+
+    SELECT is_active INTO v_doctor_active FROM hospital.staff WHERE staff_id = :NEW.doctor_id;
+    IF v_doctor_active = 0 THEN
+        RAISE_APPLICATION_ERROR(-20011, 'Không thể tạo hồ sơ: Bác sĩ này đã bị khóa (Không hoạt động).');
+    END IF;
+END;
+/
+
+-- Prevent creating service records with inactive technicians
+CREATE OR REPLACE TRIGGER TRG_VALIDATE_SERVICE_RECORD
+BEFORE INSERT ON hospital.service_record
+FOR EACH ROW
+DECLARE
+    v_tech_active NUMBER(1);
+BEGIN
+    SELECT is_active INTO v_tech_active FROM hospital.staff WHERE staff_id = :NEW.technician_id;
+    IF v_tech_active = 0 THEN
+        RAISE_APPLICATION_ERROR(-20012, 'Không thể tạo dịch vụ: Kỹ thuật viên này đã bị khóa (Không hoạt động).');
+    END IF;
+END;
+/

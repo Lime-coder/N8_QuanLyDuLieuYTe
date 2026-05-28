@@ -1,4 +1,4 @@
-﻿using QuanLyYTe.Common;
+using QuanLyYTe.Common;
 using QuanLyYTe.Repositories;
 using System;
 using System.Collections.Generic;
@@ -21,14 +21,30 @@ namespace QuanLyYTe.Services
         public void CreateRole(string roleName, string password = null) => _service.CreateRole(roleName, password);
         public void DropRole(string roleName) => _service.DropRole(roleName);
         public void ChangeRolePassword(string roleName, string password) => _service.ChangeRolePassword(roleName, password);
-        public void CreateUser(string username, string password)
+        public DataTable GetAllDepartments() => _service.GetAllDepartments();
+        public DataTable GetUserInfo(string username) => _service.GetUserInfo(username);
+
+        public void CreateUser(string username, string password, string fullName, string gender, DateTime birthdate, string idCard, string role, 
+            string? phone = null, string? hometown = null, string? deptId = null,
+            string? houseNo = null, string? street = null, string? district = null, string? cityProvince = null,
+            string? medicalHistory = null, string? familyMedicalHistory = null, string? drugAllergies = null)
         {
-            try { _service.CreateUser(username, password); }
+            try { _service.CreateUser(username, password, fullName, gender, birthdate, idCard, role, phone, hometown, deptId, houseNo, street, district, cityProvince, medicalHistory, familyMedicalHistory, drugAllergies); }
             catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
         }
-        public void DropUser(string username, bool cascade = true)
+
+        public void UpdateUser(string username, string fullName, string gender, DateTime birthdate, string idCard, string role, 
+            string? phone = null, string? hometown = null, string? deptId = null,
+            string? houseNo = null, string? street = null, string? district = null, string? cityProvince = null,
+            string? medicalHistory = null, string? familyMedicalHistory = null, string? drugAllergies = null)
         {
-            try { _service.DropUser(username, cascade); }
+            try { _service.UpdateUser(username, fullName, gender, birthdate, idCard, role, phone, hometown, deptId, houseNo, street, district, cityProvince, medicalHistory, familyMedicalHistory, drugAllergies); }
+            catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
+        }
+
+        public void DropUser(string username)
+        {
+            try { _service.DropUser(username); }
             catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
         }
     }
