@@ -35,6 +35,8 @@ BEGIN
     -- 1. Create DB User
     EXECUTE IMMEDIATE 'CREATE USER ' || v_user || ' IDENTIFIED BY "' || v_pwd || '"';
     EXECUTE IMMEDIATE 'GRANT CREATE SESSION TO ' || v_user;
+    EXECUTE IMMEDIATE 'GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO ' || v_user;
+    EXECUTE IMMEDIATE 'GRANT EXECUTE ON hospital_dba.USP_GET_USER_ID TO ' || v_user;
     EXECUTE IMMEDIATE 'GRANT ' || v_role || ' TO ' || v_user;
     EXECUTE IMMEDIATE 'ALTER USER ' || v_user || ' DEFAULT ROLE ALL';
 
