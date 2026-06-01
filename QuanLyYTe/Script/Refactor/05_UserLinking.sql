@@ -38,13 +38,14 @@ BEGIN
 
     -- 2. Insert into App Tables (is_active is 1 by default)
     IF v_role = 'RL_PATIENT' THEN
-        v_id := 'BN' || LPAD(hospital.SEQ_PATIENT_ID.NEXTVAL, 3, '0');
+        v_id := 'BN' || LPAD(hospital.SEQ_PATIENT_ID.NEXTVAL, 6, '0');
         INSERT INTO hospital.patient (patient_id, full_name, gender, birthdate, id_card, house_no, street, district, city_province, medical_history, family_medical_history, drug_allergies, username_db, is_active)
         VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_house_no, p_street, p_district, p_city_province, p_medical_history, p_family_medical_history, p_drug_allergies, v_user, 1);
     ELSE
-        v_id := 'NV' || LPAD(hospital.SEQ_STAFF_ID.NEXTVAL, 3, '0');
+        v_id := 'NV' || LPAD(hospital.SEQ_STAFF_ID.NEXTVAL, 6, '0');
         INSERT INTO hospital.staff (staff_id, full_name, gender, birthdate, id_card, phone, hometown, dept_id, staff_role, username_db, is_active)
-        VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_phone, p_hometown, p_dept_id, 
+        VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_phone, p_hometown, 
+                CASE WHEN v_role = 'RL_DOCTOR' THEN p_dept_id ELSE NULL END, 
                 CASE v_role 
                     WHEN 'RL_DOCTOR' THEN N'Bác sĩ'
                     WHEN 'RL_COORDINATOR' THEN N'Điều phối viên'

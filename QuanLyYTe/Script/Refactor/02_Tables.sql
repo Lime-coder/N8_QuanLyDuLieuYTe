@@ -43,8 +43,8 @@ CREATE TABLE staff (
     gender      NVARCHAR2(5)   NOT NULL,
     birthdate   DATE           NOT NULL,
     id_card     VARCHAR2(20)   NOT NULL UNIQUE,
-    hometown    NVARCHAR2(200),
-    phone       VARCHAR2(15),
+    hometown    NVARCHAR2(200) NOT NULL,
+    phone       VARCHAR2(15)   NOT NULL,
     dept_id     VARCHAR2(10),
     staff_role  NVARCHAR2(50)  NOT NULL,
     username_db VARCHAR2(30)   NOT NULL UNIQUE,
@@ -106,8 +106,8 @@ CREATE TABLE prescription (
     CONSTRAINT fk_presc_record FOREIGN KEY (record_id) REFERENCES medical_record(record_id)
 );
 
-CREATE SEQUENCE SEQ_STAFF_ID START WITH 5 INCREMENT BY 1;
-CREATE SEQUENCE SEQ_PATIENT_ID START WITH 14 INCREMENT BY 1;
+CREATE SEQUENCE SEQ_STAFF_ID START WITH 171 INCREMENT BY 1;
+CREATE SEQUENCE SEQ_PATIENT_ID START WITH 100001 INCREMENT BY 1;
 
 -- Validation Triggers (Safety Guards)
 -- Prevent creating medical records with inactive doctors or patients

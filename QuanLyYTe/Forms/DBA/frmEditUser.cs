@@ -1,4 +1,4 @@
-using System.Data;
+﻿using System.Data;
 using QuanLyYTe.Services;
 
 namespace QuanLyYTe.Forms.DBA
@@ -314,8 +314,14 @@ namespace QuanLyYTe.Forms.DBA
             if (string.IsNullOrWhiteSpace(txtFullName.Text)) { MessageBox.Show("Vui lòng nhập họ và tên."); return; }
             if (string.IsNullOrWhiteSpace(txtIdCard.Text)) { MessageBox.Show("Vui lòng nhập CCCD."); return; }
 
+            if (!_isPatient)
+            {
+                if (string.IsNullOrWhiteSpace(txtPhone.Text)) { MessageBox.Show("Vui lòng nhập số điện thoại."); return; }
+                if (string.IsNullOrWhiteSpace(txtHometown.Text)) { MessageBox.Show("Vui lòng nhập quê quán."); return; }
+            }
             DialogResult = DialogResult.OK;
             Close();
         }
     }
 }
+

@@ -1,4 +1,4 @@
--- Run as: hospital_dba | Container: PDB_QLYT
+﻿-- Run as: hospital_dba | Container: PDB_QLYT
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 -- 1. XÓA DỮ LIỆU CŨ ĐỂ CHẠY LẠI TỪ ĐẦU
@@ -668,18 +668,37 @@ FROM (
 COMMIT;
 
 -- ============================================================
--- 8. RE-INSERT TEST ACCOUNTS SO YOU CAN STILL LOG IN
+-- 8. EXPLICIT RECORDS FOR 4 SPECIFIC TESTING ACCOUNTS
 -- ============================================================
-INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, phone, dept_id, staff_role, username_db)
-VALUES ('NV001', N'Nguyễn Văn Minh (TEST)', N'Nam', TO_DATE('1990-01-01','YYYY-MM-DD'), '999012345678', '0901112223', 'PB01', N'Bác sĩ', 'NV001');
+-- Ensure BN000001, NV000021, and NV000121 have records so they don't just exist as users.
+INSERT INTO medical_record (record_id, patient_id, record_date, diagnosis, treatment_plan, doctor_id, dept_id, conclusion)
+VALUES ('BA999999', 'BN000001', SYSDATE, N'Khám sức khỏe tổng quát', N'Nghỉ ngơi', 'NV000021', 'PB01', N'Khỏe mạnh');
 
-INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, phone, dept_id, staff_role, username_db)
-VALUES ('NV002', N'Trần Thị Mai (TEST)', N'Nữ', TO_DATE('1992-05-15','YYYY-MM-DD'), '999012345679', '0904445556', NULL, N'Điều phối viên', 'NV002');
-
-INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, phone, dept_id, staff_role, username_db)
-VALUES ('NV003', N'Lê Văn Tám (TEST)', N'Nam', TO_DATE('1988-12-10','YYYY-MM-DD'), '999012345680', '0907778889', NULL, N'Kỹ thuật viên', 'NV003');
-
-INSERT INTO patient (patient_id, full_name, gender, birthdate, id_card, house_no, street, district, city_province, username_db)
-VALUES ('BN001', N'Bệnh nhân Test 1', N'Nam', TO_DATE('1980-01-01','YYYY-MM-DD'), '999080000001', '10', N'Đường số 1', N'Quận 1', N'TP. Hồ Chí Minh', 'BN001');
+INSERT INTO service_record (record_id, service_type, service_date, technician_id, service_result)
+VALUES ('BA999999', N'Siêu âm', SYSDATE, 'NV000121', N'Bình thường');
 
 COMMIT;
+-- Ensure at least 10 medical history records for BN000001
+BEGIN
+    FOR i IN 1..10 LOOP
+        INSERT INTO hospital.medical_record (
+            record_id, patient_id, record_date, diagnosis, treatment_plan, doctor_id, dept_id, conclusion
+        ) VALUES (
+            'T_BA' || LPAD(i, 3, '0'), 'BN000001', SYSDATE - (30 - i), N'Bệnh lý kiểm tra số ' || i, N'Kế hoạch điều trị ' || i, 'NV000021', 'PB01', N'Kết luận ' || i
+        );
+
+        INSERT INTO hospital.service_record (
+            record_id, service_type, service_date, technician_id, service_result
+        ) VALUES (
+            'T_BA' || LPAD(i, 3, '0'), N'Dịch vụ khám ' || i, SYSDATE - (30 - i), 'NV000121', N'Kết quả ' || i
+        );
+
+        INSERT INTO hospital.prescription (
+            record_id, prescription_date, medicine_name, dosage
+        ) VALUES (
+            'T_BA' || LPAD(i, 3, '0'), SYSDATE - (30 - i), N'Thuốc ' || i, N'Liều lượng ' || i
+        );
+    END LOOP;
+    COMMIT;
+END;
+/
