@@ -26,12 +26,14 @@ CREATE OR REPLACE PROCEDURE USP_CREATE_USER_LINKED (
     v_user VARCHAR2(128);
     v_id   VARCHAR2(10);
     v_role VARCHAR2(128);
+    v_pwd  VARCHAR2(4000);
 BEGIN
     v_user := DBMS_ASSERT.SIMPLE_SQL_NAME(UPPER(TRIM(p_username)));
     v_role := UPPER(TRIM(p_role));
+    v_pwd  := REPLACE(p_password, '"', '""');
 
     -- 1. Create DB User
-    EXECUTE IMMEDIATE 'CREATE USER ' || v_user || ' IDENTIFIED BY "' || p_password || '"';
+    EXECUTE IMMEDIATE 'CREATE USER ' || v_user || ' IDENTIFIED BY "' || v_pwd || '"';
     EXECUTE IMMEDIATE 'GRANT CREATE SESSION TO ' || v_user;
     EXECUTE IMMEDIATE 'GRANT ' || v_role || ' TO ' || v_user;
     EXECUTE IMMEDIATE 'ALTER USER ' || v_user || ' DEFAULT ROLE ALL';
@@ -87,6 +89,22 @@ CREATE OR REPLACE PROCEDURE USP_UPDATE_USER_LINKED (
 BEGIN
     v_user := UPPER(TRIM(p_username));
     v_new_role := UPPER(TRIM(p_role));
+
+    -- Guard: Detect cross-type role change (Staff<->Patient) which is not supported
+    BEGIN
+        SELECT granted_role INTO v_old_role
+        FROM DBA_ROLE_PRIVS
+        WHERE grantee = v_user
+          AND granted_role IN ('RL_PATIENT', 'RL_DOCTOR', 'RL_COORDINATOR', 'RL_TECHNICIAN')
+          AND ROWNUM = 1;
+
+        IF (v_old_role = 'RL_PATIENT' AND v_new_role != 'RL_PATIENT')
+           OR (v_old_role != 'RL_PATIENT' AND v_new_role = 'RL_PATIENT') THEN
+            RAISE_APPLICATION_ERROR(-20050,
+                N'Không thể chuyển đổi giữa Nhân viên và Bệnh nhân. Vui lòng tạo tài khoản mới.');
+        END IF;
+    EXCEPTION WHEN NO_DATA_FOUND THEN NULL;
+    END;
 
     -- 1. Update Role if changed (Staff only)
     IF v_new_role != 'RL_PATIENT' THEN
@@ -240,5 +258,15 @@ BEGIN
         FROM hospital.staff
         WHERE is_active = 1
         ORDER BY staff_role, full_name;
+END;
+/
+
+-- GET ALL DEPARTMENTS
+CREATE OR REPLACE PROCEDURE USP_GET_ALL_DEPARTMENTS (
+    p_cursor OUT SYS_REFCURSOR
+) AUTHID CURRENT_USER AS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT dept_id, dept_name FROM hospital.department ORDER BY dept_id;
 END;
 /

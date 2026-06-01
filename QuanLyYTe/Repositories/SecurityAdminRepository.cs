@@ -3,6 +3,8 @@ using System.Data;
 using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DataProvider;
 
+namespace QuanLyYTe.Repositories
+{
 public class SecurityAdminRepository
 {
     private readonly string? _spOwner;
@@ -58,7 +60,10 @@ public class SecurityAdminRepository
     /// </summary>
     public DataTable GetAllDepartments()
     {
-        return _dbProvider.ExecuteQuery("SELECT dept_id, dept_name FROM hospital.department ORDER BY dept_id");
+        OracleParameter[] p = {
+            new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
+        };
+        return _dbProvider.ExecuteQuerySP(Sp("USP_GET_ALL_DEPARTMENTS"), p);
     }
 
     /// <summary>
@@ -137,9 +142,9 @@ public class SecurityAdminRepository
     }
 
     /// <summary>
-    /// Xóa User (bao gồm dữ liệu liên kết)
+    /// Vô hiệu hóa User (Soft Delete: Lock and Set Inactive)
     /// </summary>
-    public void DropUser(string username)
+    public void DeactivateUser(string username)
     {
         OracleParameter[] p =
         {
@@ -232,4 +237,5 @@ public class SecurityAdminRepository
 
         _dbProvider.ExecuteNonQuerySP(Sp("USP_DROP_ROLE"), p);
     }
+}
 }

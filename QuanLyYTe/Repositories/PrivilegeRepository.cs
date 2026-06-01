@@ -1,5 +1,6 @@
 using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DataProvider;
+using System.Configuration;
 using System.Data;
 
 namespace QuanLyYTe.Repositories
@@ -10,6 +11,20 @@ namespace QuanLyYTe.Repositories
     public class PrivilegeRepository
     {
         private readonly OracleDbProvider _dbProvider = new OracleDbProvider();
+        private readonly string? _spOwner;
+
+        public PrivilegeRepository()
+        {
+            _spOwner = ConfigurationManager.AppSettings["ProcedureOwner"];
+            if (!string.IsNullOrWhiteSpace(_spOwner))
+                _spOwner = _spOwner.Trim().ToUpperInvariant();
+        }
+
+        private string Sp(string spName)
+        {
+            if (string.IsNullOrWhiteSpace(_spOwner)) return spName;
+            return $"{_spOwner}.{spName}";
+        }
         /// <summary>
         /// Lấy danh sách User trong database
         /// Sử dụng SP: USP_GET_USERS
@@ -21,7 +36,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
             };
 
-            return _dbProvider.ExecuteQuerySP("USP_GET_USERS", parameters);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_USERS"), parameters);
         }
 
         /// <summary>
@@ -35,7 +50,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
             };
 
-            return _dbProvider.ExecuteQuerySP("USP_GET_ROLES", parameters);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_ROLES"), parameters);
         }
 
         /// <summary>
@@ -53,7 +68,7 @@ namespace QuanLyYTe.Repositories
                 }
             };
 
-            return _dbProvider.ExecuteQuerySP("USP_GET_ALL_PRIVS", parameters);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_ALL_PRIVS"), parameters);
         }
 
         /// <summary>
@@ -72,7 +87,7 @@ namespace QuanLyYTe.Repositories
                 }
             };
 
-            return _dbProvider.ExecuteQuerySP("USP_GET_PRIVS_ON_OBJ", parameters);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_PRIVS_ON_OBJ"), parameters);
         }
 
         /// <summary>
@@ -91,7 +106,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_grantee",   grantee)
             };
 
-            _dbProvider.ExecuteNonQuerySP("USP_REVOKE_PRIV", parameters);
+            _dbProvider.ExecuteNonQuerySP(Sp("USP_REVOKE_PRIV"), parameters);
         }
 
         /// <summary>
@@ -105,7 +120,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
             };
 
-            return _dbProvider.ExecuteQuerySP("USP_GET_BUSINESS_OBJECTS", parameters);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_BUSINESS_OBJECTS"), parameters);
         }
 
         /// <summary>
@@ -120,7 +135,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
 
-            return _dbProvider.ExecuteQuerySP("USP_GET_GRANTEES", parameters);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_GRANTEES"), parameters);
         }
 
         /// <summary>
@@ -135,7 +150,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
 
-            return _dbProvider.ExecuteQuerySP("USP_GET_OBJECTS", parameters);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_OBJECTS"), parameters);
         }
 
         /// <summary>
@@ -150,7 +165,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
 
-            return _dbProvider.ExecuteQuerySP("USP_GET_COLUMNS", parameters);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_COLUMNS"), parameters);
         }
 
         /// <summary>
@@ -163,7 +178,7 @@ namespace QuanLyYTe.Repositories
             {
                 new OracleParameter("p_result_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return _dbProvider.ExecuteQuerySP("USP_GET_SYSTEM_PRIVILEGES", parameters);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_SYSTEM_PRIVILEGES"), parameters);
         }
 
 
@@ -185,7 +200,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_with_grant", OracleDbType.Int32) { Value = withGrant }
             };
 
-            _dbProvider.ExecuteNonQuerySP("USP_GRANT_OBJECT_PRIVILEGE", parameters);
+            _dbProvider.ExecuteNonQuerySP(Sp("USP_GRANT_OBJECT_PRIVILEGE"), parameters);
         }
 
         /// <summary>
@@ -200,7 +215,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_role", OracleDbType.Varchar2) { Value = role },
                 new OracleParameter("p_with_admin", OracleDbType.Int32) { Value = withAdmin }
             };
-            _dbProvider.ExecuteNonQuerySP("USP_GRANT_ROLE_TO_USER", parameters);
+            _dbProvider.ExecuteNonQuerySP(Sp("USP_GRANT_ROLE_TO_USER"), parameters);
         }
 
         /// <summary>
@@ -215,7 +230,7 @@ namespace QuanLyYTe.Repositories
                     new OracleParameter("p_privilege", OracleDbType.Varchar2) { Value = priv },
                     new OracleParameter("p_with_admin", OracleDbType.Int32) { Value = withAdmin }
             };
-            _dbProvider.ExecuteNonQuerySP("USP_GRANT_SYSTEM_PRIVILEGE", parameters);
+            _dbProvider.ExecuteNonQuerySP(Sp("USP_GRANT_SYSTEM_PRIVILEGE"), parameters);
         }
     }
 }

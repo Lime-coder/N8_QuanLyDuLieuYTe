@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -29,7 +29,11 @@ namespace QuanLyYTe.Forms
             tcMain.SelectedIndexChanged += tcMain_SelectedIndexChanged;
 
 
-            cbSysGranteeType.SelectedIndexChanged += (s, e) => LoadSysGrantees();
+            cbSysGranteeType.SelectedIndexChanged += (s, e) => {
+                LoadSysGrantees();
+                chkWithAdminOptionSys.Enabled = (cbSysGranteeType.Text == "USER");
+                if (!chkWithAdminOptionSys.Enabled) chkWithAdminOptionSys.Checked = false;
+            };
             btnGrantSystem.Click += btnGrantSystem_Click;
 
             cbGranteeType.SelectedIndex = 0;

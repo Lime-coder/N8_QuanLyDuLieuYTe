@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using QuanLyYTe.Services;
+using System;
+using QuanLyYTe.Common;
 using QuanLyYTe.Forms;
 using QuanLyYTe.Forms.Coordinator;
 using QuanLyYTe.Forms.Patient;
 using QuanLyYTe.Forms.Technician;
-using QuanLyYTe.Repositories;
 
 
 namespace QuanLyYTe.Helpers
@@ -17,8 +12,7 @@ namespace QuanLyYTe.Helpers
     {
         public static Form Resolve(string username)
         {
-            var service = new AuthService();
-            string role = service.GetSessionRole();
+            string role = AppSession.CurrentUserRole;
 
             return role?.Trim().ToUpperInvariant() switch
             {

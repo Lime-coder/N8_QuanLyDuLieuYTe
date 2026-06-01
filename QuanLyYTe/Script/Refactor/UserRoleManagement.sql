@@ -1,4 +1,4 @@
-﻿-- Run as: hospital_dba | Container: PDB_QLYT
+-- Run as: hospital_dba | Container: PDB_QLYT
 -- ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 -- Returns all database users including Oracle-maintained ones
@@ -103,7 +103,8 @@ BEGIN
         EXECUTE IMMEDIATE 'UPDATE hospital.staff SET is_active = 0 WHERE username_db = :u' USING v_user;
         EXECUTE IMMEDIATE 'UPDATE hospital.patient SET is_active = 0 WHERE username_db = :u' USING v_user;
         COMMIT;
-    EXCEPTION WHEN OTHERS THEN NULL;
+    EXCEPTION WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('WARNING: is_active sync failed for ' || v_user || ': ' || SQLERRM);
     END;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
@@ -135,7 +136,8 @@ BEGIN
         EXECUTE IMMEDIATE 'UPDATE hospital.staff SET is_active = 1 WHERE username_db = :u' USING v_user;
         EXECUTE IMMEDIATE 'UPDATE hospital.patient SET is_active = 1 WHERE username_db = :u' USING v_user;
         COMMIT;
-    EXCEPTION WHEN OTHERS THEN NULL;
+    EXCEPTION WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('WARNING: is_active sync failed for ' || v_user || ': ' || SQLERRM);
     END;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN

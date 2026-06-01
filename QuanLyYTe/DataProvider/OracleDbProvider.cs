@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +29,9 @@ namespace QuanLyYTe.DataProvider
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Query execution failed: {ex.Message}");
+                            Debug.WriteLine($"[OracleDbProvider] Query failed: {ex}");
+                            Console.Error.WriteLine($"[OracleDbProvider] Query failed: {ex}");
+                            throw new Exception($"Query execution failed: {ex.Message}", ex);
                         }
                     }
                 }
@@ -54,7 +57,9 @@ namespace QuanLyYTe.DataProvider
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Stored procedure execution failed ({spName}): {ex.Message}");
+                            Debug.WriteLine($"[OracleDbProvider] SP query failed ({spName}): {ex}");
+                            Console.Error.WriteLine($"[OracleDbProvider] SP query failed ({spName}): {ex}");
+                            throw new Exception($"Stored procedure execution failed ({spName}): {ex.Message}", ex);
                         }
                     }
                 }
@@ -77,7 +82,9 @@ namespace QuanLyYTe.DataProvider
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception($"Stored procedure action failed ({spName}): {ex.Message}");
+                        Debug.WriteLine($"[OracleDbProvider] SP action failed ({spName}): {ex}");
+                        Console.Error.WriteLine($"[OracleDbProvider] SP action failed ({spName}): {ex}");
+                        throw new Exception($"Stored procedure action failed ({spName}): {ex.Message}", ex);
                     }
                 }
             }
