@@ -4,7 +4,7 @@ using QuanLyYTe.Forms;
 using QuanLyYTe.Forms.Coordinator;
 using QuanLyYTe.Forms.Patient;
 using QuanLyYTe.Forms.Technician;
-
+using QuanLyYTe.Forms.Doctor;
 
 namespace QuanLyYTe.Helpers
 {
