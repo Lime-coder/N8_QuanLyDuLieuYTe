@@ -466,11 +466,25 @@ namespace QuanLyYTe.Forms
             string? username = GetSelectedUsername();
             if (string.IsNullOrWhiteSpace(username)) return;
 
-            MessageBox.Show(
-                $"Để bảo toàn toàn vẹn dữ liệu y tế lịch sử (medical records, prescriptions, etc.), bạn không thể trực tiếp xóa user `{username}` khỏi hệ thống.\n\nKhuyến nghị: Vui lòng sử dụng tính năng 'Khóa' (Lock) để vô hiệu hóa tài khoản này.",
-                "Hướng dẫn an toàn dữ liệu",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information);
+            var confirm = MessageBox.Show(
+                $"Bạn có chắc muốn vô hiệu hóa user `{username}`?\n\n" +
+                "Tài khoản sẽ bị khóa và đánh dấu không hoạt động.\n" +
+                "Dữ liệu y tế lịch sử sẽ được bảo toàn.",
+                "Xác nhận vô hiệu hóa",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+            if (confirm != DialogResult.Yes) return;
+
+            try
+            {
+                _service.DeactivateUser(username);
+                MessageBox.Show("Vô hiệu hóa user thành công.", "Thông báo");
+                RefreshUsers();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Lỗi");
+            }
         }
 
         private void btnUserLock_Click(object sender, EventArgs e)

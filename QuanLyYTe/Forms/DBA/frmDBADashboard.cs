@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using QuanLyYTe.Common;
 using QuanLyYTe.Services;
 
 namespace QuanLyYTe.Forms
@@ -14,7 +15,6 @@ namespace QuanLyYTe.Forms
 
         private Button _activeNavBtn = null;
         private readonly string _username;
-        private readonly AuthService _authService = new AuthService();
 
 
         private (string Badge, string Title, string Desc, Func<Form> Factory)[] _features;
@@ -53,7 +53,7 @@ namespace QuanLyYTe.Forms
 
         private void LoadUserInfo()
         {
-            string role = GetUserRole(_username);
+            string role = AppSession.CurrentUserRole;
 
             if (role != null && role.StartsWith("RL_"))
             {
@@ -61,21 +61,6 @@ namespace QuanLyYTe.Forms
             }
 
             lblUserInfo.Text = $"{_username.ToUpper()}  ·  {role}";
-        }
-
-        private string GetUserRole(string username)
-        {
-            try
-            {
-                string role = _authService.GetGrantedRole(username);
-                if (role != null) return role;
-                return _authService.GetSessionRole() ?? "User";
-            }
-            catch
-            {
-                try { return _authService.GetSessionRole() ?? "User"; }
-                catch { return "User"; }
-            }
         }
 
 
@@ -206,7 +191,7 @@ namespace QuanLyYTe.Forms
 
             if (confirm != DialogResult.Yes) return;
 
-            _authService.Logout(); // clear session
+            new AuthService().Logout(); // clear session
 
             Application.Restart();
         }

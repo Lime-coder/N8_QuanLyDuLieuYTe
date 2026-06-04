@@ -42,9 +42,9 @@ namespace QuanLyYTe.Services
             catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
         }
 
-        public void DropUser(string username)
+        public void DeactivateUser(string username)
         {
-            try { _service.DropUser(username); }
+            try { _service.DeactivateUser(username); }
             catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
         }
     }

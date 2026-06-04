@@ -28,7 +28,11 @@ CREATE OR REPLACE PROCEDURE USP_GET_SESSION_ROLE (
 ) AUTHID CURRENT_USER AS
 BEGIN
     OPEN p_cursor FOR
-        SELECT ROLE FROM SESSION_ROLES WHERE ROWNUM = 1;
+        SELECT ROLE FROM (
+            SELECT ROLE FROM SESSION_ROLES
+            WHERE ROLE LIKE 'RL\_%' ESCAPE '\'
+            ORDER BY CASE WHEN ROLE = 'RL_DBA' THEN 1 ELSE 2 END, ROLE
+        ) WHERE ROWNUM = 1;
 END USP_GET_SESSION_ROLE;
 /
 
@@ -54,46 +58,46 @@ END USP_GET_USER_ID;
 
 BEGIN
     FOR u IN (SELECT username FROM all_users
-              WHERE username IN ('NV001','NV002','NV003','BN001')) LOOP
+              WHERE username IN ('NV000021','NV000001','NV000121','BN000001')) LOOP
         EXECUTE IMMEDIATE 'DROP USER ' || u.username || ' CASCADE';
     END LOOP;
 EXCEPTION WHEN OTHERS THEN NULL;
 END;
 /
 
-CREATE USER NV001 IDENTIFIED BY Abc123456;
-CREATE USER NV002 IDENTIFIED BY Abc123456;
-CREATE USER NV003 IDENTIFIED BY Abc123456;
-CREATE USER BN001 IDENTIFIED BY Abc123456;
+CREATE USER NV000021 IDENTIFIED BY Abc123456;
+CREATE USER NV000001 IDENTIFIED BY Abc123456;
+CREATE USER NV000121 IDENTIFIED BY Abc123456;
+CREATE USER BN000001 IDENTIFIED BY Abc123456;
 
-GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV001;
-GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV002;
-GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV003;
-GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO BN001;
+GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV000021;
+GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV000001;
+GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO NV000121;
+GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO BN000001;
 
-GRANT EXECUTE ON hospital_dba.USP_GET_USER_ID TO NV001;
-GRANT EXECUTE ON hospital_dba.USP_GET_USER_ID TO NV002;
-GRANT EXECUTE ON hospital_dba.USP_GET_USER_ID TO NV003;
-GRANT EXECUTE ON hospital_dba.USP_GET_USER_ID TO BN001;
+GRANT EXECUTE ON hospital_dba.USP_GET_USER_ID TO NV000021;
+GRANT EXECUTE ON hospital_dba.USP_GET_USER_ID TO NV000001;
+GRANT EXECUTE ON hospital_dba.USP_GET_USER_ID TO NV000121;
+GRANT EXECUTE ON hospital_dba.USP_GET_USER_ID TO BN000001;
 
 -- System privileges
-GRANT CREATE SESSION                   TO NV001;
-GRANT CREATE SESSION, CREATE VIEW      TO NV002;
-GRANT CREATE SESSION                   TO NV003;
-GRANT CREATE SESSION                   TO BN001;
+GRANT CREATE SESSION                   TO NV000021;
+GRANT CREATE SESSION, CREATE VIEW      TO NV000001;
+GRANT CREATE SESSION                   TO NV000121;
+GRANT CREATE SESSION                   TO BN000001;
 
 -- Business role assignments
-GRANT rl_doctor    TO NV001;
-GRANT rl_coordinator TO NV002;
-GRANT rl_technician  TO NV003;
-GRANT rl_patient     TO BN001;
+GRANT rl_doctor    TO NV000021;
+GRANT rl_coordinator TO NV000001;
+GRANT rl_technician  TO NV000121;
+GRANT rl_patient     TO BN000001;
 
 -- Column-level privileges
-GRANT UPDATE (patient_id, full_name, gender, birthdate) ON hospital.patient TO NV002;
-GRANT UPDATE (conclusion, treatment_plan)               ON hospital.medical_record TO NV001;
+GRANT UPDATE (patient_id, full_name, gender, birthdate) ON hospital.patient TO NV000001;
+GRANT UPDATE (conclusion, treatment_plan)               ON hospital.medical_record TO NV000021;
 
 -- Grant with propagation right
-GRANT SELECT ON hospital.department TO NV002 WITH GRANT OPTION;
+GRANT SELECT ON hospital.department TO NV000001 WITH GRANT OPTION;
 
 COMMIT;
 
@@ -478,6 +482,13 @@ BEGIN
         RAISE_APPLICATION_ERROR(-20103, 'Role "' || v_role || '" does not exist.');
     END IF;
 
+    -- Revoke existing business roles (starting with RL_) to enforce 1 role per user
+    FOR r IN (SELECT GRANTED_ROLE FROM DBA_ROLE_PRIVS WHERE GRANTEE = v_user AND GRANTED_ROLE LIKE 'RL\_%' ESCAPE '\') LOOP
+        IF r.GRANTED_ROLE != v_role THEN
+            EXECUTE IMMEDIATE 'REVOKE ' || r.GRANTED_ROLE || ' FROM ' || v_user;
+        END IF;
+    END LOOP;
+
     v_sql := 'GRANT ' || v_role || ' TO ' || v_user;
     IF p_with_admin = 1 THEN
         v_sql := v_sql || ' WITH ADMIN OPTION';
@@ -650,7 +661,8 @@ BEGIN
         EXECUTE IMMEDIATE 'UPDATE hospital.staff SET is_active = 0 WHERE username_db = :u' USING v_user;
         EXECUTE IMMEDIATE 'UPDATE hospital.patient SET is_active = 0 WHERE username_db = :u' USING v_user;
         COMMIT;
-    EXCEPTION WHEN OTHERS THEN NULL;
+    EXCEPTION WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('WARNING: is_active sync failed for ' || v_user || ': ' || SQLERRM);
     END;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
@@ -682,7 +694,8 @@ BEGIN
         EXECUTE IMMEDIATE 'UPDATE hospital.staff SET is_active = 1 WHERE username_db = :u' USING v_user;
         EXECUTE IMMEDIATE 'UPDATE hospital.patient SET is_active = 1 WHERE username_db = :u' USING v_user;
         COMMIT;
-    EXCEPTION WHEN OTHERS THEN NULL;
+    EXCEPTION WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('WARNING: is_active sync failed for ' || v_user || ': ' || SQLERRM);
     END;
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
@@ -852,25 +865,30 @@ CREATE OR REPLACE PROCEDURE USP_CREATE_USER_LINKED (
     v_user VARCHAR2(128);
     v_id   VARCHAR2(10);
     v_role VARCHAR2(128);
+    v_pwd  VARCHAR2(4000);
 BEGIN
     v_user := DBMS_ASSERT.SIMPLE_SQL_NAME(UPPER(TRIM(p_username)));
     v_role := UPPER(TRIM(p_role));
+    v_pwd  := REPLACE(p_password, '"', '""');
 
     -- 1. Create DB User
-    EXECUTE IMMEDIATE 'CREATE USER ' || v_user || ' IDENTIFIED BY "' || p_password || '"';
+    EXECUTE IMMEDIATE 'CREATE USER ' || v_user || ' IDENTIFIED BY "' || v_pwd || '"';
     EXECUTE IMMEDIATE 'GRANT CREATE SESSION TO ' || v_user;
+    EXECUTE IMMEDIATE 'GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO ' || v_user;
+    EXECUTE IMMEDIATE 'GRANT EXECUTE ON hospital_dba.USP_GET_USER_ID TO ' || v_user;
     EXECUTE IMMEDIATE 'GRANT ' || v_role || ' TO ' || v_user;
     EXECUTE IMMEDIATE 'ALTER USER ' || v_user || ' DEFAULT ROLE ALL';
 
     -- 2. Insert into App Tables (is_active is 1 by default)
     IF v_role = 'RL_PATIENT' THEN
-        v_id := 'BN' || LPAD(hospital.SEQ_PATIENT_ID.NEXTVAL, 3, '0');
+        v_id := 'BN' || LPAD(hospital.SEQ_PATIENT_ID.NEXTVAL, 6, '0');
         INSERT INTO hospital.patient (patient_id, full_name, gender, birthdate, id_card, house_no, street, district, city_province, medical_history, family_medical_history, drug_allergies, username_db, is_active)
         VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_house_no, p_street, p_district, p_city_province, p_medical_history, p_family_medical_history, p_drug_allergies, v_user, 1);
     ELSE
-        v_id := 'NV' || LPAD(hospital.SEQ_STAFF_ID.NEXTVAL, 3, '0');
+        v_id := 'NV' || LPAD(hospital.SEQ_STAFF_ID.NEXTVAL, 6, '0');
         INSERT INTO hospital.staff (staff_id, full_name, gender, birthdate, id_card, phone, hometown, dept_id, staff_role, username_db, is_active)
-        VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_phone, p_hometown, p_dept_id, 
+        VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_phone, p_hometown, 
+                CASE WHEN v_role = 'RL_DOCTOR' THEN p_dept_id ELSE NULL END, 
                 CASE v_role 
                     WHEN 'RL_DOCTOR' THEN N'Bác sĩ'
                     WHEN 'RL_COORDINATOR' THEN N'Điều phối viên'
@@ -912,6 +930,22 @@ CREATE OR REPLACE PROCEDURE USP_UPDATE_USER_LINKED (
 BEGIN
     v_user := UPPER(TRIM(p_username));
     v_new_role := UPPER(TRIM(p_role));
+
+    -- Guard: Detect cross-type role change (Staff<->Patient) which is not supported
+    BEGIN
+        SELECT granted_role INTO v_old_role
+        FROM DBA_ROLE_PRIVS
+        WHERE grantee = v_user
+          AND granted_role IN ('RL_PATIENT', 'RL_DOCTOR', 'RL_COORDINATOR', 'RL_TECHNICIAN')
+          AND ROWNUM = 1;
+
+        IF (v_old_role = 'RL_PATIENT' AND v_new_role != 'RL_PATIENT')
+           OR (v_old_role != 'RL_PATIENT' AND v_new_role = 'RL_PATIENT') THEN
+            RAISE_APPLICATION_ERROR(-20050,
+                N'Không thể chuyển đổi giữa Nhân viên và Bệnh nhân. Vui lòng tạo tài khoản mới.');
+        END IF;
+    EXCEPTION WHEN NO_DATA_FOUND THEN NULL;
+    END;
 
     -- 1. Update Role if changed (Staff only)
     IF v_new_role != 'RL_PATIENT' THEN
@@ -1065,5 +1099,15 @@ BEGIN
         FROM hospital.staff
         WHERE is_active = 1
         ORDER BY staff_role, full_name;
+END;
+/
+
+-- GET ALL DEPARTMENTS
+CREATE OR REPLACE PROCEDURE USP_GET_ALL_DEPARTMENTS (
+    p_cursor OUT SYS_REFCURSOR
+) AUTHID CURRENT_USER AS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT dept_id, dept_name FROM hospital.department ORDER BY dept_id;
 END;
 /

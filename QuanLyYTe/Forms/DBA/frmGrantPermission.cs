@@ -29,7 +29,11 @@ namespace QuanLyYTe.Forms
             tcMain.SelectedIndexChanged += tcMain_SelectedIndexChanged;
 
 
-            cbSysGranteeType.SelectedIndexChanged += (s, e) => LoadSysGrantees();
+            cbSysGranteeType.SelectedIndexChanged += (s, e) => {
+                LoadSysGrantees();
+                chkWithAdminOptionSys.Enabled = (cbSysGranteeType.Text == "USER");
+                if (!chkWithAdminOptionSys.Enabled) chkWithAdminOptionSys.Checked = false;
+            };
             btnGrantSystem.Click += btnGrantSystem_Click;
 
             cbGranteeType.SelectedIndex = 0;
@@ -65,7 +69,7 @@ namespace QuanLyYTe.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i danh sách ngý?i nh?n: " + ex.Message);
+                MessageBox.Show("L?i t?i danh sï¿½ch ngï¿½?i nh?n: " + ex.Message);
             }
         }
 
@@ -88,7 +92,7 @@ namespace QuanLyYTe.Forms
                 chkExecute.Enabled = isCode;
                 chkExecute.Checked = isCode;
             }
-            catch (Exception ex) { MessageBox.Show("L?i t?i ð?i tý?ng: " + ex.Message); }
+            catch (Exception ex) { MessageBox.Show("L?i t?i ï¿½?i tï¿½?ng: " + ex.Message); }
         }
 
         private void LoadColumns()
@@ -111,7 +115,7 @@ namespace QuanLyYTe.Forms
 
             if (string.IsNullOrEmpty(grantee) || string.IsNullOrEmpty(objName))
             {
-                MessageBox.Show("Vui l?ng ch?n ho?c nh?p ð?y ð? thông tin Ngý?i nh?n và Ð?i tý?ng!");
+                MessageBox.Show("Vui l?ng ch?n ho?c nh?p ï¿½?y ï¿½? thï¿½ng tin Ngï¿½?i nh?n vï¿½ ï¿½?i tï¿½?ng!");
                 return;
             }
 
@@ -130,9 +134,9 @@ namespace QuanLyYTe.Forms
                 if (chkExecute.Checked) { _service.GrantObjectPrivilege(grantee, "EXECUTE", objName, null, gOpt); hasGranted = true; }
 
                 if (hasGranted)
-                    MessageBox.Show($"Ð? c?p quy?n trên {objName} cho {grantee} thành công!");
+                    MessageBox.Show($"ï¿½? c?p quy?n trï¿½n {objName} cho {grantee} thï¿½nh cï¿½ng!");
                 else
-                    MessageBox.Show("Vui l?ng tick ch?n ít nh?t m?t quy?n (SELECT, INSERT...)");
+                    MessageBox.Show("Vui l?ng tick ch?n ï¿½t nh?t m?t quy?n (SELECT, INSERT...)");
             }
             catch (Exception ex) { MessageBox.Show(CleanOracleError(ex.Message), "L?i Oracle", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
@@ -174,14 +178,14 @@ namespace QuanLyYTe.Forms
 
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(role))
             {
-                MessageBox.Show("Vui l?ng ch?n ð?y ð? User và Role!");
+                MessageBox.Show("Vui l?ng ch?n ï¿½?y ï¿½? User vï¿½ Role!");
                 return;
             }
 
             try
             {
                 _service.GrantRoleToUser(user, role, chkWithAdminOption.Checked ? 1 : 0);
-                MessageBox.Show($"Ð? gán Role {role} cho User {user} thành công!");
+                MessageBox.Show($"ï¿½? gï¿½n Role {role} cho User {user} thï¿½nh cï¿½ng!");
             }
             catch (Exception ex) { MessageBox.Show(CleanOracleError(ex.Message), "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
@@ -230,14 +234,14 @@ namespace QuanLyYTe.Forms
 
             if (string.IsNullOrEmpty(grantee) || string.IsNullOrEmpty(priv))
             {
-                MessageBox.Show("Vui l?ng ch?n Ngý?i nh?n và Quy?n h? th?ng!");
+                MessageBox.Show("Vui l?ng ch?n Ngï¿½?i nh?n vï¿½ Quy?n h? th?ng!");
                 return;
             }
 
             try
             {
                 _service.GrantSystemPrivilege(grantee, priv, chkWithAdminOptionSys.Checked ? 1 : 0);
-                MessageBox.Show($"Ð? c?p quy?n h? th?ng {priv} cho {grantee} thành công!");
+                MessageBox.Show($"ï¿½? c?p quy?n h? th?ng {priv} cho {grantee} thï¿½nh cï¿½ng!");
             }
             catch (Exception ex) { MessageBox.Show(CleanOracleError(ex.Message), "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
@@ -275,3 +279,5 @@ namespace QuanLyYTe.Forms
         private void GrantPermissionForm_Load(object sender, EventArgs e) { }
     }
 }
+
+

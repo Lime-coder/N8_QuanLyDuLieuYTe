@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.Windows.Forms;
 using System.Xml.Linq;
@@ -30,7 +30,7 @@ namespace QuanLyYTe.Forms
             string password = txtPassword.Text;
             string dataSource = txtDataSource.Text.Trim();
 
-            if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(dataSource))
+            if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(dataSource))
             {
                 ShowError("Vui lòng nhập đầy đủ thông tin.");
                 return;
