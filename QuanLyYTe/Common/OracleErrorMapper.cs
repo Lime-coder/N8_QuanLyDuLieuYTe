@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,17 +16,18 @@ namespace QuanLyYTe.Common
                 var oracleException = (ex as OracleException) ?? (ex.InnerException as OracleException);
                 switch (oracleException.Number)
                 {
-                    case 1017: return "Tên đăng nhập hoặc mật khẩu không đúng.";
-                    case 28000: return "Tài khoản đã bị khóa.";
-                    case 1031: return "Bạn không có quyền thực hiện thao tác này.";
-                    case 1045: return "Tài khoản này thiếu quyền CREATE SESSION để đăng nhập.";
-                    case 1920: return "Tên User hoặc Role đã tồn tại.";
-                    case 1918: return "Tên User không tồn tại.";
-                    case 1919: return "Tên Role không tồn tại.";
-                    default: return $"Lỗi Oracle ({oracleException.Number}): {oracleException.Message}";
+                    case 1017: return "T�n dang nh?p ho?c m?t kh?u kh�ng d�ng.";
+                    case 28000: return "T�i kho?n d� b? kh�a.";
+                    case 1031: return "B?n kh�ng c� quy?n th?c hi?n thao t�c n�y.";
+                    case 1045: return "T�i kho?n n�y thi?u quy?n CREATE SESSION d? dang nh?p.";
+                    case 1920: return "T�n User ho?c Role d� t?n t?i.";
+                    case 1918: return "T�n User kh�ng t?n t?i.";
+                    case 1919: return "T�n Role kh�ng t?n t?i.";
+                    default: return $"L?i Oracle ({oracleException.Number}): {oracleException.Message}";
                 }
             }
-            return $"Lỗi hệ thống: {ex.Message}";
+            return $"L?i h? th?ng: {ex.Message}";
         }
     }
 }
+

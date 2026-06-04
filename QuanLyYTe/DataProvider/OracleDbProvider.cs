@@ -67,6 +67,29 @@ namespace QuanLyYTe.DataProvider
             return dt;
         }
 
+        public void ExecuteNonQuery(string sql, OracleParameter[]? parameters = null)
+        {
+            using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
+            {
+                using (OracleCommand cmd = new OracleCommand(sql, conn))
+                {
+                    cmd.CommandType = CommandType.Text;
+                    if (parameters != null) cmd.Parameters.AddRange(parameters);
+                    try
+                    {
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[OracleDbProvider] Action failed: {ex}");
+                        Console.Error.WriteLine($"[OracleDbProvider] Action failed: {ex}");
+                        throw new Exception($"Action failed: {ex.Message}", ex);
+                    }
+                }
+            }
+        }
+
         public void ExecuteNonQuerySP(string spName, OracleParameter[]? parameters = null)
         {
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
