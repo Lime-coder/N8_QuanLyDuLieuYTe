@@ -1,6 +1,8 @@
+using System;
 using System.Data;
+using System.Drawing;
+using System.Windows.Forms;
 using QuanLyYTe.Common;
-using QuanLyYTe.Helpers;
 using QuanLyYTe.Services;
 
 namespace QuanLyYTe.Forms.Patient
@@ -9,8 +11,25 @@ namespace QuanLyYTe.Forms.Patient
     {
         private readonly PatientService _service = new PatientService();
 
-        private TabControl tabMain = null!;
+        // ── Styling Constants ─────────────────────────────────────────
+        private static readonly Color Orange = Color.FromArgb(255, 140, 40);
+        private static readonly Color OrangeHov = Color.FromArgb(255, 165, 80);
+        private static readonly Color ActiveBg = Color.FromArgb(45, 255, 140, 40);
+        private static readonly Color DarkBg = Color.FromArgb(24, 24, 28);
+        private static readonly Color ContentBg = Color.FromArgb(245, 244, 242);
 
+        // ── Core Layout ───────────────────────────────────────────────
+        private Panel pnlSidebar = null!;
+        private Panel pnlTopbar = null!;
+        private Panel pnlContent = null!;
+        private Label lblPageTitle = null!;
+        private Label lblPageBreadcrumb = null!;
+        private Button _activeNavBtn = null!;
+
+        private Panel pnlProfile = null!;
+        private Panel pnlRecords = null!;
+
+        // ── Profile Controls ──────────────────────────────────────────
         private Label lblPatientId = null!;
         private Label lblFullName = null!;
         private Label lblGender = null!;
@@ -25,12 +44,11 @@ namespace QuanLyYTe.Forms.Patient
         private TextBox txtCityProvince = null!;
         private Button btnSaveContact = null!;
 
+        // ── Records Controls ──────────────────────────────────────────
         private DataGridView dgvRecords = null!;
-        private Button btnViewDetail = null!;
-
-        private Label lblSelectedRecord = null!;
         private DataGridView dgvPrescriptions = null!;
         private DataGridView dgvServices = null!;
+        private Label lblDetailTitle = null!;
 
         public frmPatient()
         {
@@ -42,175 +60,286 @@ namespace QuanLyYTe.Forms.Patient
         private void InitializeComponent()
         {
             SuspendLayout();
-
-            Text = $"Hồ sơ bệnh nhân — {AppSession.CurrentUsername}";
-            ClientSize = new Size(900, 620);
+            Text = "Hospital - Patient Portal";
+            ClientSize = new Size(1100, 700);
+            MinimumSize = new Size(950, 600);
             StartPosition = FormStartPosition.CenterScreen;
-            FormBorderStyle = FormBorderStyle.FixedSingle;
-            MaximizeBox = false;
+            WindowState = FormWindowState.Maximized;
+            BackColor = ContentBg;
+            Font = new Font("Segoe UI", 9f);
 
-            tabMain = new TabControl
-            {
-                Dock = DockStyle.Fill,
-                Font = new Font("Segoe UI", 10)
-            };
+            // ── Sidebar ───────────────────────────────────────────────
+            pnlSidebar = new Panel { Dock = DockStyle.Left, Width = 240, BackColor = DarkBg };
 
-            tabMain.TabPages.Add(BuildProfileTab());
-            tabMain.TabPages.Add(BuildRecordsTab());
-            tabMain.TabPages.Add(BuildDetailTab());
+            var pnlLogo = new Panel { Dock = DockStyle.Top, Height = 88, BackColor = Color.FromArgb(30, 30, 35) };
+            pnlLogo.Controls.Add(new Label { Text = "Hospital Portal", Font = new Font("Segoe UI", 14f, FontStyle.Bold), ForeColor = Orange, AutoSize = true, Location = new Point(20, 18) });
+            pnlLogo.Controls.Add(new Label { Text = "Patient Management", Font = new Font("Segoe UI", 7.5f), ForeColor = Color.FromArgb(120, 120, 130), AutoSize = true, Location = new Point(22, 52) });
 
-            Controls.Add(tabMain);
+            var pnlNav = new Panel { Dock = DockStyle.Fill };
+            Button btnNavProfile = CreateNavButton("  Hồ sơ cá nhân", 0);
+            Button btnNavRecords = CreateNavButton("  Lịch sử khám", 1);
+            Button btnNavLogout = CreateNavButton("  Đăng xuất", 2);
+            btnNavLogout.ForeColor = Color.FromArgb(220, 80, 80);
+            
+            btnNavProfile.Click += (s, e) => { SetActiveNav(btnNavProfile); ShowPanel(pnlProfile, "Hồ sơ cá nhân", "Patient / Profile"); };
+            btnNavRecords.Click += (s, e) => { SetActiveNav(btnNavRecords); ShowPanel(pnlRecords, "Lịch sử khám", "Patient / Medical Records"); };
+            btnNavLogout.Click += BtnLogout_Click;
+
+            pnlNav.Controls.AddRange(new Control[] { btnNavProfile, btnNavRecords, btnNavLogout });
+            pnlSidebar.Controls.Add(pnlNav);
+            pnlSidebar.Controls.Add(pnlLogo);
+
+            // ── Topbar ────────────────────────────────────────────────
+            pnlTopbar = new Panel { Dock = DockStyle.Top, Height = 68, BackColor = Color.White };
+            lblPageTitle = new Label { Font = new Font("Segoe UI", 15f, FontStyle.Bold), ForeColor = Color.FromArgb(28, 28, 32), AutoSize = true, Location = new Point(28, 10) };
+            lblPageBreadcrumb = new Label { Font = new Font("Segoe UI", 8.5f), ForeColor = Color.FromArgb(160, 160, 170), AutoSize = true, Location = new Point(30, 42) };
+            var lblUserInfo = new Label { Text = $"{AppSession.CurrentUsername.ToUpper()}  ·  PATIENT", Font = new Font("Segoe UI", 8.5f, FontStyle.Bold), ForeColor = Orange, AutoSize = false, Size = new Size(300, 20), TextAlign = ContentAlignment.MiddleRight, Anchor = AnchorStyles.Top | AnchorStyles.Right, Location = new Point(pnlTopbar.Width - 324, 24) };
+            
+            pnlTopbar.Controls.AddRange(new Control[] { lblPageTitle, lblPageBreadcrumb, lblUserInfo });
+
+            var pnlDivider = new Panel { Dock = DockStyle.Top, Height = 3, BackColor = Orange };
+
+            // ── Content ───────────────────────────────────────────────
+            pnlContent = new Panel { Dock = DockStyle.Fill, Padding = new Padding(24) };
+
+            BuildProfilePanel();
+            BuildRecordsPanel();
+
+            pnlContent.Controls.Add(pnlProfile);
+            pnlContent.Controls.Add(pnlRecords);
+
+            var pnlMain = new Panel { Dock = DockStyle.Fill };
+            pnlMain.Controls.Add(pnlContent);
+            pnlMain.Controls.Add(pnlDivider);
+            pnlMain.Controls.Add(pnlTopbar);
+
+            Controls.Add(pnlMain);
+            Controls.Add(pnlSidebar);
+
+            // Default state
+            SetActiveNav(btnNavProfile);
+            ShowPanel(pnlProfile, "Hồ sơ cá nhân", "Patient / Profile");
             ResumeLayout(false);
         }
 
-        private TabPage BuildProfileTab()
+        private Button CreateNavButton(string text, int index)
         {
-            var tab = new TabPage("Hồ sơ cá nhân") { Padding = new Padding(12) };
-
-            int labelX = 20, valueX = 200, y = 20, spacing = 32;
-
-            Label Lbl(string text) =>
-                new Label { Text = text, Location = new Point(labelX, y), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) };
-
-            Label Val(string name)
+            var btn = new Button
             {
-                var l = new Label { Name = name, Text = "—", Location = new Point(valueX, y), AutoSize = true, Font = new Font("Segoe UI", 9) };
-                return l;
-            }
+                Text = text,
+                Font = new Font("Segoe UI", 9.5f),
+                ForeColor = Color.FromArgb(190, 190, 200),
+                BackColor = Color.Transparent,
+                FlatStyle = FlatStyle.Flat,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Padding = new Padding(16, 0, 0, 0),
+                Size = new Size(216, 46),
+                Location = new Point(12, 10 + index * 52),
+                Cursor = Cursors.Hand
+            };
+            btn.FlatAppearance.BorderSize = 0;
+            btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 40, 46);
+            btn.FlatAppearance.MouseDownBackColor = Color.FromArgb(50, 50, 58);
+            return btn;
+        }
 
-            tab.Controls.Add(Lbl("Mã bệnh nhân:")); lblPatientId = Val("lblPatientId"); tab.Controls.Add(lblPatientId); y += spacing;
-            tab.Controls.Add(Lbl("Họ và tên:")); lblFullName = Val("lblFullName"); tab.Controls.Add(lblFullName); y += spacing;
-            tab.Controls.Add(Lbl("Giới tính:")); lblGender = Val("lblGender"); tab.Controls.Add(lblGender); y += spacing;
-            tab.Controls.Add(Lbl("Ngày sinh:")); lblBirthdate = Val("lblBirthdate"); tab.Controls.Add(lblBirthdate); y += spacing;
-            tab.Controls.Add(Lbl("CCCD:")); lblIdCard = Val("lblIdCard"); tab.Controls.Add(lblIdCard); y += spacing;
+        private void SetActiveNav(Button btn)
+        {
+            if (_activeNavBtn != null)
+            {
+                _activeNavBtn.ForeColor = Color.FromArgb(190, 190, 200);
+                _activeNavBtn.BackColor = Color.Transparent;
+            }
+            btn.ForeColor = Orange;
+            btn.BackColor = ActiveBg;
+            _activeNavBtn = btn;
+        }
+
+        private void ShowPanel(Panel pnl, string title, string breadcrumb)
+        {
+            pnlProfile.Visible = false;
+            pnlRecords.Visible = false;
+            pnl.Visible = true;
+            lblPageTitle.Text = title;
+            lblPageBreadcrumb.Text = breadcrumb;
+        }
+
+        private void BtnLogout_Click(object? sender, EventArgs e)
+        {
+            if (MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Đăng xuất", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                new AuthService().Logout();
+                Application.Restart();
+            }
+        }
+
+        // ── Panel Profile ─────────────────────────────────────────────
+        private void BuildProfilePanel()
+        {
+            pnlProfile = new Panel { Dock = DockStyle.Fill, BackColor = Color.White };
+            pnlProfile.Padding = new Padding(24);
+
+            int labelX = 24, valueX = 180, y = 24, spacing = 32;
+
+            Label Lbl(string text) => new Label { Text = text, Location = new Point(labelX, y), AutoSize = true, Font = new Font("Segoe UI", 9.5f, FontStyle.Bold), ForeColor = Color.FromArgb(80, 80, 90) };
+            Label Val(string name) => new Label { Name = name, Text = "—", Location = new Point(valueX, y), AutoSize = true, Font = new Font("Segoe UI", 9.5f), ForeColor = Color.FromArgb(28, 28, 32) };
+
+            pnlProfile.Controls.Add(Lbl("Mã bệnh nhân:")); lblPatientId = Val("lblPatientId"); pnlProfile.Controls.Add(lblPatientId); y += spacing;
+            pnlProfile.Controls.Add(Lbl("Họ và tên:")); lblFullName = Val("lblFullName"); pnlProfile.Controls.Add(lblFullName); y += spacing;
+            pnlProfile.Controls.Add(Lbl("Giới tính:")); lblGender = Val("lblGender"); pnlProfile.Controls.Add(lblGender); y += spacing;
+            pnlProfile.Controls.Add(Lbl("Ngày sinh:")); lblBirthdate = Val("lblBirthdate"); pnlProfile.Controls.Add(lblBirthdate); y += spacing;
+            pnlProfile.Controls.Add(Lbl("CCCD:")); lblIdCard = Val("lblIdCard"); pnlProfile.Controls.Add(lblIdCard); y += spacing;
+
+            y += 12;
+            pnlProfile.Controls.Add(new Label { Text = "Tiền sử bệnh lý:", Location = new Point(labelX, y), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) }); y += 22;
+            txtMedicalHistory = new TextBox { Location = new Point(labelX, y), Height = 48, Font = new Font("Segoe UI", 9.5f), Multiline = true, ScrollBars = ScrollBars.Vertical, Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right, Width = pnlContent.Width - 48 };
+            pnlProfile.Controls.Add(txtMedicalHistory); y += 60;
+
+            pnlProfile.Controls.Add(new Label { Text = "Bệnh lý gia đình:", Location = new Point(labelX, y), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) }); y += 22;
+            txtFamilyMedicalHistory = new TextBox { Location = new Point(labelX, y), Height = 48, Font = new Font("Segoe UI", 9.5f), Multiline = true, ScrollBars = ScrollBars.Vertical, Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right, Width = pnlContent.Width - 48 };
+            pnlProfile.Controls.Add(txtFamilyMedicalHistory); y += 60;
+
+            pnlProfile.Controls.Add(new Label { Text = "Dị ứng thuốc:", Location = new Point(labelX, y), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) }); y += 22;
+            txtDrugAllergies = new TextBox { Location = new Point(labelX, y), Height = 36, Font = new Font("Segoe UI", 9.5f), Multiline = true, ScrollBars = ScrollBars.Vertical, Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right, Width = pnlContent.Width - 48 };
+            pnlProfile.Controls.Add(txtDrugAllergies); y += 52;
 
             y += 8;
-            tab.Controls.Add(new Label { Text = "Tiền sử bệnh lý:", Location = new Point(labelX, y), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) }); y += 20;
-            txtMedicalHistory = new TextBox { Location = new Point(labelX, y), Size = new Size(840, 48), Font = new Font("Segoe UI", 9), Multiline = true, ScrollBars = ScrollBars.Vertical };
-            tab.Controls.Add(txtMedicalHistory); y += 52;
+            var sep = new Label { Text = "ĐỊA CHỈ LIÊN LẠC", Location = new Point(labelX, y), AutoSize = true, Font = new Font("Segoe UI", 8.5f, FontStyle.Bold), ForeColor = Orange };
+            pnlProfile.Controls.Add(sep); y += 28;
 
-            tab.Controls.Add(new Label { Text = "Bệnh lý gia đình:", Location = new Point(labelX, y), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) }); y += 20;
-            txtFamilyMedicalHistory = new TextBox { Location = new Point(labelX, y), Size = new Size(840, 48), Font = new Font("Segoe UI", 9), Multiline = true, ScrollBars = ScrollBars.Vertical };
-            tab.Controls.Add(txtFamilyMedicalHistory); y += 52;
-
-            tab.Controls.Add(new Label { Text = "Dị ứng thuốc:", Location = new Point(labelX, y), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) }); y += 20;
-            txtDrugAllergies = new TextBox { Location = new Point(labelX, y), Size = new Size(840, 32), Font = new Font("Segoe UI", 9), Multiline = true, ScrollBars = ScrollBars.Vertical };
-            tab.Controls.Add(txtDrugAllergies); y += 44;
-
-            y += 8;
-            var sep = new Label { Text = "── Địa chỉ liên lạc (có thể chỉnh sửa) ──────────────────────────────────────", Location = new Point(labelX, y), AutoSize = true, ForeColor = Color.Gray };
-            tab.Controls.Add(sep); y += 28;
-
-            int inputW = 260;
-            void AddInput(string label, ref TextBox box, int col)
+            TableLayoutPanel tlpAddress = new TableLayoutPanel
             {
-                int px = labelX + col * 430;
-                tab.Controls.Add(new Label { Text = label, Location = new Point(px, y), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) });
-                box = new TextBox { Location = new Point(px, y + 20), Width = inputW, Font = new Font("Segoe UI", 9) };
-                tab.Controls.Add(box);
+                Location = new Point(labelX, y),
+                Height = 140, // Increased height to prevent cutoff
+                ColumnCount = 2,
+                RowCount = 2,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+                Width = pnlContent.Width - 48
+            };
+            tlpAddress.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tlpAddress.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tlpAddress.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tlpAddress.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+
+            void AddCell(string label, ref TextBox box, int col, int row)
+            {
+                var pnl = new Panel { Dock = DockStyle.Fill, Margin = new Padding(0, 0, 20, 0) };
+                pnl.Controls.Add(new Label { Text = label, Location = new Point(0, 0), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold) });
+                box = new TextBox { Location = new Point(0, 22), Width = pnl.Width, Font = new Font("Segoe UI", 9.5f), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right };
+                pnl.Controls.Add(box);
+                tlpAddress.Controls.Add(pnl, col, row);
             }
 
-            AddInput("Số nhà:", ref txtHouseNo, 0);
-            AddInput("Tên đường:", ref txtStreet, 1);
-            y += 56;
-            AddInput("Quận/Huyện:", ref txtDistrict, 0);
-            AddInput("Tỉnh/Thành phố:", ref txtCityProvince, 1);
-            y += 56;
+            AddCell("Số nhà:", ref txtHouseNo, 0, 0);
+            AddCell("Tên đường:", ref txtStreet, 1, 0);
+            AddCell("Quận/Huyện:", ref txtDistrict, 0, 1);
+            AddCell("Tỉnh/Thành phố:", ref txtCityProvince, 1, 1);
+            pnlProfile.Controls.Add(tlpAddress);
+            y += 150;
 
             btnSaveContact = new Button
             {
-                Text = "Lưu thông tin",
+                Text = "LƯU THÔNG TIN",
                 Location = new Point(labelX, y),
-                Size = new Size(140, 32),
-                Font = new Font("Segoe UI", 9)
+                Size = new Size(160, 36),
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = Orange,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
             };
+            btnSaveContact.FlatAppearance.BorderSize = 0;
             btnSaveContact.Click += BtnSaveContact_Click;
-            tab.Controls.Add(btnSaveContact);
-
-            return tab;
+            pnlProfile.Controls.Add(btnSaveContact);
         }
 
-        private TabPage BuildRecordsTab()
+        // ── Panel Records ─────────────────────────────────────────────
+        private void BuildRecordsPanel()
         {
-            var tab = new TabPage("Lịch sử khám") { Padding = new Padding(12) };
+            pnlRecords = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent };
 
-            dgvRecords = new DataGridView
+            var splitContainer = new SplitContainer
             {
                 Dock = DockStyle.Fill,
-                ReadOnly = true,
-                AllowUserToAddRows = false,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                Font = new Font("Segoe UI", 9),
-                ColumnHeadersDefaultCellStyle = { Font = new Font("Segoe UI", 9, FontStyle.Bold) },
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
+                Orientation = Orientation.Horizontal,
+                SplitterDistance = 250,
+                SplitterWidth = 6,
+                BackColor = ContentBg
             };
+
+            // Top: Medical Records
+            var pnlTop = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(12) };
+            var lblTopTitle = new Label { Text = "DANH SÁCH HỒ SƠ KHÁM", Font = new Font("Segoe UI", 9f, FontStyle.Bold), ForeColor = Orange, Dock = DockStyle.Top, Height = 24 };
+            dgvRecords = CreateGridView();
             dgvRecords.SelectionChanged += DgvRecords_SelectionChanged;
+            pnlTop.Controls.Add(dgvRecords);
+            pnlTop.Controls.Add(lblTopTitle);
 
-            var panel = new Panel { Dock = DockStyle.Bottom, Height = 46, Padding = new Padding(0, 8, 0, 0) };
-            btnViewDetail = new Button
-            {
-                Text = "Xem đơn thuốc & dịch vụ",
-                Size = new Size(200, 30),
-                Location = new Point(0, 8),
-                Font = new Font("Segoe UI", 9),
-                Enabled = false
-            };
-            btnViewDetail.Click += BtnViewDetail_Click;
-            panel.Controls.Add(btnViewDetail);
+            // Bottom: Details (Prescriptions & Services)
+            var pnlBottom = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(12) };
+            lblDetailTitle = new Label { Text = "CHI TIẾT HỒ SƠ: Chưa chọn", Font = new Font("Segoe UI", 9f, FontStyle.Bold), ForeColor = Orange, Dock = DockStyle.Top, Height = 24 };
+            
+            var splitBottom = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Color.White };
+            splitBottom.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            splitBottom.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            
+            var pnlLeft = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 0, 8, 0) };
+            var lblLeft = new Label { Text = "Đơn thuốc", Font = new Font("Segoe UI", 8.5f, FontStyle.Bold), Dock = DockStyle.Top, Height = 20 };
+            dgvPrescriptions = CreateGridView();
+            pnlLeft.Controls.Add(dgvPrescriptions);
+            pnlLeft.Controls.Add(lblLeft);
 
-            tab.Controls.Add(dgvRecords);
-            tab.Controls.Add(panel);
-            return tab;
+            var pnlRight = new Panel { Dock = DockStyle.Fill, Padding = new Padding(8, 0, 0, 0) };
+            var lblRight = new Label { Text = "Dịch vụ y tế", Font = new Font("Segoe UI", 8.5f, FontStyle.Bold), Dock = DockStyle.Top, Height = 20 };
+            dgvServices = CreateGridView();
+            pnlRight.Controls.Add(dgvServices);
+            pnlRight.Controls.Add(lblRight);
+
+            splitBottom.Controls.Add(pnlLeft, 0, 0);
+            splitBottom.Controls.Add(pnlRight, 1, 0);
+            
+            pnlBottom.Controls.Add(splitBottom);
+            pnlBottom.Controls.Add(lblDetailTitle);
+
+            splitContainer.Panel1.Controls.Add(pnlTop);
+            splitContainer.Panel2.Controls.Add(pnlBottom);
+            pnlRecords.Controls.Add(splitContainer);
         }
 
-        private TabPage BuildDetailTab()
+        private DataGridView CreateGridView()
         {
-            var tab = new TabPage("Đơn thuốc & Dịch vụ") { Padding = new Padding(12) };
-
-            lblSelectedRecord = new Label
-            {
-                Text = "Chưa chọn hồ sơ nào. Vào tab Lịch sử khám và nhấn \"Xem đơn thuốc & dịch vụ\".",
-                Dock = DockStyle.Top,
-                Height = 28,
-                Font = new Font("Segoe UI", 9, FontStyle.Italic),
-                ForeColor = Color.Gray
-            };
-
-            var lblPresc = new Label { Text = "Đơn thuốc", Dock = DockStyle.Top, Height = 24, Font = new Font("Segoe UI", 9, FontStyle.Bold) };
-
-            dgvPrescriptions = new DataGridView
-            {
-                Height = 180,
-                Dock = DockStyle.Top,
-                ReadOnly = true,
-                AllowUserToAddRows = false,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                Font = new Font("Segoe UI", 9),
-                ColumnHeadersDefaultCellStyle = { Font = new Font("Segoe UI", 9, FontStyle.Bold) },
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
-            };
-
-            var lblSvc = new Label { Text = "Dịch vụ y tế", Dock = DockStyle.Top, Height = 24, Font = new Font("Segoe UI", 9, FontStyle.Bold) };
-
-            dgvServices = new DataGridView
+            return new DataGridView
             {
                 Dock = DockStyle.Fill,
                 ReadOnly = true,
                 AllowUserToAddRows = false,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                Font = new Font("Segoe UI", 9),
-                ColumnHeadersDefaultCellStyle = { Font = new Font("Segoe UI", 9, FontStyle.Bold) },
+                Font = new Font("Segoe UI", 9f),
+                BackgroundColor = Color.White,
+                BorderStyle = BorderStyle.None,
+                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
+                EnableHeadersVisualStyles = false,
+                ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None,
+                ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
+                {
+                    Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                    BackColor = Color.FromArgb(245, 245, 250),
+                    ForeColor = Color.FromArgb(60, 60, 70),
+                    SelectionBackColor = Color.FromArgb(245, 245, 250),
+                    Padding = new Padding(4, 8, 4, 8)
+                },
+                DefaultCellStyle = new DataGridViewCellStyle
+                {
+                    Padding = new Padding(4, 6, 4, 6),
+                    SelectionBackColor = Color.FromArgb(255, 240, 230),
+                    SelectionForeColor = Color.FromArgb(28, 28, 32)
+                },
+                RowTemplate = { Height = 36 },
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
             };
-
-            tab.Controls.Add(dgvServices);
-            tab.Controls.Add(lblSvc);
-            tab.Controls.Add(dgvPrescriptions);
-            tab.Controls.Add(lblPresc);
-            tab.Controls.Add(lblSelectedRecord);
-            return tab;
         }
 
+        // ── Logic ─────────────────────────────────────────────────────
         private void LoadProfile()
         {
             try
@@ -222,14 +351,12 @@ namespace QuanLyYTe.Forms.Patient
                 lblPatientId.Text = row["PATIENT_ID"]?.ToString();
                 lblFullName.Text = row["FULL_NAME"]?.ToString();
                 lblGender.Text = row["GENDER"]?.ToString();
-                lblBirthdate.Text = row["BIRTHDATE"] != DBNull.Value
-                    ? Convert.ToDateTime(row["BIRTHDATE"]).ToString("dd/MM/yyyy")
-                    : "—";
+                lblBirthdate.Text = row["BIRTHDATE"] != DBNull.Value ? Convert.ToDateTime(row["BIRTHDATE"]).ToString("dd/MM/yyyy") : "—";
                 lblIdCard.Text = row["ID_CARD"]?.ToString();
+                
                 txtMedicalHistory.Text = row["MEDICAL_HISTORY"]?.ToString() ?? "";
                 txtFamilyMedicalHistory.Text = row["FAMILY_MEDICAL_HISTORY"]?.ToString() ?? "";
                 txtDrugAllergies.Text = row["DRUG_ALLERGIES"]?.ToString() ?? "";
-
                 txtHouseNo.Text = row["HOUSE_NO"]?.ToString();
                 txtStreet.Text = row["STREET"]?.ToString();
                 txtDistrict.Text = row["DISTRICT"]?.ToString();
@@ -246,7 +373,6 @@ namespace QuanLyYTe.Forms.Patient
             try
             {
                 DataTable dt = _service.GetMedicalRecords();
-
                 if (dt.Columns["RECORD_ID"]      != null) dt.Columns["RECORD_ID"]!.ColumnName      = "Mã hồ sơ";
                 if (dt.Columns["RECORD_DATE"]    != null) dt.Columns["RECORD_DATE"]!.ColumnName    = "Ngày khám";
                 if (dt.Columns["DIAGNOSIS"]      != null) dt.Columns["DIAGNOSIS"]!.ColumnName      = "Chẩn đoán";
@@ -256,7 +382,6 @@ namespace QuanLyYTe.Forms.Patient
                 if (dt.Columns["DEPT_NAME"]      != null) dt.Columns["DEPT_NAME"]!.ColumnName      = "Khoa";
 
                 dgvRecords.DataSource = dt;
-
                 if (dgvRecords.Columns.Contains("Ngày khám"))
                     dgvRecords.Columns["Ngày khám"].DefaultCellStyle.Format = "dd/MM/yyyy";
             }
@@ -268,22 +393,16 @@ namespace QuanLyYTe.Forms.Patient
 
         private void DgvRecords_SelectionChanged(object? sender, EventArgs e)
         {
-            btnViewDetail.Enabled = dgvRecords.SelectedRows.Count > 0;
-        }
-
-        private void BtnViewDetail_Click(object? sender, EventArgs e)
-        {
             if (dgvRecords.SelectedRows.Count == 0) return;
             string recordId = dgvRecords.SelectedRows[0].Cells["Mã hồ sơ"].Value?.ToString() ?? "";
             LoadDetail(recordId);
-            tabMain.SelectedTab = tabMain.TabPages[2];
         }
 
         private void LoadDetail(string recordId)
         {
             try
             {
-                lblSelectedRecord.Text = $"Hồ sơ: {recordId}";
+                lblDetailTitle.Text = $"CHI TIẾT HỒ SƠ: {recordId}";
 
                 DataTable dtPresc = _service.GetPrescriptions(recordId);
                 if (dtPresc.Columns["RECORD_ID"]          != null) dtPresc.Columns["RECORD_ID"]!.ColumnName          = "Mã hồ sơ";
