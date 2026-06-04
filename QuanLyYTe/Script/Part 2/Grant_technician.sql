@@ -18,6 +18,17 @@ END;
 / 
 
 BEGIN
+    EXECUTE IMMEDIATE 'DROP PROCEDURE HOSPITAL.GET_TECHNICIAN_SERVICE_RECORDS';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -4043 THEN
+            DBMS_OUTPUT.PUT_LINE('Drop procedure error: ' || SQLERRM);
+        END IF;
+END;
+/ 
+
+
+BEGIN
     EXECUTE IMMEDIATE 'DROP PROCEDURE HOSPITAL.UPDATE_TECHNICIAN_SERVICE_RESULT';
 EXCEPTION
     WHEN OTHERS THEN
@@ -27,10 +38,27 @@ EXCEPTION
 END;
 / 
 
+BEGIN
+    EXECUTE IMMEDIATE 'DROP PROCEDURE HOSPITAL.GET_TECHNICIAN_PERSONAL_INFO';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -4043 THEN
+            DBMS_OUTPUT.PUT_LINE('Drop procedure error: ' || SQLERRM);
+        END IF;
+END;
+/ 
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP PROCEDURE HOSPITAL.UPDATE_TECHNICIAN_PERSONAL_INFO';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -4043 THEN
+            DBMS_OUTPUT.PUT_LINE('Drop procedure error: ' || SQLERRM);
+        END IF;
+END;
+/
 -- ============================================================
--- Create view for technician
--- This view only returns service records assigned to
--- the current logged-in technician.
+-- View: technician only sees assigned service records
 -- ============================================================
 
 CREATE OR REPLACE VIEW HOSPITAL.V_TECHNICIAN_SERVICE_RECORD AS
@@ -44,14 +72,12 @@ FROM HOSPITAL.SERVICE_RECORD SR
 JOIN HOSPITAL.STAFF ST
     ON SR.TECHNICIAN_ID = ST.STAFF_ID
 WHERE UPPER(ST.USERNAME_DB) = SYS_CONTEXT('USERENV', 'SESSION_USER')
-  AND ST.STAFF_ROLE = N'Kỹ thuật viên';
+  AND ST.STAFF_ROLE = N'Kỹ thuật viên'
+  AND ST.IS_ACTIVE = 1;
 
 -- ============================================================
--- Create update procedure
--- Technician can only update SERVICE_RESULT of their own
--- assigned service record.
+-- Get assigned service records
 -- ============================================================
-
 CREATE OR REPLACE PROCEDURE HOSPITAL.GET_TECHNICIAN_SERVICE_RECORDS (
     P_CURSOR OUT SYS_REFCURSOR
 )
@@ -70,6 +96,9 @@ BEGIN
 END;
 / 
 
+-- ============================================================
+-- Update only SERVICE_RESULT of assigned service record
+-- ============================================================
 CREATE OR REPLACE PROCEDURE HOSPITAL.UPDATE_TECHNICIAN_SERVICE_RESULT (
     P_RECORD_ID      IN VARCHAR2,
     P_SERVICE_TYPE   IN NVARCHAR2,
@@ -90,6 +119,7 @@ BEGIN
             FROM HOSPITAL.STAFF ST
             WHERE UPPER(ST.USERNAME_DB) = SYS_CONTEXT('USERENV', 'SESSION_USER')
               AND ST.STAFF_ROLE = N'Kỹ thuật viên'
+              AND ST.IS_ACTIVE = 1
       );
 
     V_ROWS_UPDATED := SQL%ROWCOUNT;
@@ -104,11 +134,75 @@ END;
 / 
 
 -- ============================================================
+-- Get current technician personal info
+-- ============================================================
+CREATE OR REPLACE PROCEDURE HOSPITAL.GET_TECHNICIAN_PERSONAL_INFO(
+    P_CURSOR OUT SYS_REFCURSOR
+)
+AUTHID DEFINER
+AS
+BEGIN
+    OPEN P_CURSOR FOR
+        SELECT
+            ST.STAFF_ID,
+            ST.FULL_NAME,
+            ST.GENDER,
+            ST.BIRTHDATE,
+            ST.ID_CARD,
+            ST.STAFF_ROLE AS ROLE,
+            ST.PHONE,
+            ST.HOMETOWN
+        FROM HOSPITAL.STAFF ST
+        WHERE UPPER(ST.USERNAME_DB) = SYS_CONTEXT('USERENV', 'SESSION_USER')
+          AND ST.STAFF_ROLE = N'Kỹ thuật viên'
+          AND ST.IS_ACTIVE = 1;
+END;
+/
+
+-- ============================================================
+-- Update allowed personal fields only
+-- ============================================================
+CREATE OR REPLACE PROCEDURE HOSPITAL.UPDATE_TECHNICIAN_PERSONAL_INFO(
+    P_PHONE IN VARCHAR2,
+    P_HOMETOWN IN NVARCHAR2
+)
+AUTHID DEFINER
+AS
+    V_ROWS_UPDATED NUMBER;
+BEGIN
+    UPDATE HOSPITAL.STAFF ST
+    SET ST.PHONE = CASE 
+                       WHEN P_PHONE IS NULL OR TRIM(P_PHONE) = '' 
+                       THEN ST.PHONE 
+                       ELSE P_PHONE 
+                   END,
+        ST.HOMETOWN = CASE 
+                          WHEN P_HOMETOWN IS NULL OR TRIM(P_HOMETOWN) = '' 
+                          THEN ST.HOMETOWN 
+                          ELSE P_HOMETOWN 
+                      END
+    WHERE UPPER(ST.USERNAME_DB) = SYS_CONTEXT('USERENV', 'SESSION_USER')
+      AND ST.STAFF_ROLE = N'Kỹ thuật viên'
+      AND ST.IS_ACTIVE = 1;
+
+    V_ROWS_UPDATED := SQL%ROWCOUNT;
+
+    IF V_ROWS_UPDATED = 0 THEN
+        RAISE_APPLICATION_ERROR(-20032, N'Không tìm thấy kỹ thuật viên hiện tại hoặc không có quyền cập nhật.');
+    END IF;
+END;
+/
+
+
+-- ============================================================
 -- Grant safe privileges to role
 -- ============================================================
 
-GRANT EXECUTE ON HOSPITAL.GET_TECHNICIAN_SERVICE_RECORDS TO RL_TECHNICIAN;
 GRANT SELECT ON HOSPITAL.V_TECHNICIAN_SERVICE_RECORD TO RL_TECHNICIAN;
+
+GRANT EXECUTE ON HOSPITAL.GET_TECHNICIAN_SERVICE_RECORDS TO RL_TECHNICIAN;
 GRANT EXECUTE ON HOSPITAL.UPDATE_TECHNICIAN_SERVICE_RESULT TO RL_TECHNICIAN;
 
+GRANT EXECUTE ON HOSPITAL.GET_TECHNICIAN_PERSONAL_INFO TO RL_TECHNICIAN;
+GRANT EXECUTE ON HOSPITAL.UPDATE_TECHNICIAN_PERSONAL_INFO TO RL_TECHNICIAN;
 COMMIT;

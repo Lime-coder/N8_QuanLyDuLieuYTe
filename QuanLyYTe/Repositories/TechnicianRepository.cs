@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DataProvider;
@@ -20,6 +20,27 @@ namespace QuanLyYTe.Repositories
             };
 
             return _dbProvider.ExecuteQuerySP("HOSPITAL.GET_TECHNICIAN_SERVICE_RECORDS", parameters);
+        }
+
+        public DataTable GetPersonalInfo()
+        {
+            OracleParameter[] parameters =
+            {
+                new OracleParameter("P_CURSOR", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
+            };
+
+            return _dbProvider.ExecuteQuerySP("HOSPITAL.GET_TECHNICIAN_PERSONAL_INFO", parameters);
+        }
+
+        public void UpdatePersonalInfo(string phone, string hometown)
+        {
+            OracleParameter[] parameters =
+            {
+                new OracleParameter("P_PHONE", OracleDbType.Varchar2) { Value = (object?)phone ?? DBNull.Value },
+                new OracleParameter("P_HOMETOWN", OracleDbType.NVarchar2) { Value = (object?)hometown ?? DBNull.Value }
+            };
+
+            _dbProvider.ExecuteNonQuerySP("HOSPITAL.UPDATE_TECHNICIAN_PERSONAL_INFO", parameters);
         }
 
         public void UpdateServiceResult(string recordId, string serviceType, DateTime serviceDate, string serviceResult)
