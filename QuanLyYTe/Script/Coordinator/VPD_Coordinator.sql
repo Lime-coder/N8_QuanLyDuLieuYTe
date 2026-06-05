@@ -168,6 +168,7 @@ SELECT
 FROM hospital.COORD_ASSIGNMENT_STAFF
 WHERE staff_role = N'Kỹ thuật viên';
 
+
 -- ==============================================================================
 -- PHẦN 8: CHỈNH SỬA SCHEMA CHO PHÉP ĐIỀU PHỐI VIÊN PHÂN CÔNG (ALLOW NULL TECHNICIAN)
 -- ==============================================================================
@@ -214,4 +215,3 @@ BEGIN
     COMMIT;
 END;
 /
-
