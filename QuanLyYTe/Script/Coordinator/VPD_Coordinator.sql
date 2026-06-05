@@ -50,7 +50,7 @@ RETURN VARCHAR2
 AS
     v_current_user VARCHAR2(100);
 BEGIN
-    v_current_user := SYS_CONTEXT('USERENV', 'CURRENT_USER');
+    v_current_user := SYS_CONTEXT('USERENV', 'SESSION_USER');
     
     -- Bypass cho schema owner, DBA app, và khi trigger chạy (CURRENT_USER = 'HOSPITAL')
     IF v_current_user IN ('HOSPITAL', 'HOSPITAL_DBA') THEN
@@ -65,8 +65,6 @@ EXCEPTION
         RETURN '1=0';
 END;
 /
-
-SHOW ERRORS FUNCTION hospital.FN_VPD_STAFF_SELF;
 
 -- ==============================================================================
 -- PHẦN 4: GẮN VPD POLICY CHO STAFF
@@ -169,17 +167,3 @@ SELECT
     full_name
 FROM hospital.COORD_ASSIGNMENT_STAFF
 WHERE staff_role = N'Kỹ thuật viên';
-
--- ==============================================================================
--- PHẦN 8: TEST NHANH
--- ==============================================================================
-
-SELECT owner, object_name, object_type, status
-FROM dba_objects
-WHERE owner = 'HOSPITAL'
-  AND object_name IN (
-      'FN_VPD_STAFF_SELF',
-      'COORD_ASSIGNMENT_STAFF',
-      'VW_COORD_DOCTORS',
-      'VW_COORD_TECHNICIANS'
-  );
