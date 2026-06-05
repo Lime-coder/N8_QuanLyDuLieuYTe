@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DataProvider;
@@ -64,7 +64,7 @@ namespace QuanLyYTe.Repositories
 
         public DataTable GetTechniciansForAssignment()
         {
-            string sql = "SELECT username_db, staff_id, full_name, TO_NCHAR(full_name) AS display_name FROM hospital.VW_COORD_TECHNICIANS ORDER BY full_name";
+            string sql = "SELECT username_db, staff_id, full_name, TO_NCHAR(full_name) || N' (' || TO_NCHAR(staff_id) || N')' AS display_name FROM hospital.VW_COORD_TECHNICIANS ORDER BY full_name";
             return ExecuteAssignmentQuery(sql);
         }
 
