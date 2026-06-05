@@ -24,12 +24,6 @@ EXCEPTION WHEN OTHERS THEN NULL;
 END;
 /
 
-BEGIN
-    DBMS_RLS.DROP_POLICY('HOSPITAL', 'STAFF', 'POLICY_STAFF_SELF');
-EXCEPTION WHEN OTHERS THEN NULL;
-END;
-/
-
 -- ==============================================================================
 -- PHẦN 2: DROP FUNCTION CŨ
 -- ==============================================================================
