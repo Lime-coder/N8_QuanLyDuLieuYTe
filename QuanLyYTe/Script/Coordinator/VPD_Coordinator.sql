@@ -1,16 +1,15 @@
 -- ==============================================================================
 -- File: VPD_Coordinator.sql
--- Má»¥c Ä‘Ã­ch:
--- 1. Giá»¯ TC#5: nhÃ¢n viÃªn query trá»±c tiáº¿p STAFF chá»‰ tháº¥y chÃ­nh mÃ¬nh.
--- 2. Táº¡o báº£ng phá»¥ tá»‘i thiá»ƒu cho Äiá»u phá»‘i viÃªn chá»n BÃ¡c sÄ©/Y sÄ© vÃ  Ká»¹ thuáº­t viÃªn.
--- 3. KhÃ´ng dÃ¹ng CLIENT_IDENTIFIER.
--- Run as: HOSPITAL_DBA cÃ³ quyá»n DBMS_RLS
+-- Mục đích:
+-- 1. Giữ TC#5: nhân viên query trực tiếp STAFF chỉ thấy chính mình.
+-- 2. Tạo bảng phụ tối thiểu cho Điều phối viên chọn Bác sĩ/Y sĩ và Kỹ thuật viên.
+-- Run as: HOSPITAL_DBA có quyền DBMS_RLS
 -- ==============================================================================
 
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 -- ==============================================================================
--- PHáº¦N 1: DROP POLICY CÅ¨
+-- PHẦN 1: DROP POLICY CŨ
 -- ==============================================================================
 
 BEGIN
@@ -32,7 +31,7 @@ END;
 /
 
 -- ==============================================================================
--- PHáº¦N 2: DROP FUNCTION CÅ¨
+-- PHẦN 2: DROP FUNCTION CŨ
 -- ==============================================================================
 
 BEGIN
@@ -46,7 +45,7 @@ END;
 /
 
 -- ==============================================================================
--- PHáº¦N 3: Táº O FUNCTION VPD CHO STAFF
+-- PHẦN 3: TẠO FUNCTION VPD CHO STAFF
 -- ==============================================================================
 
 CREATE OR REPLACE FUNCTION hospital.FN_VPD_STAFF_SELF (
@@ -76,11 +75,11 @@ END;
 SHOW ERRORS FUNCTION hospital.FN_VPD_STAFF_SELF;
 
 -- ==============================================================================
--- PHáº¦N 4: Gáº®N VPD POLICY CHO STAFF
+-- PHẦN 4: GẮN VPD POLICY CHO STAFF
 -- ==============================================================================
 
 BEGIN
-    -- Policy 1: SELECT trá»±c tiáº¿p STAFF chá»‰ tháº¥y chÃ­nh mÃ¬nh
+    -- Policy 1: SELECT trực tiếp STAFF chỉ thấy chính mình
     DBMS_RLS.ADD_POLICY(
         object_schema   => 'HOSPITAL',
         object_name     => 'STAFF',
@@ -89,7 +88,7 @@ BEGIN
         statement_types => 'SELECT'
     );
 
-    -- Policy 2: UPDATE phone, hometown chá»‰ trÃªn dÃ²ng chÃ­nh mÃ¬nh
+    -- Policy 2: UPDATE phone, hometown chỉ trên dòng chính mình
     DBMS_RLS.ADD_POLICY(
         object_schema     => 'HOSPITAL',
         object_name       => 'STAFF',
@@ -103,7 +102,7 @@ END;
 /
 
 -- ==============================================================================
--- PHáº¦N 5: Táº O Báº¢NG PHá»¤ Tá»I THIá»‚U CHO ÄIá»€U PHá»I VIÃŠN PHÃ‚N CÃ”NG
+-- PHẦN 5: TẠO BẢNG PHỤ TỐI THIỂU CHO ĐIỀU PHỐI VIÊN PHÂN CÔNG
 -- ==============================================================================
 
 BEGIN
@@ -126,7 +125,7 @@ CREATE TABLE hospital.COORD_ASSIGNMENT_STAFF (
 );
 
 -- ==============================================================================
--- PHáº¦N 6: Äá»” Dá»® LIá»†U Tá»I THIá»‚U Tá»ª STAFF SANG Báº¢NG PHá»¤
+-- PHẦN 6: ĐỔ DỮ LIỆU TỐI THIỂU TỪ STAFF SANG BẢNG PHỤ
 -- ==============================================================================
 
 INSERT INTO hospital.COORD_ASSIGNMENT_STAFF (
@@ -148,15 +147,15 @@ FROM hospital.staff s
 LEFT JOIN hospital.department d
     ON d.dept_id = s.dept_id
 WHERE s.staff_role IN (
-    N'BÃ¡c sÄ©',
-    N'BÃ¡c sÄ©/Y sÄ©',
-    N'Ká»¹ thuáº­t viÃªn'
+    N'Bác sĩ',
+    N'Bác sĩ/Y sĩ',
+    N'Kỹ thuật viên'
 );
 
 COMMIT;
 
 -- ==============================================================================
--- PHáº¦N 7: Táº O VIEW CHO ÄIá»€U PHá»I VIÃŠN
+-- PHẦN 7: TẠO VIEW CHO ĐIỀU PHỐI VIÊN
 -- ==============================================================================
 
 CREATE OR REPLACE VIEW hospital.VW_COORD_DOCTORS AS
@@ -167,7 +166,7 @@ SELECT
     dept_id,
     specialty
 FROM hospital.COORD_ASSIGNMENT_STAFF
-WHERE staff_role IN (N'BÃ¡c sÄ©', N'BÃ¡c sÄ©/Y sÄ©');
+WHERE staff_role IN (N'Bác sĩ', N'Bác sĩ/Y sĩ');
 
 CREATE OR REPLACE VIEW hospital.VW_COORD_TECHNICIANS AS
 SELECT
@@ -175,10 +174,10 @@ SELECT
     staff_id,
     full_name
 FROM hospital.COORD_ASSIGNMENT_STAFF
-WHERE staff_role = N'Ká»¹ thuáº­t viÃªn';
+WHERE staff_role = N'Kỹ thuật viên';
 
 -- ==============================================================================
--- PHáº¦N 8: TEST NHANH
+-- PHẦN 8: TEST NHANH
 -- ==============================================================================
 
 SELECT owner, object_name, object_type, status
