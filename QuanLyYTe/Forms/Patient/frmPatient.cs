@@ -11,136 +11,14 @@ namespace QuanLyYTe.Forms.Patient
     {
         private readonly PatientService _service = new PatientService();
 
-        // ── Styling Constants ─────────────────────────────────────────
-        private static readonly Color Orange = Color.FromArgb(255, 140, 40);
-        private static readonly Color OrangeHov = Color.FromArgb(255, 165, 80);
-        private static readonly Color ActiveBg = Color.FromArgb(45, 255, 140, 40);
-        private static readonly Color DarkBg = Color.FromArgb(24, 24, 28);
-        private static readonly Color ContentBg = Color.FromArgb(245, 244, 242);
-
-        // ── Core Layout ───────────────────────────────────────────────
-        private Panel pnlSidebar = null!;
-        private Panel pnlTopbar = null!;
-        private Panel pnlContent = null!;
-        private Label lblPageTitle = null!;
-        private Label lblPageBreadcrumb = null!;
-        private Button _activeNavBtn = null!;
-
-        private Panel pnlProfile = null!;
-        private Panel pnlRecords = null!;
-
-        // ── Profile Controls ──────────────────────────────────────────
-        private Label lblPatientId = null!;
-        private Label lblFullName = null!;
-        private Label lblGender = null!;
-        private Label lblBirthdate = null!;
-        private Label lblIdCard = null!;
-        private TextBox txtMedicalHistory = null!;
-        private TextBox txtFamilyMedicalHistory = null!;
-        private TextBox txtDrugAllergies = null!;
-        private TextBox txtHouseNo = null!;
-        private TextBox txtStreet = null!;
-        private TextBox txtDistrict = null!;
-        private TextBox txtCityProvince = null!;
-        private Button btnSaveContact = null!;
-
-        // ── Records Controls ──────────────────────────────────────────
-        private DataGridView dgvRecords = null!;
-        private DataGridView dgvPrescriptions = null!;
-        private DataGridView dgvServices = null!;
-        private Label lblDetailTitle = null!;
+        
 
         public frmPatient()
         {
             InitializeComponent();
+            InitializeCustomUI();
             LoadProfile();
             LoadMedicalRecords();
-        }
-
-        private void InitializeComponent()
-        {
-            SuspendLayout();
-            Text = "Hospital - Patient Portal";
-            ClientSize = new Size(1100, 700);
-            MinimumSize = new Size(950, 600);
-            StartPosition = FormStartPosition.CenterScreen;
-            WindowState = FormWindowState.Maximized;
-            BackColor = ContentBg;
-            Font = new Font("Segoe UI", 9f);
-
-            // ── Sidebar ───────────────────────────────────────────────
-            pnlSidebar = new Panel { Dock = DockStyle.Left, Width = 240, BackColor = DarkBg };
-
-            var pnlLogo = new Panel { Dock = DockStyle.Top, Height = 88, BackColor = Color.FromArgb(30, 30, 35) };
-            pnlLogo.Controls.Add(new Label { Text = "Hospital Portal", Font = new Font("Segoe UI", 14f, FontStyle.Bold), ForeColor = Orange, AutoSize = true, Location = new Point(20, 18) });
-            pnlLogo.Controls.Add(new Label { Text = "Patient Management", Font = new Font("Segoe UI", 7.5f), ForeColor = Color.FromArgb(120, 120, 130), AutoSize = true, Location = new Point(22, 52) });
-
-            var pnlNav = new Panel { Dock = DockStyle.Fill };
-            Button btnNavProfile = CreateNavButton("  Hồ sơ cá nhân", 0);
-            Button btnNavRecords = CreateNavButton("  Lịch sử khám", 1);
-            Button btnNavLogout = CreateNavButton("  Đăng xuất", 2);
-            btnNavLogout.ForeColor = Color.FromArgb(220, 80, 80);
-            
-            btnNavProfile.Click += (s, e) => { SetActiveNav(btnNavProfile); ShowPanel(pnlProfile, "Hồ sơ cá nhân", "Patient / Profile"); };
-            btnNavRecords.Click += (s, e) => { SetActiveNav(btnNavRecords); ShowPanel(pnlRecords, "Lịch sử khám", "Patient / Medical Records"); };
-            btnNavLogout.Click += BtnLogout_Click;
-
-            pnlNav.Controls.AddRange(new Control[] { btnNavProfile, btnNavRecords, btnNavLogout });
-            pnlSidebar.Controls.Add(pnlNav);
-            pnlSidebar.Controls.Add(pnlLogo);
-
-            // ── Topbar ────────────────────────────────────────────────
-            pnlTopbar = new Panel { Dock = DockStyle.Top, Height = 68, BackColor = Color.White };
-            lblPageTitle = new Label { Font = new Font("Segoe UI", 15f, FontStyle.Bold), ForeColor = Color.FromArgb(28, 28, 32), AutoSize = true, Location = new Point(28, 10) };
-            lblPageBreadcrumb = new Label { Font = new Font("Segoe UI", 8.5f), ForeColor = Color.FromArgb(160, 160, 170), AutoSize = true, Location = new Point(30, 42) };
-            var lblUserInfo = new Label { Text = $"{AppSession.CurrentUsername.ToUpper()}  ·  PATIENT", Font = new Font("Segoe UI", 8.5f, FontStyle.Bold), ForeColor = Orange, AutoSize = false, Size = new Size(300, 20), TextAlign = ContentAlignment.MiddleRight, Anchor = AnchorStyles.Top | AnchorStyles.Right, Location = new Point(pnlTopbar.Width - 324, 24) };
-            
-            pnlTopbar.Controls.AddRange(new Control[] { lblPageTitle, lblPageBreadcrumb, lblUserInfo });
-
-            var pnlDivider = new Panel { Dock = DockStyle.Top, Height = 3, BackColor = Orange };
-
-            // ── Content ───────────────────────────────────────────────
-            pnlContent = new Panel { Dock = DockStyle.Fill, Padding = new Padding(24) };
-
-            BuildProfilePanel();
-            BuildRecordsPanel();
-
-            pnlContent.Controls.Add(pnlProfile);
-            pnlContent.Controls.Add(pnlRecords);
-
-            var pnlMain = new Panel { Dock = DockStyle.Fill };
-            pnlMain.Controls.Add(pnlContent);
-            pnlMain.Controls.Add(pnlDivider);
-            pnlMain.Controls.Add(pnlTopbar);
-
-            Controls.Add(pnlMain);
-            Controls.Add(pnlSidebar);
-
-            // Default state
-            SetActiveNav(btnNavProfile);
-            ShowPanel(pnlProfile, "Hồ sơ cá nhân", "Patient / Profile");
-            ResumeLayout(false);
-        }
-
-        private Button CreateNavButton(string text, int index)
-        {
-            var btn = new Button
-            {
-                Text = text,
-                Font = new Font("Segoe UI", 9.5f),
-                ForeColor = Color.FromArgb(190, 190, 200),
-                BackColor = Color.Transparent,
-                FlatStyle = FlatStyle.Flat,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(16, 0, 0, 0),
-                Size = new Size(216, 46),
-                Location = new Point(12, 10 + index * 52),
-                Cursor = Cursors.Hand
-            };
-            btn.FlatAppearance.BorderSize = 0;
-            btn.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 40, 46);
-            btn.FlatAppearance.MouseDownBackColor = Color.FromArgb(50, 50, 58);
-            return btn;
         }
 
         private void SetActiveNav(Button btn)
@@ -173,7 +51,6 @@ namespace QuanLyYTe.Forms.Patient
             }
         }
 
-        // ── Panel Profile ─────────────────────────────────────────────
         private void BuildProfilePanel()
         {
             pnlProfile = new Panel { Dock = DockStyle.Fill, BackColor = Color.White };
@@ -210,7 +87,7 @@ namespace QuanLyYTe.Forms.Patient
             TableLayoutPanel tlpAddress = new TableLayoutPanel
             {
                 Location = new Point(labelX, y),
-                Height = 140, // Increased height to prevent cutoff
+                Height = 140,
                 ColumnCount = 2,
                 RowCount = 2,
                 Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
@@ -253,93 +130,6 @@ namespace QuanLyYTe.Forms.Patient
             pnlProfile.Controls.Add(btnSaveContact);
         }
 
-        // ── Panel Records ─────────────────────────────────────────────
-        private void BuildRecordsPanel()
-        {
-            pnlRecords = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent };
-
-            var splitContainer = new SplitContainer
-            {
-                Dock = DockStyle.Fill,
-                Orientation = Orientation.Horizontal,
-                SplitterDistance = 250,
-                SplitterWidth = 6,
-                BackColor = ContentBg
-            };
-
-            // Top: Medical Records
-            var pnlTop = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(12) };
-            var lblTopTitle = new Label { Text = "DANH SÁCH HỒ SƠ KHÁM", Font = new Font("Segoe UI", 9f, FontStyle.Bold), ForeColor = Orange, Dock = DockStyle.Top, Height = 24 };
-            dgvRecords = CreateGridView();
-            dgvRecords.SelectionChanged += DgvRecords_SelectionChanged;
-            pnlTop.Controls.Add(dgvRecords);
-            pnlTop.Controls.Add(lblTopTitle);
-
-            // Bottom: Details (Prescriptions & Services)
-            var pnlBottom = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(12) };
-            lblDetailTitle = new Label { Text = "CHI TIẾT HỒ SƠ: Chưa chọn", Font = new Font("Segoe UI", 9f, FontStyle.Bold), ForeColor = Orange, Dock = DockStyle.Top, Height = 24 };
-            
-            var splitBottom = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1, BackColor = Color.White };
-            splitBottom.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            splitBottom.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            
-            var pnlLeft = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 0, 8, 0) };
-            var lblLeft = new Label { Text = "Đơn thuốc", Font = new Font("Segoe UI", 8.5f, FontStyle.Bold), Dock = DockStyle.Top, Height = 20 };
-            dgvPrescriptions = CreateGridView();
-            pnlLeft.Controls.Add(dgvPrescriptions);
-            pnlLeft.Controls.Add(lblLeft);
-
-            var pnlRight = new Panel { Dock = DockStyle.Fill, Padding = new Padding(8, 0, 0, 0) };
-            var lblRight = new Label { Text = "Dịch vụ y tế", Font = new Font("Segoe UI", 8.5f, FontStyle.Bold), Dock = DockStyle.Top, Height = 20 };
-            dgvServices = CreateGridView();
-            pnlRight.Controls.Add(dgvServices);
-            pnlRight.Controls.Add(lblRight);
-
-            splitBottom.Controls.Add(pnlLeft, 0, 0);
-            splitBottom.Controls.Add(pnlRight, 1, 0);
-            
-            pnlBottom.Controls.Add(splitBottom);
-            pnlBottom.Controls.Add(lblDetailTitle);
-
-            splitContainer.Panel1.Controls.Add(pnlTop);
-            splitContainer.Panel2.Controls.Add(pnlBottom);
-            pnlRecords.Controls.Add(splitContainer);
-        }
-
-        private DataGridView CreateGridView()
-        {
-            return new DataGridView
-            {
-                Dock = DockStyle.Fill,
-                ReadOnly = true,
-                AllowUserToAddRows = false,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                Font = new Font("Segoe UI", 9f),
-                BackgroundColor = Color.White,
-                BorderStyle = BorderStyle.None,
-                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
-                EnableHeadersVisualStyles = false,
-                ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None,
-                ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
-                {
-                    Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                    BackColor = Color.FromArgb(245, 245, 250),
-                    ForeColor = Color.FromArgb(60, 60, 70),
-                    SelectionBackColor = Color.FromArgb(245, 245, 250),
-                    Padding = new Padding(4, 8, 4, 8)
-                },
-                DefaultCellStyle = new DataGridViewCellStyle
-                {
-                    Padding = new Padding(4, 6, 4, 6),
-                    SelectionBackColor = Color.FromArgb(255, 240, 230),
-                    SelectionForeColor = Color.FromArgb(28, 28, 32)
-                },
-                RowTemplate = { Height = 36 },
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
-            };
-        }
-
-        // ── Logic ─────────────────────────────────────────────────────
         private void LoadProfile()
         {
             try
@@ -368,6 +158,7 @@ namespace QuanLyYTe.Forms.Patient
             }
         }
 
+        
         private void LoadMedicalRecords()
         {
             try
@@ -381,14 +172,68 @@ namespace QuanLyYTe.Forms.Patient
                 if (dt.Columns["DOCTOR_NAME"]    != null) dt.Columns["DOCTOR_NAME"]!.ColumnName    = "Bác sĩ";
                 if (dt.Columns["DEPT_NAME"]      != null) dt.Columns["DEPT_NAME"]!.ColumnName      = "Khoa";
 
-                dgvRecords.DataSource = dt;
+                _allRecordsTable = dt;
+                dgvRecords.DataSource = _allRecordsTable.DefaultView;
                 if (dgvRecords.Columns.Contains("Ngày khám"))
                     dgvRecords.Columns["Ngày khám"].DefaultCellStyle.Format = "dd/MM/yyyy";
+
+                var depts = new System.Collections.Generic.List<string> { "Tất cả" };
+                var doctors = new System.Collections.Generic.List<string> { "Tất cả" };
+
+                foreach (DataRow row in dt.Rows)
+                {
+                    string dept = row["Khoa"]?.ToString() ?? "";
+                    string doctor = row["Bác sĩ"]?.ToString() ?? "";
+                    if (!string.IsNullOrEmpty(dept) && !depts.Contains(dept)) depts.Add(dept);
+                    if (!string.IsNullOrEmpty(doctor) && !doctors.Contains(doctor)) doctors.Add(doctor);
+                }
+
+                cboDept.DataSource = depts;
+                cboDoctor.DataSource = doctors;
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Lỗi tải lịch sử khám: " + ex.Message);
             }
+        }
+
+        private void FilterRecords()
+        {
+            if (_allRecordsTable == null) return;
+
+            string keyword = txtSearchRecords.Text.Trim().ToLower();
+            string selectedDept = cboDept.SelectedItem?.ToString() ?? "Tất cả";
+            string selectedDoctor = cboDoctor.SelectedItem?.ToString() ?? "Tất cả";
+
+            DateTime from = dtpFrom.Value.Date;
+            DateTime to = dtpTo.Value.Date.AddDays(1).AddSeconds(-1);
+
+            _allRecordsTable.DefaultView.RowFilter = "";
+
+            var parts = new System.Collections.Generic.List<string>();
+
+            parts.Add($"[Ngày khám] >= #{from:MM/dd/yyyy}# AND [Ngày khám] <= #{to:MM/dd/yyyy HH:mm:ss}#");
+
+            if (selectedDept != "Tất cả")
+            {
+                string escDept = selectedDept.Replace("'", "''");
+                parts.Add($"[Khoa] = '{escDept}'");
+            }
+
+            if (selectedDoctor != "Tất cả")
+            {
+                string escDoc = selectedDoctor.Replace("'", "''");
+                parts.Add($"[Bác sĩ] = '{escDoc}'");
+            }
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                string esc = keyword.Replace("'", "''");
+                parts.Add($"(CONVERT([Chẩn đoán], 'System.String') LIKE '%{esc}%' OR " +
+                           $"CONVERT([Kết luận], 'System.String') LIKE '%{esc}%')");
+            }
+
+            _allRecordsTable.DefaultView.RowFilter = string.Join(" AND ", parts);
         }
 
         private void DgvRecords_SelectionChanged(object? sender, EventArgs e)
