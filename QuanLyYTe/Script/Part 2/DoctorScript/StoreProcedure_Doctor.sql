@@ -12,9 +12,18 @@ END;
 CREATE OR REPLACE PROCEDURE USP_GET_MEDICAL_RECORD(p_s NVARCHAR2, p_c OUT SYS_REFCURSOR) AS 
 BEGIN 
     OPEN p_c FOR 
-    SELECT record_id, patient_id, TO_CHAR(record_date, 'DD/MM/YYYY') as record_date, diagnosis, treatment_plan, doctor_id, dept_id, conclusion 
-    FROM medical_record 
-    WHERE record_id LIKE '%'||UPPER(p_s)||'%' OR patient_id LIKE '%'||UPPER(p_s)||'%'; 
+    SELECT m.record_id, m.patient_id, p.full_name, 
+           TO_CHAR(m.record_date, 'DD/MM/YYYY') as record_date, 
+           m.diagnosis, m.treatment_plan, m.conclusion 
+    FROM medical_record m 
+    JOIN patient p ON m.patient_id = p.patient_id
+    WHERE m.record_id LIKE '%'||UPPER(p_s)||'%' 
+       OR m.patient_id LIKE '%'||UPPER(p_s)||'%'
+       OR p.full_name LIKE '%'||p_s||'%'
+       OR m.diagnosis LIKE '%'||p_s||'%'
+       OR m.treatment_plan LIKE '%'||p_s||'%'
+       OR m.conclusion LIKE '%'||p_s||'%'
+       OR TO_CHAR(m.record_date, 'DD/MM/YYYY') LIKE '%'||p_s||'%';
 END;
 /
 
@@ -73,7 +82,10 @@ BEGIN
     OPEN p_c FOR 
     SELECT record_id, TO_CHAR(prescription_date, 'DD/MM/YYYY') as prescription_date, medicine_name, dosage 
     FROM prescription 
-    WHERE record_id LIKE '%'||UPPER(TRIM(p_s))||'%';
+    WHERE record_id LIKE '%'||UPPER(TRIM(p_s))||'%'
+       OR medicine_name LIKE '%'||p_s||'%'
+       OR dosage LIKE '%'||p_s||'%'
+       OR TO_CHAR(prescription_date, 'DD/MM/YYYY') LIKE '%'||p_s||'%';
 END;
 /
 
@@ -124,7 +136,11 @@ BEGIN
     OPEN p_c FOR 
     SELECT patient_id, full_name, gender, TO_CHAR(birthdate, 'DD/MM/YYYY') as birthdate, medical_history, family_medical_history, drug_allergies 
     FROM patient 
-    WHERE (full_name LIKE '%'||p_s||'%' OR patient_id LIKE '%'||UPPER(TRIM(p_s))||'%');
+    WHERE full_name LIKE '%'||p_s||'%' 
+       OR patient_id LIKE '%'||UPPER(TRIM(p_s))||'%'
+       OR gender LIKE '%'||p_s||'%'
+       OR TO_CHAR(birthdate, 'DD/MM/YYYY') LIKE '%'||p_s||'%'
+       OR medical_history LIKE '%'||p_s||'%';
 END;
 /
 
@@ -150,6 +166,26 @@ BEGIN
 END;
 /
 
+-- E. TC#5
+-- 1. Stored Procedure Doctors get their profile
+CREATE OR REPLACE PROCEDURE USP_GET_SELF_INFO(p_c OUT SYS_REFCURSOR) AS
+BEGIN
+    OPEN p_c FOR 
+    SELECT s.full_name, s.gender, s.birthdate, s.id_card, s.hometown, s.phone, s.staff_role, d.dept_name
+    FROM staff s
+    JOIN department d ON d.dept_id = s.dept_id
+    WHERE UPPER(username_db) = SYS_CONTEXT('USERENV', 'SESSION_USER');
+END;
+/
+
+-- 2. Stored Procedure Doctors update their profile  
+CREATE OR REPLACE PROCEDURE USP_UPDATE_SELF_INFO(p_hometown NVARCHAR2, p_phone VARCHAR2) AS
+BEGIN
+    UPDATE staff SET hometown = p_hometown, phone = p_phone 
+    WHERE UPPER(username_db) = SYS_CONTEXT('USERENV', 'SESSION_USER');
+END;
+/
+
 GRANT EXECUTE ON hospital.USP_GET_MEDICAL_RECORD TO rl_doctor;
 GRANT EXECUTE ON hospital.USP_UPDATE_MEDICAL_RECORD TO rl_doctor;
 
@@ -162,3 +198,6 @@ GRANT EXECUTE ON hospital.USP_MANAGE_PRESCRIPTION TO rl_doctor;
 
 GRANT EXECUTE ON hospital.USP_GET_PATIENTS TO rl_doctor;
 GRANT EXECUTE ON hospital.USP_UPDATE_PATIENT TO rl_doctor;
+
+GRANT EXECUTE ON hospital.USP_GET_SELF_INFO TO rl_doctor;
+GRANT EXECUTE ON hospital.USP_UPDATE_SELF_INFO TO rl_doctor;
