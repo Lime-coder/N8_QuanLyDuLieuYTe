@@ -135,6 +135,15 @@ namespace QuanLyYTe.Forms.Technician
             FilterServices();
         }
 
+        private void txtSearchRecord_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true; // Ngăn tiếng "bíp" khi nhấn Enter
+                btnSearch_Click(sender, e);
+            }
+        }
+
         private void btnRefresh_Click(object sender, EventArgs e)
         {
             txtSearchRecord.Clear();
