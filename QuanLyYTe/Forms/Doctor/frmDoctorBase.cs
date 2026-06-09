@@ -1,46 +1,58 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
 using QuanLyYTe.Services;
-using QuanLyYTe.Helpers;
 
 namespace QuanLyYTe.Forms.Doctor
 {
     public class frmDoctorBase : Form
     {
         protected readonly DoctorService Svc = new DoctorService();
-        protected DataGridView Dgv = new DataGridView {
-            Dock = DockStyle.Fill,
+        protected DataGridView Dgv = new DataGridView { 
+            Dock = DockStyle.Fill, 
             BackgroundColor = Color.White, 
-            BorderStyle = BorderStyle.None
+            BorderStyle = BorderStyle.None, 
+            AllowUserToAddRows = false, 
+            SelectionMode = DataGridViewSelectionMode.FullRowSelect 
         };
 
         protected TextBox TxtS = new TextBox { 
-            Width = 200, Location = new Point(70, 25) 
+            Width = 200, 
+            Location = new Point(70, 25) 
         };
 
+        protected Panel pnlSearch;
         protected Button btnS, btnA, btnE, btnD;
 
         public frmDoctorBase()
         {
-            Color bg = Color.FromArgb(242, 242, 242);
-            Panel p = new Panel { 
-                Dock = DockStyle.Top, Height = 75, BackColor = bg 
+            pnlSearch = new Panel { 
+                Dock = DockStyle.Top, 
+                Height = 75, 
+                BackColor = Color.FromArgb(242, 242, 242) 
             };
 
             Label lblS = new Label { 
-                Text = "Tìm:", Location = new Point(25, 28), AutoSize = true, BackColor = bg 
+                Text = "Tìm:", 
+                Location = new Point(25, 28), 
+                AutoSize = true 
             };
 
-            btnS = CreateBtn("Tìm", Color.Gray, 290); btnS.Click += (s, e) => LoadD();
-            btnA = CreateBtn("Tạo", Color.DodgerBlue, 405); btnA.Click += (s, e) => FormA();
-            btnE = CreateBtn("Sửa", Color.Gold, 520); btnE.Click += (s, e) => FormE();
-            btnD = CreateBtn("Xóa", Color.Crimson, 635); btnD.Click += (s, e) => FormD();
+            btnS = CreateBtn("Tìm", Color.Gray, 290); 
+            btnS.Click += (s, e) => LoadD();
 
-            p.Controls.AddRange(new Control[] { lblS, TxtS, btnS, btnA, btnE, btnD });
-            this.Controls.AddRange(new Control[] { Dgv, p });
+            btnA = CreateBtn("Thêm", Color.DodgerBlue, 405); 
+            btnA.Click += (s, e) => FormA();
+
+            btnE = CreateBtn("Sửa", Color.Gold, 520); 
+            btnE.Click += (s, e) => FormE();
+
+            btnD = CreateBtn("Xóa", Color.Crimson, 635); 
+            btnD.Click += (s, e) => FormD();
+
+            pnlSearch.Controls.AddRange(new Control[] { lblS, TxtS, btnS, btnA, btnE, btnD });
+            this.Controls.AddRange(new Control[] { Dgv, pnlSearch });
         }
 
         protected virtual void LoadD() { }
@@ -49,7 +61,8 @@ namespace QuanLyYTe.Forms.Doctor
         protected virtual void FormD() { }
 
         protected Button CreateBtn(string t, Color c, int x) => new Button { 
-            Text = t, BackColor = c, 
+            Text = t, 
+            BackColor = c, 
             ForeColor = Color.White, 
             FlatStyle = FlatStyle.Flat, 
             Location = new Point(x, 20), 
@@ -61,85 +74,84 @@ namespace QuanLyYTe.Forms.Doctor
         protected void ShowDialog(string t, Dictionary<string, string> f, Action<Dictionary<string, string>> s)
         {
             Form d = new Form { 
-                Text = t, Size = new Size(550, 680), 
+                Text = t, 
+                Width = 520, 
                 StartPosition = FormStartPosition.CenterParent, 
                 FormBorderStyle = FormBorderStyle.FixedDialog, 
                 MaximizeBox = false 
             };
-            int y = 25;
-            var boxes = new Dictionary<string, TextBox>();
 
+            int y = 20;
+            var boxes = new Dictionary<string, TextBox>();
             foreach (var k in f.Keys)
             {
-                string labelText = k.Replace("(Không sửa)", "").Trim();
                 d.Controls.Add(new Label { 
-                    Text = labelText + ":", 
+                    Text = k.Replace("(Không sửa)", "") + ":", 
                     Location = new Point(25, y), 
                     AutoSize = true, 
                     Font = new Font("Segoe UI", 9, FontStyle.Bold) 
                 });
 
-                var b = new TextBox { Text = f[k], Location = new Point(190, y - 3), Width = 300 };
+                var b = new TextBox { 
+                    Text = f[k], 
+                    Location = new Point(175, y - 3), 
+                    Width = 300 
+                };
 
-                if (k.Contains("Không sửa"))
-                {
-                    b.ReadOnly = true; b.BackColor = Color.FromArgb(235, 235, 235); b.TabStop = false;
+                if (k.Contains("Không sửa")) { 
+                    b.ReadOnly = true; 
+                    b.BackColor = Color.FromArgb(235, 235, 235); 
                 }
 
-                if (k.Contains("Tiền sử") || k.Contains("Dị ứng") || k.Contains("Chẩn đoán") || k.Contains("Điều trị") || k.Contains("Kết quả") || k.Contains("Kết luận"))
+                if (k.Contains("Chẩn đoán") || k.Contains("Điều trị") || k.Contains("Kết luận") || k.Contains("Tiền sử") || k.Contains("Dị ứng") || k.Contains("Kết quả"))
                 {
-                    b.Multiline = true; b.Height = 100; b.ScrollBars = ScrollBars.Vertical;
-                    y += 120;
+                    b.Multiline = true; b.Height = 85; y += 100;
                 }
-                else
-                {
-                    y += 45;
+                else { 
+                    y += 40; 
                 }
+
                 boxes.Add(k, b); d.Controls.Add(b);
             }
 
             Button btn = new Button { 
                 Text = "LƯU DỮ LIỆU", 
-                Location = new Point(190, y + 10), 
-                Size = new Size(130, 45), 
+                Location = new Point(175, y + 10), 
+                Size = new Size(130, 40), 
                 BackColor = Color.Orange, 
                 ForeColor = Color.White, 
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold)
+                FlatStyle = FlatStyle.Flat, 
+                Font = new Font("Segoe UI", 9, FontStyle.Bold) 
             };
 
             btn.Click += (se, ee) => {
                 var res = new Dictionary<string, string>();
-
                 foreach (var k in boxes.Keys)
                 {
-                    string value = boxes[k].Text.Trim();
-                    
-                    if (!boxes[k].ReadOnly && string.IsNullOrWhiteSpace(value))
+                    if (!boxes[k].ReadOnly && string.IsNullOrWhiteSpace(boxes[k].Text))
                     {
-                        MessageBox.Show($"Vui lòng nhập đầy đủ thông tin cho trường '{k.Replace("(Không sửa)", "")}'!",
-                                        "Dữ liệu trống", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        boxes[k].Focus();
-                        return;
+                        MessageBox.Show("Vui lòng nhập đầy đủ thông tin!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        boxes[k].Focus(); return;
                     }
-                    res.Add(k, value);
+                    res.Add(k, boxes[k].Text.Trim());
                 }
-
                 try
                 {
                     s(res);
                     MessageBox.Show("Thao tác thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    d.Close(); LoadD();
+                    d.Close();
+                    LoadD();
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(ParseOracleError(ex.Message), "Cảnh báo dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             };
-            d.Controls.Add(btn); d.ShowDialog();
+
+            d.Controls.Add(btn); d.Height = btn.Bottom + 50; d.ShowDialog();
         }
 
-        private string ParseOracleError(string rawError)
+        protected string ParseOracleError(string rawError)
         {
             try
             {

@@ -1,51 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Windows.Forms;
-using QuanLyYTe.Helpers;
+﻿using System.Collections.Generic;
 
 namespace QuanLyYTe.Forms.Doctor
 {
     public class frmPatientManagement : frmDoctorBase
     {
-        public frmPatientManagement()
-        {
-            this.Text = "Danh sách Bệnh nhân đã điều trị";
-
-            btnA.Visible = false; // Hide button "Tạo"
-            btnD.Visible = false; // Hide button "Xóa"
-
-            Dgv.BringToFront();
-            LoadD();
-        }
-
+        public frmPatientManagement() { btnA.Visible = btnD.Visible = false; LoadD(); }
         protected override void LoadD()
         {
-            try
-            {
-                // Get Patients List
-                Dgv.DataSource = Svc.GetPatients(TxtS.Text);
-                GridViewStyler.Format(Dgv);
-            }
-            catch (Exception ex) { MessageBox.Show("Lỗi hiển thị: " + ex.Message); }
+            Dgv.DataSource = Svc.GetPatients(TxtS.Text);
+            if (Dgv.Columns.Contains("PATIENT_ID")) Dgv.Columns["PATIENT_ID"].HeaderText = "Mã Bệnh Nhân";
+            if (Dgv.Columns.Contains("FULL_NAME")) Dgv.Columns["FULL_NAME"].HeaderText = "Họ tên";
+            if (Dgv.Columns.Contains("GENDER")) Dgv.Columns["GENDER"].HeaderText = "Giới tính";
+            if (Dgv.Columns.Contains("BIRTHDATE")) Dgv.Columns["BIRTHDATE"].HeaderText = "Ngày sinh";
+            if (Dgv.Columns.Contains("MEDICAL_HISTORY")) Dgv.Columns["MEDICAL_HISTORY"].HeaderText = "Tiền sử bệnh";
+            if (Dgv.Columns.Contains("MEDICAL_HISTORY")) Dgv.Columns["FAMILY_MEDICAL_HISTORY"].HeaderText = "Tiền sử bệnh của gia đình";
+            if (Dgv.Columns.Contains("MEDICAL_HISTORY")) Dgv.Columns["DRUG_ALLERGIES"].HeaderText = "Dị ứng thuốc";
+            Helpers.GridViewStyler.Format(Dgv);
         }
-
         protected override void FormE()
         {
             if (Dgv.CurrentRow == null) return;
-
-            string id = Dgv.CurrentRow.Cells["PATIENT_ID"].Value.ToString();
-            string name = Dgv.CurrentRow.Cells["FULL_NAME"].Value.ToString();
-
-            var fields = new Dictionary<string, string> {
-                { "Bệnh nhân (Không sửa)", name }, // "Không sửa" -> Will be lock
-                { "Tiền sử bệnh", Dgv.CurrentRow.Cells["MEDICAL_HISTORY"].Value?.ToString() ?? "" }, // Multiline
-                { "Tiền sử gia đình", Dgv.CurrentRow.Cells["FAMILY_MEDICAL_HISTORY"].Value?.ToString() ?? "" },
-                { "Dị ứng thuốc", Dgv.CurrentRow.Cells["DRUG_ALLERGIES"].Value?.ToString() ?? "" }
+            var r = Dgv.CurrentRow;
+            var f = new Dictionary<string, string> { 
+                { "Mã BN (Không sửa)", r.Cells["PATIENT_ID"].Value.ToString() }, 
+                { "Tiền sử bệnh lý", r.Cells["MEDICAL_HISTORY"].Value.ToString() }, 
+                { "Tiền sử gia đình", r.Cells["FAMILY_MEDICAL_HISTORY"].Value.ToString() }, 
+                { "Dị ứng thuốc", r.Cells["DRUG_ALLERGIES"].Value.ToString() } 
             };
 
-            ShowDialog("Cập nhật thông tin bệnh lý", fields, r => {
-                Svc.SavePatient(id, r["Tiền sử bệnh"], r["Tiền sử gia đình"], r["Dị ứng thuốc"]);
-            });
+            ShowDialog("Cập nhật thông tin bệnh lý", f, res => Svc.SavePatient(res["Mã BN (Không sửa)"], res["Tiền sử bệnh lý"], res["Tiền sử gia đình"], res["Dị ứng thuốc"]));
         }
     }
 }
