@@ -104,7 +104,7 @@ namespace QuanLyYTe.Forms.Technician
             lblAppSubtitle.ForeColor = Color.Gainsboro;
             lblAppSubtitle.Location = new Point(21, 46);
             lblAppSubtitle.Name = "lblAppSubtitle";
-            lblAppSubtitle.Text = "Quản lý dịch vụ được phân công và thông tin cá nhân";
+            lblAppSubtitle.Text = "Thực hiện dịch vụ được phân công và ghi nhận kết quả";
 
             btnLogout.Text = "Đăng xuất";
             btnLogout.Location = new Point(880, 23);
@@ -211,11 +211,11 @@ namespace QuanLyYTe.Forms.Technician
             // ── SplitContainer: top = grid, bottom = detail ───────────
             splitServices.Dock = DockStyle.Fill;
             splitServices.Orientation = Orientation.Horizontal;
-            splitServices.SplitterDistance = 260;  // initial height of top panel (grid)
+            splitServices.SplitterDistance = 215;  // searchBar(50) + header(36) + 6 rows≈21px = ~215
             splitServices.SplitterWidth = 8;       // thickness of the draggable gap
             splitServices.BackColor = Color.FromArgb(203, 213, 225); // gap colour
             splitServices.Panel1MinSize = 80;
-            splitServices.Panel2MinSize = 120;
+            splitServices.Panel2MinSize = 180;
             splitServices.Name = "splitServices";
 
             // Panel1 (top): search bar + grid
@@ -253,26 +253,31 @@ namespace QuanLyYTe.Forms.Technician
             });
 
             // Kết quả hiện tại
-            tabDetailResult.Text = "Kết quả hiện tại";
+            tabDetailResult.Text = "Kết quả dịch vụ";
             tabDetailResult.Padding = new Padding(10);
             tabDetailResult.UseVisualStyleBackColor = true;
 
+            // ── Label bên trái, TextBox multiline bên phải ───────────────
             lblCurrentResult.AutoSize = true;
-            lblCurrentResult.Location = new Point(10, 14);
-            lblCurrentResult.Text = "Kết quả hiện tại";
+            lblCurrentResult.Location = new Point(10, 16);
+            lblCurrentResult.Text = "Kết quả dịch vụ:";
             lblCurrentResult.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             lblCurrentResult.ForeColor = Color.FromArgb(30, 41, 59);
 
             txtCurrentResult.Location = new Point(150, 10);
-            txtCurrentResult.Size = new Size(560, 24);
+            txtCurrentResult.Size = new Size(530, 70);
+            txtCurrentResult.Multiline = true;
+            txtCurrentResult.ScrollBars = ScrollBars.Vertical;
+            txtCurrentResult.WordWrap = true;
             txtCurrentResult.ReadOnly = true;
             txtCurrentResult.Font = new Font("Segoe UI", 9.5f);
             txtCurrentResult.ForeColor = Color.FromArgb(30, 41, 59);
             txtCurrentResult.BackColor = Color.FromArgb(229, 231, 235);
             txtCurrentResult.Name = "txtCurrentResult";
 
-            btnUpdateResult.Location = new Point(10, 46);
-            btnUpdateResult.Size = new Size(160, 34);
+            // ── Các nút bên dưới TextBox (y = 10 + 70 + 10 = 90) ──────
+            btnUpdateResult.Location = new Point(150, 90);
+            btnUpdateResult.Size = new Size(130, 34);
             btnUpdateResult.Text = "Cập nhật";
             btnUpdateResult.FlatStyle = FlatStyle.Flat;
             btnUpdateResult.BackColor = Color.FromArgb(255, 140, 40);
@@ -283,37 +288,30 @@ namespace QuanLyYTe.Forms.Technician
             btnUpdateResult.Name = "btnUpdateResult";
 
             btnSaveResult = new Button();
-            btnSaveResult.Location = new Point(180, 46);
-            btnSaveResult.Size = new Size(100, 34);
+            btnSaveResult.Location = new Point(150, 90);
+            btnSaveResult.Size = new Size(80, 34);
             btnSaveResult.Text = "Lưu";
             btnSaveResult.FlatStyle = FlatStyle.Flat;
-            btnSaveResult.BackColor = Color.FromArgb(16, 185, 129); // Emerald green
+            btnSaveResult.BackColor = Color.FromArgb(16, 185, 129);
             btnSaveResult.ForeColor = Color.White;
             btnSaveResult.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             btnSaveResult.FlatAppearance.BorderSize = 0;
-            btnSaveResult.Visible = false; // Hidden until Edit is clicked
+            btnSaveResult.Visible = false;
             btnSaveResult.Click += new EventHandler(btnSaveResult_Click);
             btnSaveResult.Name = "btnSaveResult";
 
             btnCancelResult = new Button();
-            btnCancelResult.Location = new Point(100, 46); // Place next to btnUpdateResult (which we'll reposition)
+            btnCancelResult.Location = new Point(238, 90);
             btnCancelResult.Size = new Size(80, 34);
             btnCancelResult.Text = "Hủy";
             btnCancelResult.FlatStyle = FlatStyle.Flat;
-            btnCancelResult.BackColor = Color.FromArgb(100, 116, 139); // Gray
+            btnCancelResult.BackColor = Color.FromArgb(100, 116, 139);
             btnCancelResult.ForeColor = Color.White;
             btnCancelResult.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
             btnCancelResult.FlatAppearance.BorderSize = 0;
-            btnCancelResult.Visible = false; // Hidden until Edit is clicked
+            btnCancelResult.Visible = false;
             btnCancelResult.Click += new EventHandler(btnCancelResult_Click);
             btnCancelResult.Name = "btnCancelResult";
-
-            // Adjust locations: when editing, "Lưu" is at X=10, "Hủy" is at X=100
-            btnUpdateResult.Location = new Point(10, 46);
-            btnUpdateResult.Size = new Size(130, 34);
-            btnUpdateResult.Text = "Cập nhật";
-            btnSaveResult.Location = new Point(10, 46);
-            btnSaveResult.Size = new Size(80, 34);
 
             tabDetailResult.Controls.AddRange(new Control[]
             {
