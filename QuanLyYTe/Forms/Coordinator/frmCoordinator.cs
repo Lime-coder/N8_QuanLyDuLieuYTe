@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
@@ -252,7 +252,23 @@ namespace QuanLyYTe.Forms.Coordinator
     
     	private void frmCoordinator_Load(object sender, EventArgs e)
     	{
+    		this.DoubleBuffered = true;
+    		EnableDoubleBuffered(dgvPatients);
+    		EnableDoubleBuffered(dgvMedicalRecords);
+    		EnableDoubleBuffered(dgvServiceRecords);
+    		
+    		txtPatientUsernameDb.ReadOnly = true;
+    		txtMRRecordId.ReadOnly = true;
     		LoadData();
+    	}
+
+    	private void EnableDoubleBuffered(DataGridView dgv)
+    	{
+    		typeof(DataGridView).InvokeMember("DoubleBuffered", 
+    			System.Reflection.BindingFlags.NonPublic | 
+    			System.Reflection.BindingFlags.Instance | 
+    			System.Reflection.BindingFlags.SetProperty, 
+    			null, dgv, new object[] { true });
     	}
     
     	private void LoadData()
@@ -262,6 +278,20 @@ namespace QuanLyYTe.Forms.Coordinator
     			dtPatients = _coordinatorService.GetAllPatients();
     			dtPatients.Columns.Add("display_name", typeof(string), "patient_id + ' - ' + full_name");
     			dgvPatients.DataSource = dtPatients;
+    			if (dgvPatients.Columns.Contains("patient_id")) dgvPatients.Columns["patient_id"].HeaderText = "Mã bệnh nhân";
+    			if (dgvPatients.Columns.Contains("full_name")) dgvPatients.Columns["full_name"].HeaderText = "Tên bệnh nhân";
+    			if (dgvPatients.Columns.Contains("gender")) dgvPatients.Columns["gender"].HeaderText = "Giới tính";
+    			if (dgvPatients.Columns.Contains("birthdate")) dgvPatients.Columns["birthdate"].HeaderText = "Ngày sinh";
+    			if (dgvPatients.Columns.Contains("medical_history")) dgvPatients.Columns["medical_history"].HeaderText = "Tiền sử bệnh";
+    			if (dgvPatients.Columns.Contains("family_medical_history")) dgvPatients.Columns["family_medical_history"].HeaderText = "Tiền sử bệnh gia đình";
+    			if (dgvPatients.Columns.Contains("drug_allergies")) dgvPatients.Columns["drug_allergies"].HeaderText = "Dị ứng thuốc";
+    			if (dgvPatients.Columns.Contains("display_name")) dgvPatients.Columns["display_name"].Visible = false;
+    			if (dgvPatients.Columns.Contains("id_card")) dgvPatients.Columns["id_card"].Visible = false;
+    			if (dgvPatients.Columns.Contains("house_no")) dgvPatients.Columns["house_no"].Visible = false;
+    			if (dgvPatients.Columns.Contains("street")) dgvPatients.Columns["street"].Visible = false;
+    			if (dgvPatients.Columns.Contains("district")) dgvPatients.Columns["district"].Visible = false;
+    			if (dgvPatients.Columns.Contains("city_province")) dgvPatients.Columns["city_province"].Visible = false;
+    			if (dgvPatients.Columns.Contains("username_db")) dgvPatients.Columns["username_db"].Visible = false;
     			cmbMRPatientId.DataSource = dtPatients.Copy();
     			cmbMRPatientId.DisplayMember = "display_name";
     			cmbMRPatientId.ValueMember = "patient_id";
@@ -274,6 +304,15 @@ namespace QuanLyYTe.Forms.Coordinator
     			cmbAssignDept.ValueMember = "dept_id";
     			dtMedicalRecords = _coordinatorService.GetAllMedicalRecords();
     			dgvMedicalRecords.DataSource = dtMedicalRecords;
+    			if (dgvMedicalRecords.Columns.Contains("RECORD_ID")) dgvMedicalRecords.Columns["RECORD_ID"].HeaderText = "Mã HSBA";
+    			if (dgvMedicalRecords.Columns.Contains("PATIENT_ID")) dgvMedicalRecords.Columns["PATIENT_ID"].HeaderText = "Mã Bệnh nhân";
+    			if (dgvMedicalRecords.Columns.Contains("RECORD_DATE")) dgvMedicalRecords.Columns["RECORD_DATE"].HeaderText = "Ngày lập";
+    			if (dgvMedicalRecords.Columns.Contains("DIAGNOSIS")) dgvMedicalRecords.Columns["DIAGNOSIS"].HeaderText = "Chẩn đoán";
+    			if (dgvMedicalRecords.Columns.Contains("TREATMENT_PLAN")) dgvMedicalRecords.Columns["TREATMENT_PLAN"].HeaderText = "Hướng điều trị";
+    			if (dgvMedicalRecords.Columns.Contains("DOCTOR_ID")) dgvMedicalRecords.Columns["DOCTOR_ID"].HeaderText = "Mã Bác sĩ";
+    			if (dgvMedicalRecords.Columns.Contains("DEPT_ID")) dgvMedicalRecords.Columns["DEPT_ID"].HeaderText = "Mã Khoa";
+    			if (dgvMedicalRecords.Columns.Contains("CONCLUSION")) dgvMedicalRecords.Columns["CONCLUSION"].HeaderText = "Kết luận";
+    			txtMRRecordId.Text = GenerateNewMRId();
     			dtServiceRecords = _coordinatorService.GetAllServiceAssignments();
     			if (dtServiceRecords != null)
     			{
@@ -302,7 +341,7 @@ namespace QuanLyYTe.Forms.Coordinator
     			DataTable techniciansForAssignment = _coordinatorService.GetTechniciansForAssignment();
     			cmbAssignTech.DataSource = techniciansForAssignment;
     			cmbAssignTech.DisplayMember = "display_name";
-    			cmbAssignTech.ValueMember = "username_db";
+    			cmbAssignTech.ValueMember = "staff_id";
     			LoadProfile();
     		}
     		catch (Exception ex)
@@ -359,7 +398,28 @@ namespace QuanLyYTe.Forms.Coordinator
     
     	private void btnPatientAdd_Click(object sender, EventArgs e)
     	{
-    		MessageBox.Show("Chức năng thêm mới Bệnh nhân chưa được hỗ trợ từ API hiện tại.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+    		try
+    		{
+    			string patientId = txtPatientId.Text.Trim();
+    			if (string.IsNullOrEmpty(patientId))
+    			{
+    				MessageBox.Show("Vui lòng nhập Mã bệnh nhân để thêm mới!");
+    				return;
+    			}
+    			string fullName = txtPatientFullName.Text.Trim();
+    			string gender = txtPatientGender.Text.Trim();
+    			DateTime birthDate = DateTime.ParseExact(txtPatientBirthDate.Text.Trim(), "dd/MM/yyyy", null);
+    			string idCard = txtPatientIdCard.Text.Trim();
+    			// Khi thêm mới, username_db thường được đặt giống mã bệnh nhân
+    			string usernameDb = patientId; 
+    			_coordinatorService.InsertPatient(patientId, fullName, gender, birthDate, idCard, txtPatientHouseNo.Text, txtPatientStreet.Text, txtPatientDistrict.Text, txtPatientCityProvince.Text, txtPatientMedicalHistory.Text, txtPatientFamilyMedicalHistory.Text, txtPatientDrugAllergies.Text, usernameDb);
+    			MessageBox.Show("Thêm mới bệnh nhân thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+    			LoadData();
+    		}
+    		catch (Exception ex)
+    		{
+    			ShowError(ex);
+    		}
     	}
     
     	private void btnPatientUpdate_Click(object sender, EventArgs e)
@@ -375,10 +435,10 @@ namespace QuanLyYTe.Forms.Coordinator
     			DataRow[] array = dtPatients.Select("patient_id = '" + text + "'");
     			if (array.Length != 0)
     			{
-    				string fullName = array[0]["full_name"].ToString() ?? "";
-    				string gender = array[0]["gender"].ToString() ?? "";
-    				DateTime birthDate = Convert.ToDateTime(array[0]["birthdate"]);
-    				string idCard = array[0]["id_card"].ToString() ?? "";
+    				string fullName = txtPatientFullName.Text.Trim();
+    				string gender = txtPatientGender.Text.Trim();
+    				DateTime birthDate = DateTime.ParseExact(txtPatientBirthDate.Text.Trim(), "dd/MM/yyyy", null);
+    				string idCard = txtPatientIdCard.Text.Trim();
     				string usernameDb = array[0]["username_db"].ToString() ?? "";
     				_coordinatorService.UpdatePatient(text, fullName, gender, birthDate, idCard, txtPatientHouseNo.Text, txtPatientStreet.Text, txtPatientDistrict.Text, txtPatientCityProvince.Text, txtPatientMedicalHistory.Text, txtPatientFamilyMedicalHistory.Text, txtPatientDrugAllergies.Text, usernameDb);
     				MessageBox.Show("Cập nhật thông tin bệnh nhân thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
@@ -430,17 +490,22 @@ namespace QuanLyYTe.Forms.Coordinator
     		try
     		{
     			string text = txtMRRecordId.Text.Trim();
-    			string text2 = cmbMRPatientId.SelectedValue?.ToString();
-    			string text3 = cmbMRDeptId.SelectedValue?.ToString();
-    			string text4 = cmbMRDoctorId.SelectedValue?.ToString();
+    			string text2 = "";
+    			if (cmbMRPatientId.SelectedItem is DataRowView drvPat) text2 = drvPat["patient_id"].ToString();
+    			
+    			string text3 = "";
+    			if (cmbMRDeptId.SelectedItem is DataRowView drvDept) text3 = drvDept["dept_id"].ToString();
+    			
+    			string text4 = "";
+    			if (cmbMRDoctorId.SelectedItem is DataRowView drvDoc) text4 = drvDoc["staff_id"].ToString();
+
     			if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(text2) || string.IsNullOrEmpty(text3) || string.IsNullOrEmpty(text4))
     			{
-    				MessageBox.Show("Vui lòng điền đủ Mã HSBA, Bệnh nhân, Khoa và Bác sĩ.", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+    				MessageBox.Show("Vui lòng chọn hợp lệ từ danh sách thả xuống (Bệnh nhân, Khoa, Bác sĩ).", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
     				return;
     			}
     			_coordinatorService.InsertMedicalRecord(text, text2, dtpMRRecordDate.Value, text4, text3);
     			MessageBox.Show("Đã tạo HSBA " + text + " và phân công Bác sĩ thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
-    			txtMRRecordId.Clear();
     			LoadData();
     		}
     		catch (Exception ex)
@@ -495,8 +560,18 @@ namespace QuanLyYTe.Forms.Coordinator
     				MessageBox.Show("Vui lòng chọn HSBA từ danh sách trước khi cập nhật.");
     				return;
     			}
-    			string text2 = cmbAssignDoctor.SelectedValue?.ToString();
-    			string text3 = cmbAssignDept.SelectedValue?.ToString();
+    			string text2 = "";
+    			if (cmbAssignDoctor.SelectedItem is DataRowView drvDoc) text2 = drvDoc["staff_id"].ToString();
+    			
+    			string text3 = "";
+    			if (cmbAssignDept.SelectedItem is DataRowView drvDept) text3 = drvDept["dept_id"].ToString();
+    			
+    			if (string.IsNullOrEmpty(text2) || string.IsNullOrEmpty(text3))
+    			{
+    				MessageBox.Show("Vui lòng chọn hợp lệ từ danh sách thả xuống (Khoa, Bác sĩ).", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+    				return;
+    			}
+    			
     			if (!string.IsNullOrEmpty(text2) && !string.IsNullOrEmpty(text3))
     			{
     				_coordinatorService.UpdateCoordinatorFields(text, text2, text3);
@@ -519,7 +594,9 @@ namespace QuanLyYTe.Forms.Coordinator
     			txtAssignSRType.Text = dataGridViewRow.Cells["LOAIDV"].Value?.ToString();
     			if (dataGridViewRow.Cells["NGAYDV"].Value != DBNull.Value)
     			{
-    				txtAssignSRDate.Text = Convert.ToDateTime(dataGridViewRow.Cells["NGAYDV"].Value).ToString("dd/MM/yyyy");
+    				DateTime originalDate = Convert.ToDateTime(dataGridViewRow.Cells["NGAYDV"].Value);
+    				txtAssignSRDate.Text = originalDate.ToString("dd/MM/yyyy");
+    				txtAssignSRDate.Tag = originalDate;
     			}
     		}
     	}
@@ -545,8 +622,25 @@ namespace QuanLyYTe.Forms.Coordinator
     				MessageBox.Show("Vui lòng chọn Dịch vụ từ danh sách trước khi cập nhật.");
     				return;
     			}
-    			DateTime serviceDate = DateTime.ParseExact(text3, "dd/MM/yyyy", null);
-    			string text4 = cmbAssignTech.SelectedValue?.ToString();
+    			DateTime serviceDate;
+    			if (txtAssignSRDate.Tag != null)
+    			{
+    				serviceDate = (DateTime)txtAssignSRDate.Tag;
+    			}
+    			else
+    			{
+    				serviceDate = DateTime.ParseExact(text3, "dd/MM/yyyy", null);
+    			}
+    			
+    			string text4 = "";
+    			if (cmbAssignTech.SelectedItem is DataRowView drvTech) text4 = drvTech["staff_id"].ToString();
+    			
+    			if (string.IsNullOrEmpty(text4))
+    			{
+    				MessageBox.Show("Vui lòng chọn Kỹ thuật viên hợp lệ từ danh sách.", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+    				return;
+    			}
+
     			if (!string.IsNullOrEmpty(text4))
     			{
     				_coordinatorService.UpdateTechnician(text, text2, serviceDate, text4);
@@ -604,6 +698,40 @@ namespace QuanLyYTe.Forms.Coordinator
     		}
     	}
     
+    	private string GenerateNewMRId()
+    	{
+    		if (dtMedicalRecords == null || dtMedicalRecords.Rows.Count == 0)
+    			return "HSBA001";
+    
+    		int maxId = 0;
+    		string prefix = "HSBA";
+    		int numLength = 3;
+    
+    		foreach (DataRow row in dtMedicalRecords.Rows)
+    		{
+    			string idStr = row["record_id"].ToString();
+    			var match = System.Text.RegularExpressions.Regex.Match(idStr, @"^([A-Za-z]+)(\d+)$");
+    			if (match.Success)
+    			{
+    				prefix = match.Groups[1].Value;
+    				string numStr = match.Groups[2].Value;
+    				if (numStr.Length > numLength) numLength = numStr.Length;
+    				if (int.TryParse(numStr, out int num))
+    				{
+    					if (num > maxId) maxId = num;
+    				}
+    			}
+    			else if (int.TryParse(idStr, out int num2))
+    			{
+    				prefix = "";
+    				if (idStr.Length > numLength) numLength = idStr.Length;
+    				if (num2 > maxId) maxId = num2;
+    			}
+    		}
+    		
+    		if (string.IsNullOrEmpty(prefix)) prefix = "HSBA";
+    		return $"{prefix}{(maxId + 1).ToString().PadLeft(numLength, '0')}";
+    	}
     }
 }
 

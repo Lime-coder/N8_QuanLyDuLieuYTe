@@ -53,7 +53,7 @@ BEGIN
     v_current_user := SYS_CONTEXT('USERENV', 'SESSION_USER');
     
     -- Bypass cho schema owner, DBA app, và khi trigger chạy (CURRENT_USER = 'HOSPITAL')
-    IF v_current_user IN ('HOSPITAL', 'HOSPITAL_DBA') THEN
+    IF SYS_CONTEXT('USERENV', 'CURRENT_USER') IN ('HOSPITAL', 'HOSPITAL_DBA') THEN
         RETURN '1=1';
     END IF;
 
