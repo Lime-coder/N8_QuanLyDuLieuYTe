@@ -1112,8 +1112,6 @@ BEGIN
 END;
 /
 
-<<<<<<< HEAD
-
 -- ============================================================
 -- Remove old objects if exist
 -- ============================================================
@@ -1297,4 +1295,3 @@ GRANT SELECT ON hospital.staff      TO rl_patient;
 GRANT SELECT ON hospital.department TO rl_patient;
 
 COMMIT;
->>>>>>> 57a1bcaa9df3cc7e7428f64b9e44dbe230b5649c
