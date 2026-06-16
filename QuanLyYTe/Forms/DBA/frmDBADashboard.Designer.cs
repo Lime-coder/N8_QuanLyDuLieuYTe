@@ -1,4 +1,4 @@
-﻿namespace QuanLyYTe.Forms
+namespace QuanLyYTe.Forms
 {
     partial class Dashboard
     {
@@ -24,6 +24,7 @@
             // btnNavRoles = new System.Windows.Forms.Button();
             btnNavGrant = new System.Windows.Forms.Button();
             btnNavRevoke = new System.Windows.Forms.Button();
+            btnNavBackup = new System.Windows.Forms.Button();
             // btnNavPermView = new System.Windows.Forms.Button();
             pnlLogo = new System.Windows.Forms.Panel();
             lblAppSubtitle = new System.Windows.Forms.Label();
@@ -88,6 +89,7 @@
             // pnlNavItems.Controls.Add(btnNavRoles);
             pnlNavItems.Controls.Add(btnNavGrant);
             pnlNavItems.Controls.Add(btnNavRevoke);
+            pnlNavItems.Controls.Add(btnNavBackup);
             // pnlNavItems.Controls.Add(btnNavPermView);
 
             // Setup each nav button with proper position/style
@@ -95,12 +97,14 @@
             // SetupNavButton(btnNavRoles, "  Quản lý Role", 1);
             SetupNavButton(btnNavGrant, "  Cấp Quyền", 1);
             SetupNavButton(btnNavRevoke, "  Xem và thu hồi quyền", 2);
+            SetupNavButton(btnNavBackup, "  Sao lưu & Phục hồi", 3);
             // SetupNavButton(btnNavPermView, "  Xem Quyền", 4);
 
             btnNavUsers.Name = "btnNavUsers"; btnNavUsers.TabIndex = 0;
             // btnNavRoles.Name = "btnNavRoles"; btnNavRoles.TabIndex = 1;
             btnNavGrant.Name = "btnNavGrant"; btnNavGrant.TabIndex = 2;
             btnNavRevoke.Name = "btnNavRevoke"; btnNavRevoke.TabIndex = 3;
+            btnNavBackup.Name = "btnNavBackup"; btnNavBackup.TabIndex = 4;
             // btnNavPermView.Name = "btnNavPermView"; btnNavPermView.TabIndex = 4;
 
             btnLogout = new System.Windows.Forms.Button();
@@ -115,7 +119,7 @@
             btnLogout.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             btnLogout.Padding = new System.Windows.Forms.Padding(16, 0, 0, 0);
             btnLogout.Size = new System.Drawing.Size(216, 46);
-            btnLogout.Location = new System.Drawing.Point(12, 10 + 3 * 52); // index 3, below revoke
+            btnLogout.Location = new System.Drawing.Point(12, 10 + 4 * 52); // index 4, below backup
             btnLogout.Cursor = System.Windows.Forms.Cursors.Hand;
             btnLogout.Name = "btnLogout";
             btnLogout.TabIndex = 3;
@@ -309,6 +313,7 @@
         // private System.Windows.Forms.Button btnNavRoles;
         private System.Windows.Forms.Button btnNavGrant;
         private System.Windows.Forms.Button btnNavRevoke;
+        private System.Windows.Forms.Button btnNavBackup;
         // private System.Windows.Forms.Button btnNavPermView;
         private System.Windows.Forms.Panel pnlSidebarFooter;
         private System.Windows.Forms.Label lblVersion;

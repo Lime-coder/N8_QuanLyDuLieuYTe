@@ -29,6 +29,7 @@ namespace QuanLyYTe.Forms
                 ("USR", "Quản lý user và role",  "Tạo, sửa, xóa tài khoản người dùng Oracle", () => new frmUserManagement()),
                 ("GRT", "Cấp Quyền",     "Cấp quyền cho user / role",                  () => new frmGrantPermission()),
                 ("REV", "Xem và thu hồi quyền", "Xem và thu hồi quyền đã cấp",                       () => new frmRevokePermission()),
+                ("BKP", "Sao lưu và Phục hồi", "Quản lý sao lưu, phục hồi dữ liệu",           () => new Forms.BackupRecovery.frmBackupRecovery()),
             };
 
             WireNavButtons();
@@ -168,6 +169,7 @@ namespace QuanLyYTe.Forms
                 (btnNavUsers,    0),
                 (btnNavGrant,    1),
                 (btnNavRevoke,   2),
+                (btnNavBackup,   3),
             };
 
             foreach (var (btn, idx) in map)
@@ -193,7 +195,7 @@ namespace QuanLyYTe.Forms
 
             new AuthService().Logout(); // clear session
 
-            Application.Restart();
+            this.Close();
         }
 
         private void SetActiveNav(Button btn)
