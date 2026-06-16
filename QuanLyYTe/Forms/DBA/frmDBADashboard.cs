@@ -29,6 +29,7 @@ namespace QuanLyYTe.Forms
                 ("USR", "Quản lý user và role",  "Tạo, sửa, xóa tài khoản người dùng Oracle", () => new frmUserManagement()),
                 ("GRT", "Cấp Quyền",     "Cấp quyền cho user / role",                  () => new frmGrantPermission()),
                 ("REV", "Xem và thu hồi quyền", "Xem và thu hồi quyền đã cấp",                       () => new frmRevokePermission()),
+                ("OLS", "Thông báo OLS", "Xem thông báo bằng Oracle Label Security", () => new QuanLyYTe.Forms.Common.frmNotifications())
             };
 
             WireNavButtons();

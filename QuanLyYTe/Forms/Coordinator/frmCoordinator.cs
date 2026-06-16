@@ -260,6 +260,16 @@ namespace QuanLyYTe.Forms.Coordinator
     		txtPatientUsernameDb.ReadOnly = true;
     		txtMRRecordId.ReadOnly = true;
     		LoadData();
+
+            // Add OLS Notification Tab
+            TabPage tabOls = new TabPage("Thông báo OLS");
+            QuanLyYTe.Forms.Common.frmNotifications frm = new QuanLyYTe.Forms.Common.frmNotifications();
+            frm.TopLevel = false;
+            frm.FormBorderStyle = FormBorderStyle.None;
+            frm.Dock = DockStyle.Fill;
+            tabOls.Controls.Add(frm);
+            tabCoordinator.TabPages.Add(tabOls);
+            frm.Show();
     	}
 
     	private void EnableDoubleBuffered(DataGridView dgv)

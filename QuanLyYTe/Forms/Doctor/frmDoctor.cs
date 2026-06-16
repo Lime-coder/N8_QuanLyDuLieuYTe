@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using QuanLyYTe.Common;
@@ -42,6 +42,7 @@ namespace QuanLyYTe.Forms.Doctor
             AddNav(pnlSidebar, "Đơn thuốc", () => OpenPage("Đơn thuốc", () => new frmPrescriptionManagement()));
             AddNav(pnlSidebar, "Bệnh nhân", () => OpenPage("Bệnh nhân", () => new frmPatientManagement()));
             AddNav(pnlSidebar, "Hồ sơ cá nhân", () => OpenPage("Hồ sơ cá nhân", () => new frmDoctorProfile()));
+            AddNav(pnlSidebar, "Thông báo OLS", () => OpenPage("Thông báo OLS", () => new QuanLyYTe.Forms.Common.frmNotifications()));
 
             Button btnLogout = new Button
             {

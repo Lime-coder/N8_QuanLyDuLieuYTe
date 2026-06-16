@@ -1,0 +1,102 @@
+-- ==============================================================================
+-- File: OLS_AIO_2_HOSP_ARCH.sql
+-- Run as: HOSPITAL_DBA
+-- Connect to: PDB_QLYT
+-- ==============================================================================
+ALTER SESSION SET CURRENT_SCHEMA = hospital;
+SET SERVEROUTPUT ON;
+
+-- 1. Base Table
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE hospital.thongbao CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+CREATE TABLE hospital.thongbao (
+    id_thongbao VARCHAR2(10) PRIMARY KEY,
+    noidung     NVARCHAR2(1000) NOT NULL,
+    ngaygio     DATE NOT NULL,
+    diadiem     NVARCHAR2(100)
+);
+
+-- 2. Initialize Policy
+BEGIN SA_SYSDBA.DROP_POLICY('HOSP_OLS_POL', TRUE); EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN
+    SA_SYSDBA.CREATE_POLICY(
+        policy_name     => 'HOSP_OLS_POL',
+        column_name     => 'OLS_LABEL',
+        default_options => 'READ_CONTROL, WRITE_CONTROL, CHECK_CONTROL'
+    );
+END;
+/
+
+-- CRITICAL: Activate the newly generated HOSP_OLS_POL_DBA role dynamically
+SET ROLE ALL;
+
+-- 3. Build Components & Labels
+BEGIN
+    SA_COMPONENTS.CREATE_LEVEL('HOSP_OLS_POL', 3000, 'BGD', 'Ban Giam Doc');
+    SA_COMPONENTS.CREATE_LEVEL('HOSP_OLS_POL', 2000, 'LDK', 'Lanh Dao Khoa');
+    SA_COMPONENTS.CREATE_LEVEL('HOSP_OLS_POL', 1000, 'NV',  'Nhan Vien');
+
+    SA_COMPONENTS.CREATE_COMPARTMENT('HOSP_OLS_POL', 100, 'TH', 'Khoa Tieu Hoa');
+    SA_COMPONENTS.CREATE_COMPARTMENT('HOSP_OLS_POL', 200, 'TK', 'Khoa Than Kinh');
+    SA_COMPONENTS.CREATE_COMPARTMENT('HOSP_OLS_POL', 300, 'TM', 'Khoa Tim Mach');
+
+    SA_COMPONENTS.CREATE_GROUP('HOSP_OLS_POL', 10, 'HCM', 'Ho Chi Minh');
+    SA_COMPONENTS.CREATE_GROUP('HOSP_OLS_POL', 20, 'HP',  'Hai Phong');
+    SA_COMPONENTS.CREATE_GROUP('HOSP_OLS_POL', 30, 'HN',  'Ha Noi');
+
+    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 10000, 'NV');             
+    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 30000, 'BGD');            
+    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 20000, 'LDK');            
+    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 20100, 'LDK:TH');         
+    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 10110, 'NV:TH:HCM');      
+    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 10130, 'NV:TH:HN');       
+    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 20122, 'LDK:TH,TK:HP');   
+    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 39999, 'BGD:TH,TK,TM:HCM,HP,HN'); 
+    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 29999, 'LDK:TH,TK,TM:HCM,HP,HN');
+    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 20310, 'LDK:TM:HCM');     
+    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 20230, 'LDK:TK:HN');      
+    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 10210, 'NV:TK:HCM');      
+    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 10310, 'NV:TM:HCM');      
+END;
+/
+
+-- 4. Apply Policy & Grant Bypass privileges
+BEGIN
+    SA_POLICY_ADMIN.APPLY_TABLE_POLICY('HOSP_OLS_POL', 'HOSPITAL', 'THONGBAO', 'READ_CONTROL, WRITE_CONTROL, CHECK_CONTROL');
+    SA_USER_ADMIN.SET_USER_PRIVS('HOSP_OLS_POL', 'HOSPITAL_DBA', 'FULL');
+END;
+/
+
+-- 5. User Creation & Authorization
+DECLARE
+    PROCEDURE create_u(p_user IN VARCHAR2) IS
+    BEGIN
+        EXECUTE IMMEDIATE 'DROP USER ' || p_user || ' CASCADE';
+    EXCEPTION WHEN OTHERS THEN NULL;
+    END;
+BEGIN
+    FOR i IN 1..8 LOOP
+        create_u('U' || i);
+        EXECUTE IMMEDIATE 'CREATE USER U' || i || ' IDENTIFIED BY 123';
+        EXECUTE IMMEDIATE 'GRANT CREATE SESSION TO U' || i;
+        EXECUTE IMMEDIATE 'GRANT SELECT ON hospital.thongbao TO U' || i;
+    END LOOP;
+END;
+/
+
+BEGIN
+    SA_USER_ADMIN.SET_USER_LABELS('HOSP_OLS_POL', 'U1', 'BGD:TH,TK,TM:HCM,HP,HN');
+    SA_USER_ADMIN.SET_USER_LABELS('HOSP_OLS_POL', 'U2', 'LDK:TM:HCM');
+    SA_USER_ADMIN.SET_USER_LABELS('HOSP_OLS_POL', 'U3', 'LDK:TK:HN');
+    SA_USER_ADMIN.SET_USER_LABELS('HOSP_OLS_POL', 'U4', 'NV:TK:HCM');
+    SA_USER_ADMIN.SET_USER_LABELS('HOSP_OLS_POL', 'U5', 'NV:TM:HCM');
+    SA_USER_ADMIN.SET_USER_LABELS('HOSP_OLS_POL', 'U6', 'LDK:TM:HCM');
+    SA_USER_ADMIN.SET_USER_LABELS('HOSP_OLS_POL', 'U7', 'LDK:TH,TK,TM:HCM,HP,HN');
+    SA_USER_ADMIN.SET_USER_LABELS('HOSP_OLS_POL', 'U8', 'NV:TH:HN');
+END;
+/
+PROMPT ==============================================================================
+PROMPT DONE: Architecture complete. 
+PROMPT CRITICAL: Disconnect and Reconnect your HOSPITAL_DBA session now!
+PROMPT ==============================================================================
