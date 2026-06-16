@@ -1,0 +1,48 @@
+-- ==============================================================================
+-- BackupRecoveryGrants.sql
+-- Run as: SYS or user with DBA privileges
+-- Container: PDB_QLYT
+-- Purpose: Grant necessary privileges to HOSPITAL_DBA for Backup & Recovery Module
+-- ==============================================================================
+
+-- Scheduler
+GRANT CREATE ANY JOB TO HOSPITAL_DBA;
+GRANT CREATE JOB TO HOSPITAL_DBA;
+GRANT MANAGE SCHEDULER TO HOSPITAL_DBA;
+
+-- Tạo package/procedure/sequence
+GRANT CREATE PROCEDURE TO HOSPITAL_DBA;
+GRANT CREATE SEQUENCE TO HOSPITAL_DBA;
+
+-- DML & Execute Privileges cho DBA để có thể truy vấn và thực thi procedure của HOSPITAL
+GRANT SELECT ANY TABLE TO HOSPITAL_DBA;
+GRANT INSERT ANY TABLE TO HOSPITAL_DBA;
+GRANT UPDATE ANY TABLE TO HOSPITAL_DBA;
+GRANT DELETE ANY TABLE TO HOSPITAL_DBA;
+GRANT SELECT ANY SEQUENCE TO HOSPITAL_DBA;
+GRANT EXECUTE ANY PROCEDURE TO HOSPITAL_DBA;
+
+-- Unified Audit
+GRANT AUDIT_ADMIN TO HOSPITAL_DBA;
+GRANT AUDIT_VIEWER TO HOSPITAL_DBA;
+GRANT AUDIT_VIEWER TO HOSPITAL;
+
+-- Data Pump Directory
+CREATE OR REPLACE DIRECTORY HOSPITAL_BACKUP_DIR
+AS 'C:\OracleBackups';
+
+GRANT READ, WRITE ON DIRECTORY HOSPITAL_BACKUP_DIR TO HOSPITAL;
+GRANT READ, WRITE ON DIRECTORY HOSPITAL_BACKUP_DIR TO HOSPITAL_DBA;
+
+-- Tạo bảng BACKUP_HISTORY và RECOVERY_HISTORY
+GRANT CREATE TABLE TO HOSPITAL;
+GRANT UNLIMITED TABLESPACE TO HOSPITAL;
+
+-- Flashback Query
+GRANT FLASHBACK ANY TABLE TO HOSPITAL;
+
+-- Tạo chính sách Audit theo dõi lệnh UPDATE và DELETE trên bảng PRESCRIPTION
+CREATE AUDIT POLICY audit_prescription_recovery_policy ACTIONS UPDATE ON hospital.PRESCRIPTION, DELETE ON hospital.PRESCRIPTION;
+
+-- Bật chính sách Audit vừa tạo lên
+AUDIT POLICY audit_prescription_recovery_policy;
