@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DataProvider;
@@ -41,12 +41,11 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_SERVICES"), p);
         }
 
-        public void AddService(string id, string type, string res)
+        public void AddService(string id, string type)
         {
             OracleParameter[] p = {
                 new OracleParameter("p_id", id),
-                new OracleParameter("p_type", type),
-                new OracleParameter("p_res", res)
+                new OracleParameter("p_type", type)
             };
             _dbProvider.ExecuteNonQuerySP(Sp("USP_ADD_SERVICE"), p);
         }
