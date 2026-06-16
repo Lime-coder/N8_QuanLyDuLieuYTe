@@ -270,6 +270,16 @@ namespace QuanLyYTe.Forms.Coordinator
             tabOls.Controls.Add(frm);
             tabCoordinator.TabPages.Add(tabOls);
             frm.Show();
+
+            // Add Add OLS Notification Tab
+            TabPage tabAddOls = new TabPage("Tạo thông báo OLS");
+            QuanLyYTe.Forms.DBA.frmAddNotification frmAdd = new QuanLyYTe.Forms.DBA.frmAddNotification();
+            frmAdd.TopLevel = false;
+            frmAdd.FormBorderStyle = FormBorderStyle.None;
+            frmAdd.Dock = DockStyle.Fill;
+            tabAddOls.Controls.Add(frmAdd);
+            tabCoordinator.TabPages.Add(tabAddOls);
+            frmAdd.Show();
     	}
 
     	private void EnableDoubleBuffered(DataGridView dgv)

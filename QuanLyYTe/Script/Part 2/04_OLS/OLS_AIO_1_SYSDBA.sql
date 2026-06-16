@@ -22,6 +22,9 @@ GRANT EXECUTE ON sa_label_admin TO hospital_dba;
 GRANT EXECUTE ON sa_policy_admin TO hospital_dba;
 GRANT EXECUTE ON sa_user_admin TO hospital_dba;
 
+-- Allow hospital_dba to read user OLS privilege
+GRANT SELECT ON DBA_SA_USERS TO hospital_dba;
+
 PROMPT ==============================================================================
 PROMPT 3. Enable OLS Kernel and Restart PDB
 PROMPT ==============================================================================

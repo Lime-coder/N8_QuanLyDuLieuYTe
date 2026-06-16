@@ -47,5 +47,17 @@ namespace QuanLyYTe.Services
             try { _service.DeactivateUser(username); }
             catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
         }
+
+        public string GetUserOlsLabel(string username)
+        {
+            try { return _service.GetUserOlsLabel(username); }
+            catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
+        }
+
+        public void SetUserOlsLabel(string username, string label)
+        {
+            try { _service.SetUserOlsLabel(username, label); }
+            catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
+        }
     }
 }

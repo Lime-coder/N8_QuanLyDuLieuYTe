@@ -35,25 +35,25 @@ namespace QuanLyYTe.Forms.Common
                 dgvNotifications.DataSource = _repo.GetNotifications();
                 
                 // Customize columns if they exist
-                if (dgvNotifications.Columns.Contains("ID_THONGBAO"))
+                if (dgvNotifications.Columns.Contains("NOTIFICATION_ID"))
                 {
-                    dgvNotifications.Columns["ID_THONGBAO"].HeaderText = "Mã TB";
-                    dgvNotifications.Columns["ID_THONGBAO"].Width = 80;
+                    dgvNotifications.Columns["NOTIFICATION_ID"].HeaderText = "Mã TB";
+                    dgvNotifications.Columns["NOTIFICATION_ID"].Width = 80;
                 }
-                if (dgvNotifications.Columns.Contains("NOIDUNG"))
+                if (dgvNotifications.Columns.Contains("DESCRIPTION"))
                 {
-                    dgvNotifications.Columns["NOIDUNG"].HeaderText = "Nội dung";
-                    dgvNotifications.Columns["NOIDUNG"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                    dgvNotifications.Columns["DESCRIPTION"].HeaderText = "Nội dung";
+                    dgvNotifications.Columns["DESCRIPTION"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 }
-                if (dgvNotifications.Columns.Contains("NGAYGIO"))
+                if (dgvNotifications.Columns.Contains("POSTED_DATE"))
                 {
-                    dgvNotifications.Columns["NGAYGIO"].HeaderText = "Ngày giờ";
-                    dgvNotifications.Columns["NGAYGIO"].Width = 150;
+                    dgvNotifications.Columns["POSTED_DATE"].HeaderText = "Ngày giờ";
+                    dgvNotifications.Columns["POSTED_DATE"].Width = 150;
                 }
-                if (dgvNotifications.Columns.Contains("DIADIEM"))
+                if (dgvNotifications.Columns.Contains("LOCATION"))
                 {
-                    dgvNotifications.Columns["DIADIEM"].HeaderText = "Địa điểm";
-                    dgvNotifications.Columns["DIADIEM"].Width = 200;
+                    dgvNotifications.Columns["LOCATION"].HeaderText = "Địa điểm";
+                    dgvNotifications.Columns["LOCATION"].Width = 200;
                 }
             }
             catch (Exception ex)

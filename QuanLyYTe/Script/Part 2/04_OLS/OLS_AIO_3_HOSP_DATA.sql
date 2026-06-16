@@ -41,7 +41,7 @@ VALUES ('T7', N'Họp liên khoa TH & TK', SYSDATE, N'Chi nhánh Hải Phòng', 
 COMMIT;
 
 PROMPT ==============================================================================
-PROMPT 2. Build Stored Procedures for Application
+PROMPT 2. Build Stored Procedures for Notification App
 PROMPT ==============================================================================
 
 -- GET Procedure (Updated with English columns and sorting)
@@ -75,28 +75,81 @@ END;
 /
 
 PROMPT ==============================================================================
-PROMPT 3. Grant Execute Privileges for OLS and Login Requirements
+PROMPT 3. Build OLS Label Management Procedures for DBA
+PROMPT ==============================================================================
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
+
+CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_USER_OLS_LABEL (
+    p_username IN VARCHAR2,
+    p_cursor   OUT SYS_REFCURSOR
+) AUTHID CURRENT_USER AS
+BEGIN
+    OPEN p_cursor FOR
+        SELECT USER_NAME, MAX_READ_LABEL 
+        FROM DBA_SA_USERS 
+        WHERE POLICY_NAME = 'HOSP_OLS_POL' 
+          AND USER_NAME = UPPER(TRIM(p_username));
+END;
+/
+
+CREATE OR REPLACE PROCEDURE hospital_dba.USP_SET_USER_OLS_LABEL (
+    p_username  IN VARCHAR2,
+    p_label_str IN VARCHAR2
+) AUTHID CURRENT_USER AS
+BEGIN
+    -- 1. Thu hồi quyền OLS cũ của user (nếu có) để làm sạch
+    BEGIN
+        SA_USER_ADMIN.DROP_USER_ACCESS(
+            policy_name => 'HOSP_OLS_POL', 
+            user_name   => UPPER(TRIM(p_username))
+        );
+    EXCEPTION WHEN OTHERS THEN NULL; 
+    END;
+    
+    -- 2. Cấp nhãn mới (nếu chuỗi truyền vào không rỗng)
+    IF p_label_str IS NOT NULL AND LENGTH(TRIM(p_label_str)) > 0 THEN
+        SA_USER_ADMIN.SET_USER_LABELS(
+            policy_name    => 'HOSP_OLS_POL',
+            user_name      => UPPER(TRIM(p_username)),
+            max_read_label => UPPER(p_label_str)
+        );
+    END IF;
+    
+    COMMIT;
+END;
+/
+
+ALTER SESSION SET CURRENT_SCHEMA = hospital;
+
+PROMPT ==============================================================================
+PROMPT 4. Grant Execute Privileges for Application
 PROMPT ==============================================================================
 DECLARE
 BEGIN
     FOR i IN 1..8 LOOP
-        -- Quyền cho chức năng xem thông báo OLS
         EXECUTE IMMEDIATE 'GRANT EXECUTE ON hospital.USP_GET_NOTIFICATIONS TO U' || i;
-        
-        -- Quyền cho cơ chế Đăng nhập WinForm
         EXECUTE IMMEDIATE 'GRANT EXECUTE ON hospital_dba.USP_GET_SESSION_ROLE TO U' || i;
         EXECUTE IMMEDIATE 'GRANT EXECUTE ON hospital_dba.USP_GET_USER_ID TO U' || i;
     END LOOP;
 END;
 /
 
--- Grant ADD ability to DBA and Coordinator (U1)
+-- Quản lý thông báo
 GRANT EXECUTE ON hospital.USP_ADD_NOTIFICATION TO rl_dba;
 GRANT EXECUTE ON hospital.USP_ADD_NOTIFICATION TO rl_coordinator;
 
+-- Cấp quyền sequence và bảng cho các role sử dụng USP_ADD_NOTIFICATION
+GRANT SELECT ON hospital.seq_notification_id TO rl_dba;
+GRANT SELECT ON hospital.seq_notification_id TO rl_coordinator;
+GRANT INSERT ON hospital.notification TO rl_coordinator;
+
+-- DBA quản lý nhãn OLS
+GRANT EXECUTE ON hospital_dba.USP_GET_USER_OLS_LABEL TO rl_dba;
+GRANT EXECUTE ON hospital_dba.USP_SET_USER_OLS_LABEL TO rl_dba;
+
 
 PROMPT ==============================================================================
-PROMPT 4. Bridge OLS Users (U1-U8) into Application RBAC & VPD
+PROMPT 5. Bridge OLS Users (U1-U8) into Application RBAC & VPD
 PROMPT ==============================================================================
 BEGIN
     -- Insert specific OLS departments if they don't exist
@@ -139,7 +192,7 @@ END;
 /
 
 PROMPT ==============================================================================
-PROMPT 5. Grant Application Roles to U1-U8
+PROMPT 6. Grant Application Roles to U1-U8
 PROMPT ==============================================================================
 BEGIN
     EXECUTE IMMEDIATE 'GRANT rl_coordinator TO U1';

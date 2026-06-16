@@ -237,5 +237,54 @@ public class SecurityAdminRepository
 
         _dbProvider.ExecuteNonQuerySP(Sp("USP_DROP_ROLE"), p);
     }
+
+    /// <summary>
+    /// Lấy nhãn OLS của User
+    /// Sử dụng SP: USP_GET_USER_OLS_LABEL
+    /// </summary>
+    public string GetUserOlsLabel(string username)
+    {
+        OracleParameter p_cursor = new OracleParameter
+        {
+            ParameterName = "p_cursor",
+            OracleDbType = OracleDbType.RefCursor,
+            Direction = ParameterDirection.Output
+        };
+        OracleParameter p_username = new OracleParameter
+        {
+            ParameterName = "p_username",
+            OracleDbType = OracleDbType.Varchar2,
+            Value = username
+        };
+
+        DataTable dt = _dbProvider.ExecuteQuerySP(Sp("USP_GET_USER_OLS_LABEL"), new[] { p_username, p_cursor });
+        if (dt != null && dt.Rows.Count > 0)
+        {
+            if (dt.Columns.Contains("MAX_READ_LABEL"))
+            {
+                return dt.Rows[0]["MAX_READ_LABEL"].ToString() ?? "";
+            }
+            else if (dt.Columns.Count > 1)
+            {
+                return dt.Rows[0][1].ToString() ?? "";
+            }
+        }
+        return "";
+    }
+
+    /// <summary>
+    /// Cập nhật nhãn OLS của User
+    /// Sử dụng SP: USP_SET_USER_OLS_LABEL
+    /// </summary>
+    public void SetUserOlsLabel(string username, string label)
+    {
+        OracleParameter[] p =
+        {
+            new OracleParameter("p_username", OracleDbType.Varchar2, 128) { Value = username },
+            new OracleParameter("p_label", OracleDbType.Varchar2, 4000) { Value = label }
+        };
+
+        _dbProvider.ExecuteNonQuerySP(Sp("USP_SET_USER_OLS_LABEL"), p);
+    }
 }
 }

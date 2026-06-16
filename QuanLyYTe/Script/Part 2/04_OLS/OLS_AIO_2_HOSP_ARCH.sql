@@ -50,19 +50,40 @@ BEGIN
     SA_COMPONENTS.CREATE_GROUP('HOSP_OLS_POL', 20, 'HP',  'Hai Phong');
     SA_COMPONENTS.CREATE_GROUP('HOSP_OLS_POL', 30, 'HN',  'Ha Noi');
 
-    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 10000, 'NV');             
-    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 30000, 'BGD');            
-    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 20000, 'LDK');            
-    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 20100, 'LDK:TH');         
-    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 10110, 'NV:TH:HCM');      
-    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 10130, 'NV:TH:HN');       
-    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 20122, 'LDK:TH,TK:HP');   
-    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 39999, 'BGD:TH,TK,TM:HCM,HP,HN'); 
-    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 29999, 'LDK:TH,TK,TM:HCM,HP,HN');
-    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 20310, 'LDK:TM:HCM');     
-    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 20230, 'LDK:TK:HN');      
-    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 10210, 'NV:TK:HCM');      
-    SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', 10310, 'NV:TM:HCM');      
+    -- Sinh toàn bộ 192 tổ hợp nhãn (3 Cấp bậc x 8 Tổ hợp khoa x 8 Tổ hợp cơ sở)
+    -- Điều này là BẮT BUỘC vì Oracle OLS chỉ cho phép Read Access chính xác 
+    -- trên các nhãn đã được khởi tạo tường minh (Valid Data Labels).
+    DECLARE
+        TYPE t_str_arr IS TABLE OF VARCHAR2(100);
+        v_levels t_str_arr := t_str_arr('NV', 'LDK', 'BGD');
+        v_comps t_str_arr := t_str_arr('', 'TH', 'TK', 'TM', 'TH,TK', 'TH,TM', 'TK,TM', 'TH,TK,TM');
+        v_groups t_str_arr := t_str_arr('', 'HCM', 'HN', 'HP', 'HCM,HN', 'HCM,HP', 'HN,HP', 'HCM,HN,HP');
+        v_label VARCHAR2(200);
+        v_id NUMBER := 10000;
+    BEGIN
+        FOR l IN 1..v_levels.COUNT LOOP
+            FOR c IN 1..v_comps.COUNT LOOP
+                FOR g IN 1..v_groups.COUNT LOOP
+                    v_label := v_levels(l);
+                    IF v_comps(c) IS NOT NULL THEN
+                        v_label := v_label || ':' || v_comps(c);
+                    ELSIF v_groups(g) IS NOT NULL THEN
+                        v_label := v_label || ':';
+                    END IF;
+                    
+                    IF v_groups(g) IS NOT NULL THEN
+                        v_label := v_label || ':' || v_groups(g);
+                    END IF;
+                    
+                    BEGIN
+                        SA_LABEL_ADMIN.CREATE_LABEL('HOSP_OLS_POL', v_id, v_label);
+                    EXCEPTION WHEN OTHERS THEN NULL;
+                    END;
+                    v_id := v_id + 1;
+                END LOOP;
+            END LOOP;
+        END LOOP;
+    END;
 END;
 /
 

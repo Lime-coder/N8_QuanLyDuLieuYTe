@@ -1,4 +1,4 @@
-﻿namespace QuanLyYTe.Forms
+namespace QuanLyYTe.Forms
 {
     partial class Dashboard
     {
@@ -88,6 +88,8 @@
             // pnlNavItems.Controls.Add(btnNavRoles);
             pnlNavItems.Controls.Add(btnNavGrant);
             pnlNavItems.Controls.Add(btnNavRevoke);
+            btnNavAddOls = new System.Windows.Forms.Button();
+            pnlNavItems.Controls.Add(btnNavAddOls);
             // pnlNavItems.Controls.Add(btnNavPermView);
 
             // Setup each nav button with proper position/style
@@ -95,13 +97,15 @@
             // SetupNavButton(btnNavRoles, "  Quản lý Role", 1);
             SetupNavButton(btnNavGrant, "  Cấp Quyền", 1);
             SetupNavButton(btnNavRevoke, "  Xem và thu hồi quyền", 2);
-            // SetupNavButton(btnNavPermView, "  Xem Quyền", 4);
+            SetupNavButton(btnNavAddOls, "  Tạo thông báo OLS", 3);
+            // SetupNavButton(btnNavPermView, "  Xem Quyền", 5);
 
             btnNavUsers.Name = "btnNavUsers"; btnNavUsers.TabIndex = 0;
             // btnNavRoles.Name = "btnNavRoles"; btnNavRoles.TabIndex = 1;
             btnNavGrant.Name = "btnNavGrant"; btnNavGrant.TabIndex = 2;
             btnNavRevoke.Name = "btnNavRevoke"; btnNavRevoke.TabIndex = 3;
-            // btnNavPermView.Name = "btnNavPermView"; btnNavPermView.TabIndex = 4;
+            btnNavAddOls.Name = "btnNavAddOls"; btnNavAddOls.TabIndex = 4;
+            // btnNavPermView.Name = "btnNavPermView"; btnNavPermView.TabIndex = 5;
 
             btnLogout = new System.Windows.Forms.Button();
             pnlNavItems.Controls.Add(btnLogout);
@@ -115,10 +119,10 @@
             btnLogout.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             btnLogout.Padding = new System.Windows.Forms.Padding(16, 0, 0, 0);
             btnLogout.Size = new System.Drawing.Size(216, 46);
-            btnLogout.Location = new System.Drawing.Point(12, 10 + 3 * 52); // index 3, below revoke
+            btnLogout.Location = new System.Drawing.Point(12, 10 + 4 * 52); // index 4, below add ols
             btnLogout.Cursor = System.Windows.Forms.Cursors.Hand;
             btnLogout.Name = "btnLogout";
-            btnLogout.TabIndex = 3;
+            btnLogout.TabIndex = 5;
             btnLogout.Click += new System.EventHandler(this.btnLogout_Click);
 
             // ── Logo ──────────────────────────────────────────────────
@@ -309,6 +313,7 @@
         // private System.Windows.Forms.Button btnNavRoles;
         private System.Windows.Forms.Button btnNavGrant;
         private System.Windows.Forms.Button btnNavRevoke;
+        private System.Windows.Forms.Button btnNavAddOls;
         // private System.Windows.Forms.Button btnNavPermView;
         private System.Windows.Forms.Panel pnlSidebarFooter;
         private System.Windows.Forms.Label lblVersion;

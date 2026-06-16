@@ -60,16 +60,16 @@ namespace QuanLyYTe.Forms.Common
             this.lblTitle.ForeColor = System.Drawing.Color.DimGray;
             this.lblTitle.Location = new System.Drawing.Point(160, 22);
             this.lblTitle.Name = "lblTitle";
-            this.lblTitle.Size = new System.Drawing.Size(350, 25);
+            this.lblTitle.Size = new System.Drawing.Size(260, 25);
             this.lblTitle.TabIndex = 2;
-            this.lblTitle.Text = "Hệ thống Thông báo (Oracle Label Security)";
+            this.lblTitle.Text = "Hệ thống Thông báo (OLS)";
             // 
             // lblTestMode
             // 
             this.lblTestMode.AutoSize = true;
             this.lblTestMode.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Italic);
             this.lblTestMode.ForeColor = System.Drawing.Color.OrangeRed;
-            this.lblTestMode.Location = new System.Drawing.Point(550, 26);
+            this.lblTestMode.Location = new System.Drawing.Point(450, 26);
             this.lblTestMode.Name = "lblTestMode";
             this.lblTestMode.Size = new System.Drawing.Size(0, 19);
             this.lblTestMode.TabIndex = 3;

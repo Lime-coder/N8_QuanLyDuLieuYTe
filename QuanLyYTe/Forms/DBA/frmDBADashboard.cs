@@ -29,7 +29,8 @@ namespace QuanLyYTe.Forms
                 ("USR", "Quản lý user và role",  "Tạo, sửa, xóa tài khoản người dùng Oracle", () => new frmUserManagement()),
                 ("GRT", "Cấp Quyền",     "Cấp quyền cho user / role",                  () => new frmGrantPermission()),
                 ("REV", "Xem và thu hồi quyền", "Xem và thu hồi quyền đã cấp",                       () => new frmRevokePermission()),
-                ("OLS", "Thông báo OLS", "Xem thông báo bằng Oracle Label Security", () => new QuanLyYTe.Forms.Common.frmNotifications())
+                ("OLS", "Thông báo OLS", "Xem thông báo bằng Oracle Label Security", () => new QuanLyYTe.Forms.Common.frmNotifications()),
+                ("ADD", "Tạo thông báo OLS", "Thêm thông báo mới có dán nhãn", () => new QuanLyYTe.Forms.DBA.frmAddNotification())
             };
 
             WireNavButtons();
@@ -169,6 +170,7 @@ namespace QuanLyYTe.Forms
                 (btnNavUsers,    0),
                 (btnNavGrant,    1),
                 (btnNavRevoke,   2),
+                (btnNavAddOls,   4), // index in features array
             };
 
             foreach (var (btn, idx) in map)
