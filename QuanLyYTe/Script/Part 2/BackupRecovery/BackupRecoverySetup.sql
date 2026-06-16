@@ -43,6 +43,35 @@ EXCEPTION
 END;
 /
 
+DECLARE
+    PROCEDURE ADD_COLUMN_IF_MISSING(
+        p_column_name IN VARCHAR2,
+        p_column_def  IN VARCHAR2
+    ) AS
+        v_count NUMBER;
+    BEGIN
+        SELECT COUNT(*)
+        INTO v_count
+        FROM ALL_TAB_COLUMNS
+        WHERE OWNER = 'HOSPITAL'
+          AND TABLE_NAME = 'BACKUP_HISTORY'
+          AND COLUMN_NAME = UPPER(p_column_name);
+
+        IF v_count = 0 THEN
+            EXECUTE IMMEDIATE 'ALTER TABLE hospital.BACKUP_HISTORY ADD (' || p_column_def || ')';
+            DBMS_OUTPUT.PUT_LINE('[OK] Added BACKUP_HISTORY.' || p_column_name);
+        END IF;
+    END;
+BEGIN
+    ADD_COLUMN_IF_MISSING('METHOD', 'METHOD VARCHAR2(30) DEFAULT ''DATA_PUMP'' NOT NULL');
+    ADD_COLUMN_IF_MISSING('DIRECTORY_NAME', 'DIRECTORY_NAME VARCHAR2(128)');
+    ADD_COLUMN_IF_MISSING('DUMP_FILE', 'DUMP_FILE VARCHAR2(255)');
+    ADD_COLUMN_IF_MISSING('LOG_FILE', 'LOG_FILE VARCHAR2(255)');
+    ADD_COLUMN_IF_MISSING('NOTE', 'NOTE VARCHAR2(1000)');
+    ADD_COLUMN_IF_MISSING('ERROR_MESSAGE', 'ERROR_MESSAGE VARCHAR2(4000)');
+END;
+/
+
 -- ==============================================================================
 -- 2. RECOVERY HISTORY TABLE
 -- ==============================================================================
@@ -162,14 +191,9 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
         PRAGMA AUTONOMOUS_TRANSACTION;
         v_recovery_id NUMBER;
     BEGIN
-        /*
-           Use dynamic SQL here to avoid compile-time ORA-00942 when this package
-           is created by HOSPITAL_DBA inside schema HOSPITAL.
-           Runtime object is still HOSPITAL.RECOVERY_HISTORY.
-        */
-        EXECUTE IMMEDIATE
-            'SELECT NVL(MAX(RECOVERY_ID), 0) + 1 FROM hospital.RECOVERY_HISTORY'
-            INTO v_recovery_id;
+        SELECT hospital.SEQ_RECOVERY_ID.NEXTVAL
+        INTO v_recovery_id
+        FROM dual;
 
         EXECUTE IMMEDIATE '
             INSERT INTO hospital.RECOVERY_HISTORY(
@@ -234,7 +258,7 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
         DBMS_DATAPUMP.METADATA_FILTER(
             handle => v_handle,
             name   => 'EXCLUDE_PATH_EXPR',
-            value  => 'IN (''STATISTICS'', ''PROCEDURE'', ''FUNCTION'', ''PACKAGE'', ''VIEW'', ''GRANT'', ''TYPE'')'
+            value  => 'IN (''STATISTICS'', ''PROCEDURE'', ''FUNCTION'', ''PACKAGE'', ''VIEW'', ''GRANT'', ''TYPE'', ''TRIGGER'')'
         );
 
         DBMS_DATAPUMP.START_JOB(v_handle);

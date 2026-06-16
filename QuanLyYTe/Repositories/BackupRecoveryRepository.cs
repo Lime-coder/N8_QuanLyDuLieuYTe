@@ -17,7 +17,20 @@ namespace QuanLyYTe.Repositories
 
         public DataTable GetBackupHistory()
         {
-            string sql = "SELECT BACKUP_ID, BACKUP_TIME, BACKUP_TYPE, STATUS FROM hospital.BACKUP_HISTORY ORDER BY BACKUP_TIME DESC";
+            string sql = @"
+                SELECT
+                    BACKUP_ID,
+                    BACKUP_TIME,
+                    BACKUP_TYPE,
+                    METHOD,
+                    DIRECTORY_NAME,
+                    DUMP_FILE,
+                    LOG_FILE,
+                    STATUS,
+                    NOTE,
+                    ERROR_MESSAGE
+                FROM hospital.BACKUP_HISTORY
+                ORDER BY BACKUP_TIME DESC";
             return _dbProvider.ExecuteQuery(sql);
         }
 

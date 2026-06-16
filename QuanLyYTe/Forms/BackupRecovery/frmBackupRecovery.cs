@@ -129,6 +129,12 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 dgvBackupHistory.DataSource = dt;
                 GridViewStyler.Format(dgvBackupHistory);
 
+                if (dgvBackupHistory.Columns.Contains("METHOD")) dgvBackupHistory.Columns["METHOD"].HeaderText = "Method";
+                if (dgvBackupHistory.Columns.Contains("DIRECTORY_NAME")) dgvBackupHistory.Columns["DIRECTORY_NAME"].HeaderText = "Directory";
+                if (dgvBackupHistory.Columns.Contains("DUMP_FILE")) dgvBackupHistory.Columns["DUMP_FILE"].HeaderText = "Dump file";
+                if (dgvBackupHistory.Columns.Contains("LOG_FILE")) dgvBackupHistory.Columns["LOG_FILE"].HeaderText = "Log file";
+                if (dgvBackupHistory.Columns.Contains("ERROR_MESSAGE")) dgvBackupHistory.Columns["ERROR_MESSAGE"].HeaderText = "Error";
+
                 if (dgvBackupHistory.Columns.Contains("BACKUP_ID")) dgvBackupHistory.Columns["BACKUP_ID"].HeaderText = "ID";
                 if (dgvBackupHistory.Columns.Contains("BACKUP_TIME")) dgvBackupHistory.Columns["BACKUP_TIME"].HeaderText = "Thời gian";
                 if (dgvBackupHistory.Columns.Contains("BACKUP_TYPE")) dgvBackupHistory.Columns["BACKUP_TYPE"].HeaderText = "Loại sao lưu";
