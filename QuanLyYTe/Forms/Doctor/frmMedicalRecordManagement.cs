@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Drawing;
 using System;
@@ -84,9 +84,9 @@ namespace QuanLyYTe.Forms.Doctor
         {
             if (Dgv.CurrentRow == null) return;
             string rid = Dgv.CurrentRow.Cells["RECORD_ID"].Value.ToString().Trim();
-            var f = new Dictionary<string, string> { { "Mã HSBA (Không sửa)", rid }, { "Loại dịch vụ", "" }, { "Kết quả", "" } };
+            var f = new Dictionary<string, string> { { "Mã HSBA (Không sửa)", rid }, { "Loại dịch vụ", "" } };
             ShowDialog("Thêm dịch vụ mới", f, res => {
-                Svc.CreateService(rid, res["Loại dịch vụ"], res["Kết quả"]);
+                Svc.CreateService(rid, res["Loại dịch vụ"]);
                 LoadSubData();
             });
         }
@@ -118,7 +118,7 @@ namespace QuanLyYTe.Forms.Doctor
         {
             Dgv.DataSource = Svc.GetMedicalRecords(TxtS.Text);
             if (Dgv.Columns.Contains("RECORD_ID")) Dgv.Columns["RECORD_ID"].HeaderText = "Mã HSBA";
-            if (Dgv.Columns.Contains("PATIENT_ID")) Dgv.Columns["PATIENT_ID"].HeaderText = "Mã Bệnh Nhân";
+            if (Dgv.Columns.Contains("PATIENT_ID")) Dgv.Columns["PATIENT_ID"].HeaderText = "Mã Bệnh nhân";
             if (Dgv.Columns.Contains("FULL_NAME")) Dgv.Columns["FULL_NAME"].HeaderText = "Tên Bệnh nhân";
             if (Dgv.Columns.Contains("RECORD_DATE")) Dgv.Columns["RECORD_DATE"].HeaderText = "Ngày lập";
             if (Dgv.Columns.Contains("DIAGNOSIS")) Dgv.Columns["DIAGNOSIS"].HeaderText = "Chẩn đoán";
