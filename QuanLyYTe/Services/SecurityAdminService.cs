@@ -47,5 +47,29 @@ namespace QuanLyYTe.Services
             try { _service.DeactivateUser(username); }
             catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
         }
+
+        // Get 5 standard audit contexts (Requirement 3.2)
+        public DataTable GetStandardAudit()
+        {
+            return _service.GetStandardAuditLogs();
+        }
+
+        // Get FGA logs for Prescription updates (Requirement 3.3a)
+        public DataTable GetPrescriptionAudit()
+        {
+            return _service.GetFGAAuditLogs("FGA_UPDATE_PRESCRIPTION");
+        }
+
+        // Get FGA logs for Medical info updates (Requirement 3.3b, c)
+        public DataTable GetMedicalInfoAudit()
+        {
+            return _service.GetFGAAuditLogs("FGA_MEDICAL_INFO_AUDIT");
+        }
+
+        // Get FGA logs for Service record changes (Requirement 3.3d)
+        public DataTable GetServiceRecordAudit()
+        {
+            return _service.GetFGAAuditLogs("FGA_SERVICE_RECORD_CHANGES");
+        }
     }
 }

@@ -237,5 +237,33 @@ public class SecurityAdminRepository
 
         _dbProvider.ExecuteNonQuerySP(Sp("USP_DROP_ROLE"), p);
     }
-}
+
+        /// <summary>
+        /// Fetch Standard Audit logs from Oracle (Req 3.2)
+        /// </summary>
+        public DataTable GetStandardAuditLogs()
+        {
+            OracleParameter[] p = {
+                new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
+            };
+
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_STANDARD_AUDIT"), p);
+        }
+
+        /// <summary>
+        /// Fetch Fine-Grained Audit logs based on specific policy (Req 3.3)
+        /// </summary>
+        public DataTable GetFGAAuditLogs(string policyName = null)
+        {
+            OracleParameter[] p = {
+                new OracleParameter("p_policy_name", OracleDbType.Varchar2)
+                {
+                    Value = (object)policyName ?? DBNull.Value
+                },
+                new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
+            };
+
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_FGA_AUDIT"), p);
+        }
+    }
 }
