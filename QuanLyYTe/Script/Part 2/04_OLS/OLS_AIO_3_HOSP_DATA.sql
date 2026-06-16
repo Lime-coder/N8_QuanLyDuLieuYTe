@@ -12,45 +12,65 @@ PROMPT =========================================================================
 PROMPT 1. Insert Target Data (T1 -> T7)
 PROMPT ==============================================================================
 BEGIN
-    DELETE FROM hospital.thongbao;
+    DELETE FROM hospital.notification;
 EXCEPTION WHEN OTHERS THEN NULL;
 END;
 /
 
-INSERT INTO hospital.thongbao (id_thongbao, noidung, ngaygio, diadiem, ols_label) 
+INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
 VALUES ('T1', N'Thông báo chung toàn viện', SYSDATE, N'Toàn quốc', CHAR_TO_LABEL('HOSP_OLS_POL', 'NV'));
 
-INSERT INTO hospital.thongbao (id_thongbao, noidung, ngaygio, diadiem, ols_label) 
+INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
 VALUES ('T2', N'Họp chiến lược Quý 3', SYSDATE, N'Phòng họp VIP', CHAR_TO_LABEL('HOSP_OLS_POL', 'BGD'));
 
-INSERT INTO hospital.thongbao (id_thongbao, noidung, ngaygio, diadiem, ols_label) 
+INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
 VALUES ('T3', N'Đánh giá ngân sách các khoa', SYSDATE, N'Hội trường A', CHAR_TO_LABEL('HOSP_OLS_POL', 'LDK'));
 
-INSERT INTO hospital.thongbao (id_thongbao, noidung, ngaygio, diadiem, ols_label) 
+INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
 VALUES ('T4', N'Báo cáo thiết bị nội soi', SYSDATE, N'Phòng Giám đốc', CHAR_TO_LABEL('HOSP_OLS_POL', 'LDK:TH'));
 
-INSERT INTO hospital.thongbao (id_thongbao, noidung, ngaygio, diadiem, ols_label) 
+INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
 VALUES ('T5', N'Thay đổi ca trực tuần tới', SYSDATE, N'Khoa TH - HCM', CHAR_TO_LABEL('HOSP_OLS_POL', 'NV:TH:HCM'));
 
-INSERT INTO hospital.thongbao (id_thongbao, noidung, ngaygio, diadiem, ols_label) 
+INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
 VALUES ('T6', N'Tập huấn an toàn vệ sinh', SYSDATE, N'Khoa TH - HN', CHAR_TO_LABEL('HOSP_OLS_POL', 'NV:TH:HN'));
 
-INSERT INTO hospital.thongbao (id_thongbao, noidung, ngaygio, diadiem, ols_label) 
+INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
 VALUES ('T7', N'Họp liên khoa TH & TK', SYSDATE, N'Chi nhánh Hải Phòng', CHAR_TO_LABEL('HOSP_OLS_POL', 'LDK:TH,TK:HP'));
 
 COMMIT;
 
 PROMPT ==============================================================================
-PROMPT 2. Build Stored Procedure for Application
+PROMPT 2. Build Stored Procedures for Application
 PROMPT ==============================================================================
+
+-- GET Procedure (Updated with English columns and sorting)
 CREATE OR REPLACE PROCEDURE hospital.USP_GET_NOTIFICATIONS (
     p_cursor OUT SYS_REFCURSOR
 ) AUTHID CURRENT_USER AS
 BEGIN
     OPEN p_cursor FOR
-        SELECT id_thongbao, noidung, TO_CHAR(ngaygio, 'DD/MM/YYYY HH24:MI') as ngaygio, diadiem
-        FROM hospital.thongbao
-        ORDER BY id_thongbao;
+        SELECT notification_id, description, TO_CHAR(posted_date, 'DD/MM/YYYY HH24:MI') as posted_date, location
+        FROM hospital.notification
+        ORDER BY TO_NUMBER(SUBSTR(notification_id, 2)); -- T1, T2.. T10 sort correctly
+END;
+/
+
+-- ADD Procedure (For Admin/Coordinator to create new notifications)
+CREATE OR REPLACE PROCEDURE hospital.USP_ADD_NOTIFICATION (
+    p_description IN NVARCHAR2,
+    p_location    IN NVARCHAR2,
+    p_label_str   IN VARCHAR2
+) AUTHID CURRENT_USER AS
+    v_id VARCHAR2(10);
+BEGIN
+    -- Format ID as T8, T9, T10...
+    v_id := 'T' || hospital.seq_notification_id.NEXTVAL;
+    
+    INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label)
+    VALUES (v_id, p_description, SYSDATE, p_location, CHAR_TO_LABEL('HOSP_OLS_POL', UPPER(p_label_str)));
+    
+    COMMIT;
 END;
 /
 
@@ -69,6 +89,11 @@ BEGIN
     END LOOP;
 END;
 /
+
+-- Grant ADD ability to DBA and Coordinator (U1)
+GRANT EXECUTE ON hospital.USP_ADD_NOTIFICATION TO rl_dba;
+GRANT EXECUTE ON hospital.USP_ADD_NOTIFICATION TO rl_coordinator;
+
 
 PROMPT ==============================================================================
 PROMPT 4. Bridge OLS Users (U1-U8) into Application RBAC & VPD

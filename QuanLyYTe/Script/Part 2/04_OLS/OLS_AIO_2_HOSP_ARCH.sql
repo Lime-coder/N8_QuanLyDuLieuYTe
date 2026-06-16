@@ -6,15 +6,20 @@
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 SET SERVEROUTPUT ON;
 
--- 1. Base Table
-BEGIN EXECUTE IMMEDIATE 'DROP TABLE hospital.thongbao CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+-- 1. Base Table & Sequence (English Naming)
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE hospital.notification CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
 /
-CREATE TABLE hospital.thongbao (
-    id_thongbao VARCHAR2(10) PRIMARY KEY,
-    noidung     NVARCHAR2(1000) NOT NULL,
-    ngaygio     DATE NOT NULL,
-    diadiem     NVARCHAR2(100)
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE hospital.seq_notification_id'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+
+CREATE TABLE hospital.notification (
+    notification_id VARCHAR2(10) PRIMARY KEY,
+    description     NVARCHAR2(1000) NOT NULL,
+    posted_date     DATE NOT NULL,
+    location        NVARCHAR2(100)
 );
+
+CREATE SEQUENCE hospital.seq_notification_id START WITH 8 INCREMENT BY 1;
 
 -- 2. Initialize Policy
 BEGIN SA_SYSDBA.DROP_POLICY('HOSP_OLS_POL', TRUE); EXCEPTION WHEN OTHERS THEN NULL; END;
@@ -61,14 +66,14 @@ BEGIN
 END;
 /
 
--- 4. Apply Policy & Grant Bypass privileges
+-- 4. Apply Policy & Grant Bypass privileges (Updated table name)
 BEGIN
-    SA_POLICY_ADMIN.APPLY_TABLE_POLICY('HOSP_OLS_POL', 'HOSPITAL', 'THONGBAO', 'READ_CONTROL, WRITE_CONTROL, CHECK_CONTROL');
+    SA_POLICY_ADMIN.APPLY_TABLE_POLICY('HOSP_OLS_POL', 'HOSPITAL', 'NOTIFICATION', 'READ_CONTROL, WRITE_CONTROL, CHECK_CONTROL');
     SA_USER_ADMIN.SET_USER_PRIVS('HOSP_OLS_POL', 'HOSPITAL_DBA', 'FULL');
 END;
 /
 
--- 5. User Creation & Authorization
+-- 5. User Creation & Authorization (Unchanged)
 DECLARE
     PROCEDURE create_u(p_user IN VARCHAR2) IS
     BEGIN
@@ -80,7 +85,8 @@ BEGIN
         create_u('U' || i);
         EXECUTE IMMEDIATE 'CREATE USER U' || i || ' IDENTIFIED BY 123';
         EXECUTE IMMEDIATE 'GRANT CREATE SESSION TO U' || i;
-        EXECUTE IMMEDIATE 'GRANT SELECT ON hospital.thongbao TO U' || i;
+        -- Update grant to new table name
+        EXECUTE IMMEDIATE 'GRANT SELECT ON hospital.notification TO U' || i;
     END LOOP;
 END;
 /
