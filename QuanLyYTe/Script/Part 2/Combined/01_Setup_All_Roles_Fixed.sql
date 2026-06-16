@@ -1415,8 +1415,7 @@ END;
 
 CREATE OR REPLACE PROCEDURE hospital.USP_ADD_SERVICE(
     p_id   IN VARCHAR2,
-    p_type IN NVARCHAR2,
-    p_res  IN NVARCHAR2 DEFAULT NULL
+    p_type IN NVARCHAR2
 )
 AUTHID DEFINER
 AS
@@ -1594,22 +1593,36 @@ AS
 BEGIN
     OPEN p_c FOR
         SELECT
-            patient_id,
-            full_name,
-            gender,
-            TO_CHAR(birthdate, 'DD/MM/YYYY') AS birthdate,
-            medical_history,
-            family_medical_history,
-            drug_allergies
-        FROM hospital.patient
-        WHERE LOWER(full_name) LIKE '%' || LOWER(v_s) || '%'
-           OR patient_id LIKE '%' || UPPER(TRIM(v_s)) || '%'
-           OR LOWER(gender) LIKE '%' || LOWER(v_s) || '%'
-           OR TO_CHAR(birthdate, 'DD/MM/YYYY') LIKE '%' || v_s || '%'
-           OR LOWER(medical_history) LIKE '%' || LOWER(v_s) || '%'
-           OR LOWER(family_medical_history) LIKE '%' || LOWER(v_s) || '%'
-           OR LOWER(drug_allergies) LIKE '%' || LOWER(v_s) || '%'
-        ORDER BY full_name, patient_id;
+            p.patient_id,
+            p.full_name,
+            p.gender,
+            TO_CHAR(p.birthdate, 'DD/MM/YYYY') AS birthdate,
+            p.medical_history,
+            p.family_medical_history,
+            p.drug_allergies
+        FROM hospital.patient p
+        WHERE (
+           LOWER(p.full_name) LIKE '%' || LOWER(v_s) || '%'
+           OR p.patient_id LIKE '%' || UPPER(TRIM(v_s)) || '%'
+           OR p.LOWER(gender) LIKE '%' || LOWER(v_s) || '%'
+           OR TO_CHAR(p.birthdate, 'DD/MM/YYYY') LIKE '%' || v_s || '%'
+           OR LOWER(p.medical_history) LIKE '%' || LOWER(v_s) || '%'
+           OR LOWER(p.family_medical_history) LIKE '%' || LOWER(v_s) || '%'
+           OR LOWER(p.drug_allergies) LIKE '%' || LOWER(v_s) || '%'
+
+           OR EXISTS (
+                SELECT 1 FROM medical_record m 
+                WHERE m.patient_id = p.patient_id
+                AND (
+                    m.record_id LIKE '%'||UPPER(TRIM(v_s))||'%'
+                    OR m.diagnosis LIKE '%'||v_s||'%'
+                    OR m.treatment_plan LIKE '%'||v_s||'%'
+                    OR m.conclusion LIKE '%'||v_s||'%'
+                    OR TO_CHAR(m.record_date, 'DD/MM/YYYY') LIKE '%'||v_s||'%'
+                )
+           )
+        )
+        ORDER BY p.full_name, p.patient_id;
 END;
 /
 
