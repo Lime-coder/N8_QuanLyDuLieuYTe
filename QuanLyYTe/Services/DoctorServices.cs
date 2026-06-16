@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using QuanLyYTe.Repositories;
 
@@ -17,8 +17,8 @@ namespace QuanLyYTe.Services
         public DataTable GetServices(string s = "") 
             => _doctorRepo.GetServices(s);
 
-        public void CreateService(string id, string ty, string rs) 
-            => _doctorRepo.AddService(id, ty, rs);
+        public void CreateService(string id, string ty) 
+            => _doctorRepo.AddService(id, ty);
         public void RemoveService(string id, string ty, DateTime dt) 
             => _doctorRepo.DeleteService(id, ty, dt);
 
