@@ -1604,7 +1604,7 @@ BEGIN
         WHERE (
            LOWER(p.full_name) LIKE '%' || LOWER(v_s) || '%'
            OR p.patient_id LIKE '%' || UPPER(TRIM(v_s)) || '%'
-           OR p.LOWER(gender) LIKE '%' || LOWER(v_s) || '%'
+           OR LOWER(p.gender) LIKE '%' || LOWER(v_s) || '%'
            OR TO_CHAR(p.birthdate, 'DD/MM/YYYY') LIKE '%' || v_s || '%'
            OR LOWER(p.medical_history) LIKE '%' || LOWER(v_s) || '%'
            OR LOWER(p.family_medical_history) LIKE '%' || LOWER(v_s) || '%'
