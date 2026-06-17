@@ -247,23 +247,40 @@ public class SecurityAdminRepository
                 new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
             };
 
-            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_STANDARD_AUDIT"), p);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_REQ32_LOGS"), p);
         }
 
         /// <summary>
-        /// Fetch Fine-Grained Audit logs based on specific policy (Req 3.3)
+        /// Fetch FGA Audit logs for Prescription (Req 3.3a)
         /// </summary>
-        public DataTable GetFGAAuditLogs(string policyName = null)
+        public DataTable GetFGAPrescriptionLogs()
         {
             OracleParameter[] p = {
-                new OracleParameter("p_policy_name", OracleDbType.Varchar2)
-                {
-                    Value = (object)policyName ?? DBNull.Value
-                },
                 new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
             };
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_REQ33A_LOGS"), p);
+        }
 
-            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_FGA_AUDIT"), p);
+        /// <summary>
+        /// Fetch FGA + Unified Audit logs for Medical Record (Req 3.3b, 3.3c)
+        /// </summary>
+        public DataTable GetFGAMedicalRecordLogs()
+        {
+            OracleParameter[] p = {
+                new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
+            };
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_REQ33BC_LOGS"), p);
+        }
+
+        /// <summary>
+        /// Fetch Unified Audit logs for Service Record (Req 3.3d)
+        /// </summary>
+        public DataTable GetUnifiedServiceRecordLogs()
+        {
+            OracleParameter[] p = {
+                new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
+            };
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_REQ33D_LOGS"), p);
         }
     }
 }

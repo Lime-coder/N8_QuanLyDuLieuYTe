@@ -1,6 +1,13 @@
--- Chạy với quyền SYSDBA
-ALTER SESSION SET CONTAINER = PDB_QLYT;
 
+-- ============================================================
+-- Yêu cầu 3: Vận dụng cơ chế kiểm toán
+-- ============================================================
+-- Run as SYSDBA
+ALTER SESSION SET CONTAINER = PDB_QLYT;
+-- Cấp quyền xem nhật ký kiểm toán
+GRANT SELECT ON SYS.DBA_AUDIT_TRAIL TO HOSPITAL_DBA;
+GRANT SELECT ON SYS.DBA_FGA_AUDIT_TRAIL TO HOSPITAL_DBA;
+GRANT AUDIT_VIEWER TO HOSPITAL_DBA;  -- Cho phép xem UNIFIED_AUDIT_TRAIL (không dùng GRANT SELECT trực tiếp)
 -- ============================================================
 -- 1. XÓA CẤU TRÚC VÀ DỮ LIỆU NHẬT KÝ CŨ
 -- ============================================================
@@ -8,6 +15,19 @@ BEGIN
     EXECUTE IMMEDIATE 'DELETE FROM SYS.AUD$';      -- Xóa Standard Audit log
     EXECUTE IMMEDIATE 'DELETE FROM SYS.FGA_LOG$';  -- Xóa Fine-Grained Audit log
     COMMIT;
+
+    -- A2. Xóa Unified Audit Trail (phải dùng API, không được DELETE trực tiếp)
+    BEGIN
+        DBMS_AUDIT_MGMT.FLUSH_UNIFIED_AUDIT_TRAIL;  -- Ép đẩy log từ RAM xuống disk
+    EXCEPTION WHEN OTHERS THEN NULL; END;
+
+    BEGIN
+        -- use_last_arch_timestamp => FALSE: xóa toàn bộ, không cần đánh dấu timestamp
+        DBMS_AUDIT_MGMT.CLEAN_AUDIT_TRAIL(
+            audit_trail_type        => DBMS_AUDIT_MGMT.AUDIT_TRAIL_UNIFIED,
+            use_last_arch_timestamp => FALSE
+        );
+    EXCEPTION WHEN OTHERS THEN NULL; END;
 
     -- B. Hủy các thiết lập quy tắc cũ
     BEGIN EXECUTE IMMEDIATE 'NOAUDIT ALL ON hospital.staff'; EXCEPTION WHEN OTHERS THEN NULL; END;
@@ -17,90 +37,160 @@ BEGIN
     BEGIN EXECUTE IMMEDIATE 'NOAUDIT ALL ON hospital.SP_COORD_GET_DOCTORS'; EXCEPTION WHEN OTHERS THEN NULL; END;
 
     -- C. Xóa các Fine-Grained Audit Policies cũ
-    BEGIN DBMS_FGA.DROP_POLICY('HOSPITAL', 'PRESCRIPTION', 'FGA_PRESC_UPDATE'); EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DBMS_FGA.DROP_POLICY('HOSPITAL', 'MEDICAL_RECORD', 'FGA_MR_UPDATE'); EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN DBMS_FGA.DROP_POLICY('HOSPITAL', 'SERVICE_RECORD', 'FGA_SR_ILLEGAL'); EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN DBMS_FGA.DROP_POLICY('HOSPITAL', 'PRESCRIPTION', 'FGA_PRESC_UPDATE');    EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN DBMS_FGA.DROP_POLICY('HOSPITAL', 'MEDICAL_RECORD', 'FGA_MR_UPDATE');     EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN DBMS_FGA.DROP_POLICY('HOSPITAL', 'SERVICE_RECORD', 'FGA_SR_ILLEGAL');    EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN DBMS_FGA.DROP_POLICY('HOSPITAL', 'PRESCRIPTION', 'FGA_PRESCRIPTION_COLS');  EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN DBMS_FGA.DROP_POLICY('HOSPITAL', 'MEDICAL_RECORD', 'FGA_MEDICAL_RECORD_COLS'); EXCEPTION WHEN OTHERS THEN NULL; END;
 
-    -- D. Xóa các Stored Procedures cũ của Nhật ký
+    -- D. Xóa Unified Audit Policy cũ
+    BEGIN EXECUTE IMMEDIATE 'NOAUDIT POLICY AUD_ILLEGAL_MR_POLICY'; EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN EXECUTE IMMEDIATE 'DROP AUDIT POLICY AUD_ILLEGAL_MR_POLICY';         EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN EXECUTE IMMEDIATE 'NOAUDIT POLICY AUD_ILLEGAL_SR_POLICY'; EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN EXECUTE IMMEDIATE 'DROP AUDIT POLICY AUD_ILLEGAL_SR_POLICY';         EXCEPTION WHEN OTHERS THEN NULL; END;
+
+    -- E. Xóa các Stored Procedures cũ của Nhật ký
     BEGIN EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_GET_STANDARD_AUDIT'; EXCEPTION WHEN OTHERS THEN NULL; END;
-    BEGIN EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_GET_FGA_AUDIT'; EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_GET_FGA_AUDIT';       EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_GET_REQ32_LOGS';      EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_GET_REQ33A_LOGS';     EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_GET_REQ33BC_LOGS';    EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_GET_REQ33D_LOGS';     EXCEPTION WHEN OTHERS THEN NULL; END;
+
 END;
 /
+-- ============================================================
+-- 2. Thực hiện kiểm toán dùng Standard audit: 5 ngữ cảnh
+-- ============================================================
 
--- ============================================================
--- 2. CẤP QUYỀN VÀ THIẾT LẬP HỆ THỐNG
--- ============================================================
-
-GRANT SELECT ON SYS.DBA_AUDIT_TRAIL TO hospital_dba;
-GRANT SELECT ON SYS.DBA_FGA_AUDIT_TRAIL TO hospital_dba;
-GRANT SELECT ANY DICTIONARY TO hospital_dba;
-
--- ============================================================
--- 3. THIẾT LẬP LẠI QUY TẮC KIỂM TOÁN (5 NGỮ CẢNH)
--- ============================================================
-AUDIT DELETE ON hospital.staff BY ACCESS;
-AUDIT UPDATE ON hospital.department BY ACCESS;
-AUDIT SELECT ON hospital.medical_record BY ACCESS;
-AUDIT EXECUTE ON hospital.USP_MANAGE_PRESCRIPTION BY ACCESS;
-AUDIT EXECUTE ON hospital.SP_COORD_GET_DOCTORS BY ACCESS; 
-
--- ============================================================
--- 4. THIẾT LẬP LẠI FINE-GRAINED AUDIT (FGA)
--- ============================================================
+-- Tạo function để demo audit
+CREATE OR REPLACE FUNCTION hospital_dba.F_GET_DOCTOR_STATS(p_dept_id IN VARCHAR2) 
+RETURN NUMBER AS
+    v_cnt NUMBER;
 BEGIN
-  -- a. Cập nhật ĐƠN THUỐC
-  DBMS_FGA.ADD_POLICY('HOSPITAL', 'PRESCRIPTION', 'FGA_PRESC_UPDATE', 
-    audit_column => 'RECORD_ID, PRESCRIPTION_DATE, MEDICINE_NAME, DOSAGE', statement_types => 'UPDATE');
+    SELECT COUNT(*) INTO v_cnt FROM hospital.staff WHERE dept_id = p_dept_id;
+    RETURN v_cnt;
+END;
+/   
+GRANT EXECUTE ON hospital_dba.F_GET_DOCTOR_STATS TO rl_doctor, rl_coordinator;
 
-  -- b & c. Cập nhật HSBA
-  DBMS_FGA.ADD_POLICY('HOSPITAL', 'MEDICAL_RECORD', 'FGA_MR_UPDATE', 
-    audit_column => 'DIAGNOSIS, TREATMENT_PLAN, CONCLUSION', statement_types => 'UPDATE');
+-- 5 ngữ cảnh (có cả SUCCESSFUL và NOT SUCCESSFUL theo yêu cầu đề bài)
+-- NC#1: TABLE - Xóa nhân viên
+AUDIT DELETE ON hospital.staff BY ACCESS WHENEVER SUCCESSFUL;
+AUDIT DELETE ON hospital.staff BY ACCESS WHENEVER NOT SUCCESSFUL;
 
-  -- d. Thêm, xóa, sửa trên SERVICE_RECORD
-  DBMS_FGA.ADD_POLICY('HOSPITAL', 'SERVICE_RECORD', 'FGA_SR_ILLEGAL', 
-    statement_types => 'INSERT, UPDATE, DELETE');
+-- NC#2: TABLE - Cập nhật thông tin bệnh nhân
+AUDIT UPDATE ON hospital.patient BY ACCESS WHENEVER SUCCESSFUL;
+AUDIT UPDATE ON hospital.patient BY ACCESS WHENEVER NOT SUCCESSFUL;
+
+-- NC#3: VIEW - Tra cứu danh sách bác sĩ
+AUDIT SELECT ON hospital.VW_COORD_DOCTORS BY ACCESS WHENEVER SUCCESSFUL;
+AUDIT SELECT ON hospital.VW_COORD_DOCTORS BY ACCESS WHENEVER NOT SUCCESSFUL;
+
+-- NC#4: STORED PROCEDURE - Cập nhật HSBA
+AUDIT EXECUTE ON hospital.USP_UPDATE_MEDICAL_RECORD BY ACCESS WHENEVER SUCCESSFUL;
+AUDIT EXECUTE ON hospital.USP_UPDATE_MEDICAL_RECORD BY ACCESS WHENEVER NOT SUCCESSFUL;
+
+-- NC#5: FUNCTION - Thống kê số bác sĩ theo khoa
+AUDIT EXECUTE ON hospital_dba.F_GET_DOCTOR_STATS BY ACCESS WHENEVER SUCCESSFUL;
+AUDIT EXECUTE ON hospital_dba.F_GET_DOCTOR_STATS BY ACCESS WHENEVER NOT SUCCESSFUL;
+
+-- ============================================================
+-- 3. Dùng Fine-grained Audit hoặc Unified Audit để thực hiện kiểm toán
+-- ============================================================
+
+--  3.3a, 3.3b (FGA - THÀNH CÔNG)
+
+BEGIN
+    -- 3.3a: FGA Policy cho bảng ĐƠNTHUỐC
+    DBMS_FGA.ADD_POLICY(
+        object_schema   => 'HOSPITAL',
+        object_name     => 'PRESCRIPTION',
+        policy_name     => 'FGA_PRESCRIPTION_COLS',
+        audit_column    => 'RECORD_ID, PRESCRIPTION_DATE, MEDICINE_NAME, DOSAGE',
+        statement_types => 'UPDATE'
+    );
+
+    -- 3.3b: FGA Policy cho bảng HỒ SƠ BỆNH ÁN
+    DBMS_FGA.ADD_POLICY(
+        object_schema   => 'HOSPITAL',
+        object_name     => 'MEDICAL_RECORD',
+        policy_name     => 'FGA_MEDICAL_RECORD_COLS',
+        audit_column    => 'DIAGNOSIS, TREATMENT_PLAN, CONCLUSION',
+        statement_types => 'UPDATE'
+    );
 END;
 /
 
+-- 3.3c (UNIFIED - BẤT HỢP PHÁP TRÊN HSBA)
+CREATE AUDIT POLICY AUD_ILLEGAL_MR_POLICY
+  ACTIONS 
+    UPDATE ON hospital.medical_record;
+
+-- Bắt hành vi Failed (Sai quyền/Bất hợp pháp) cho 3.3c
+AUDIT POLICY AUD_ILLEGAL_MR_POLICY WHENEVER NOT SUCCESSFUL;
+
+-- 3.3d (UNIFIED - BẤT HỢP PHÁP TRÊN SERVICE_RECORD)
+CREATE AUDIT POLICY AUD_ILLEGAL_SR_POLICY
+  ACTIONS 
+    INSERT ON hospital.service_record, 
+    UPDATE ON hospital.service_record, 
+    DELETE ON hospital.service_record; 
+
+-- Bắt hành vi Failed (Sai quyền/Bất hợp pháp) cho 3.3d
+AUDIT POLICY AUD_ILLEGAL_SR_POLICY WHENEVER NOT SUCCESSFUL;
+
 -- ============================================================
--- 5. TẠO STORED PROCEDURES CHO GIAO DIỆN
+-- 4. STORED PROCEDURES
 -- ============================================================
 
--- 1. Lấy nhật ký hệ thống
-CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_STANDARD_AUDIT (
-    p_cursor OUT SYS_REFCURSOR
-) AUTHID CURRENT_USER AS 
+-- 4.1. Tab Kiểm toán hệ thống
+CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_REQ32_LOGS (p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT USERNAME, 
-           TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
-           OBJ_NAME as OBJECT, 
-           ACTION_NAME as ACTION, 
-           CASE WHEN RETURNCODE = 0 THEN 'Success' ELSE 'Failed' END AS STATUS, 
-           SQL_TEXT
-    FROM SYS.DBA_AUDIT_TRAIL 
-    WHERE OWNER IN ('HOSPITAL', 'HOSPITAL_DBA')
+    SELECT CAST(USERNAME AS VARCHAR2(128)) as USERNAME, TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
+           CAST(OBJ_NAME AS VARCHAR2(128)) as OBJECT, CAST(ACTION_NAME AS VARCHAR2(128)) as ACTION,
+           CASE WHEN RETURNCODE = 0 THEN 'Success' ELSE 'Failed' END AS STATUS, DBMS_LOB.SUBSTR(SQL_TEXT, 4000, 1) as SQL_TEXT
+    FROM DBA_AUDIT_TRAIL 
+    WHERE OBJ_NAME IN ('STAFF', 'PATIENT', 'VW_COORD_DOCTORS', 'USP_UPDATE_MEDICAL_RECORD', 'F_GET_DOCTOR_STATS')
     ORDER BY TIMESTAMP DESC;
 END;
 /
 
--- 2. Lấy nhật ký FGA
-CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_FGA_AUDIT (
-    p_policy_name IN VARCHAR2,
-    p_cursor OUT SYS_REFCURSOR
-) AUTHID CURRENT_USER AS
+-- 4.2. Tab Đơn thuốc
+CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_REQ33A_LOGS (p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT DB_USER as USERNAME, 
-           TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
-           OBJECT_NAME, POLICY_NAME, STATEMENT_TYPE, SQL_TEXT,
-           'Success' AS STATUS
-    FROM SYS.DBA_FGA_AUDIT_TRAIL
-    WHERE OBJECT_SCHEMA = 'HOSPITAL'
-      AND (p_policy_name IS NULL OR POLICY_NAME = p_policy_name)
+    SELECT CAST(DB_USER AS VARCHAR2(128)) as USERNAME, TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
+           CAST(OBJECT_NAME AS VARCHAR2(128)) as OBJECT, 'UPDATE' as ACTION, 'Success' AS STATUS, CAST(SQL_TEXT AS VARCHAR2(4000)) as SQL_TEXT
+    FROM DBA_FGA_AUDIT_TRAIL WHERE POLICY_NAME = 'FGA_PRESCRIPTION_COLS'
     ORDER BY TIMESTAMP DESC;
 END;
 /
 
-GRANT EXECUTE ON hospital_dba.USP_GET_STANDARD_AUDIT TO hospital_dba;
-GRANT EXECUTE ON hospital_dba.USP_GET_FGA_AUDIT TO hospital_dba;
+-- 4.3. Tab HSBA (Gộp FGA-Thành công và Unified-Thất bại)
+CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_REQ33BC_LOGS (p_cursor OUT SYS_REFCURSOR) AS
+BEGIN
+    OPEN p_cursor FOR
+    SELECT CAST(DB_USER AS VARCHAR2(128)) as USERNAME, TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
+           CAST(OBJECT_NAME AS VARCHAR2(128)) as OBJECT, 'UPDATE' as ACTION, 'Success' AS STATUS, CAST(SQL_TEXT AS VARCHAR2(4000)) as SQL_TEXT
+    FROM DBA_FGA_AUDIT_TRAIL WHERE POLICY_NAME = 'FGA_MEDICAL_RECORD_COLS'
+    UNION ALL
+    SELECT CAST(DBUSERNAME AS VARCHAR2(128)), TO_CHAR(EVENT_TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS'), 
+           CAST(OBJECT_NAME AS VARCHAR2(128)), 'UPDATE', 'Failed', DBMS_LOB.SUBSTR(SQL_TEXT, 4000, 1)
+    FROM UNIFIED_AUDIT_TRAIL WHERE OBJECT_NAME = 'MEDICAL_RECORD' AND RETURN_CODE != 0
+    ORDER BY TIMESTAMP DESC;
+END;
+/
+
+-- 4.4. Tab Dịch vụ (Lấy từ Unified Thất bại)
+CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_REQ33D_LOGS (p_cursor OUT SYS_REFCURSOR) AS
+BEGIN
+    OPEN p_cursor FOR
+    SELECT CAST(DBUSERNAME AS VARCHAR2(128)) as USERNAME, TO_CHAR(EVENT_TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
+           CAST(OBJECT_NAME AS VARCHAR2(128)) as OBJECT, CAST(ACTION_NAME AS VARCHAR2(128)) as ACTION, 
+           'Failed' AS STATUS, DBMS_LOB.SUBSTR(SQL_TEXT, 4000, 1) as SQL_TEXT
+    FROM UNIFIED_AUDIT_TRAIL WHERE OBJECT_NAME = 'SERVICE_RECORD' AND RETURN_CODE != 0
+    ORDER BY EVENT_TIMESTAMP DESC;
+END;
+/

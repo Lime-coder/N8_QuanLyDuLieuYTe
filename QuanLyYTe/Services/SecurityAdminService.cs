@@ -57,19 +57,19 @@ namespace QuanLyYTe.Services
         // Get FGA logs for Prescription updates (Requirement 3.3a)
         public DataTable GetPrescriptionAudit()
         {
-            return _service.GetFGAAuditLogs("FGA_UPDATE_PRESCRIPTION");
+            return _service.GetFGAPrescriptionLogs();
         }
 
-        // Get FGA logs for Medical info updates (Requirement 3.3b, c)
+        // Get FGA + Unified logs for Medical Record (Requirement 3.3b, 3.3c)
         public DataTable GetMedicalInfoAudit()
         {
-            return _service.GetFGAAuditLogs("FGA_MEDICAL_INFO_AUDIT");
+            return _service.GetFGAMedicalRecordLogs();
         }
 
-        // Get FGA logs for Service record changes (Requirement 3.3d)
+        // Get Unified logs for Service Record illegal actions (Requirement 3.3d)
         public DataTable GetServiceRecordAudit()
         {
-            return _service.GetFGAAuditLogs("FGA_SERVICE_RECORD_CHANGES");
+            return _service.GetUnifiedServiceRecordLogs();
         }
     }
 }
