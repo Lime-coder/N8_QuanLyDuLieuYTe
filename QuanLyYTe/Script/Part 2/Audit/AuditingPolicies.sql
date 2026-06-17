@@ -7,7 +7,7 @@ ALTER SESSION SET CONTAINER = PDB_QLYT;
 -- Cấp quyền xem nhật ký kiểm toán
 GRANT SELECT ON SYS.DBA_AUDIT_TRAIL TO HOSPITAL_DBA;
 GRANT SELECT ON SYS.DBA_FGA_AUDIT_TRAIL TO HOSPITAL_DBA;
-GRANT AUDIT_VIEWER TO HOSPITAL_DBA;  -- Cho phép xem UNIFIED_AUDIT_TRAIL (không dùng GRANT SELECT trực tiếp)
+GRANT SELECT ON SYS.UNIFIED_AUDIT_TRAIL TO HOSPITAL_DBA;
 -- ============================================================
 -- 1. XÓA CẤU TRÚC VÀ DỮ LIỆU NHẬT KÝ CŨ
 -- ============================================================
