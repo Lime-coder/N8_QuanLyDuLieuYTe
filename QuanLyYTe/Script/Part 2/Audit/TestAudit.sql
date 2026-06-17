@@ -44,7 +44,7 @@ CONNECT NV000001/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THÀNH CÔNG: Điều phối viên cập nhật SĐT bệnh nhân
-UPDATE hospital.patient SET phone = '0909999999' WHERE patient_id = 'BN000001';
+UPDATE hospital.patient SET street = 'Nguyễn thị minh khai' WHERE patient_id = 'BN000001';
 COMMIT;
 -- Kết quả mong đợi: DBA_AUDIT_TRAIL ghi RETURNCODE = 0
 
@@ -53,7 +53,7 @@ CONNECT NV000021/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Bác sĩ cố sửa thông tin bệnh nhân trực tiếp
-UPDATE hospital.patient SET phone = '0900000000' WHERE patient_id = 'BN000001';
+UPDATE hospital.patient SET street = 'Nguyễn thị minh khai' WHERE patient_id = 'BN000001';
 -- Kết quả mong đợi: ORA-01031 → DBA_AUDIT_TRAIL ghi RETURNCODE != 0
 
 
@@ -83,17 +83,19 @@ SELECT * FROM hospital.VW_COORD_DOCTORS;
 -- │ Mục tiêu: Tạo 1 log Thành Công + 1 log Thất Bại        │
 -- └─────────────────────────────────────────────────────────┘
 
--- *** Chạy với tài khoản: NV000021 (Bác sĩ – có quyền execute) ***
 CONNECT NV000021/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THÀNH CÔNG: Bác sĩ cập nhật HSBA của chính mình
-EXEC hospital.USP_UPDATE_MEDICAL_RECORD(
-    p_record_id      => 'BA001',
-    p_diagnosis      => N'Viêm dạ dày cấp - đã cải thiện',
-    p_treatment_plan => N'Tiếp tục uống thuốc',
-    p_conclusion     => N'Theo dõi thêm 1 tuần'
-);
+BEGIN
+    hospital.USP_UPDATE_MEDICAL_RECORD(
+        p_id => 'BA999999',
+        p_dg => N'Viêm dạ dày cấp - đã cải thiện',
+        p_tr => N'Tiếp tục uống thuốc',
+        p_cl => N'Theo dõi thêm 1 tuần'
+    );
+END;
+/
 -- Kết quả mong đợi: DBA_AUDIT_TRAIL ghi RETURNCODE = 0
 
 -- *** Chạy với tài khoản: NV000121 (Kỹ thuật viên – không có quyền execute SP này) ***
@@ -101,13 +103,15 @@ CONNECT NV000121/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Kỹ thuật viên cố gọi SP của bác sĩ
-EXEC hospital.USP_UPDATE_MEDICAL_RECORD(
-    p_record_id      => 'BA001',
-    p_diagnosis      => N'Hack chẩn đoán',
-    p_treatment_plan => N'...',
-    p_conclusion     => N'...'
-);
--- Kết quả mong đợi: ORA-01031 → DBA_AUDIT_TRAIL ghi RETURNCODE != 0
+BEGIN
+    hospital.USP_UPDATE_MEDICAL_RECORD(
+        p_id => 'BA999999',
+        p_dg => N'Hack chẩn đoán',
+        p_tr => N'...',
+        p_cl => N'...'
+    );
+END;
+/
 
 
 -- ┌─────────────────────────────────────────────────────────┐
