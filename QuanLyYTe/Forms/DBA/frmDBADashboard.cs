@@ -30,13 +30,10 @@ namespace QuanLyYTe.Forms
                 ("USR", "Quản lý user và role",  "Tạo, sửa, xóa tài khoản người dùng Oracle", () => new frmUserManagement()),
                 ("GRT", "Cấp Quyền",     "Cấp quyền cho user / role",                  () => new frmGrantPermission()),
                 ("REV", "Xem và thu hồi quyền", "Xem và thu hồi quyền đã cấp",                       () => new frmRevokePermission()),
-<<<<<<< HEAD
                 ("OLS", "Thông báo OLS", "Xem thông báo bằng Oracle Label Security", () => new QuanLyYTe.Forms.Common.frmNotifications()),
                 ("ADD", "Tạo thông báo OLS", "Thêm thông báo mới có dán nhãn", () => new QuanLyYTe.Forms.DBA.frmAddNotification()),
                 ("AUD", "Nhật ký kiểm toán", "Theo dõi hoạt động hệ thống và thay đổi dữ liệu",     () => new frmAuditManagement()),
-=======
                 ("BKP", "Sao lưu và Phục hồi", "Quản lý sao lưu, phục hồi dữ liệu",           () => new Forms.BackupRecovery.frmBackupRecovery()),
->>>>>>> BackupRecovery
             };
 
             SetupManualNavigation();
@@ -182,13 +179,10 @@ namespace QuanLyYTe.Forms
                 (btnNavUsers,    0),
                 (btnNavGrant,    1),
                 (btnNavRevoke,   2),
-<<<<<<< HEAD
                 (btnNavOls,      3),
                 (btnNavAddOls,   4),
                 (btnNavAudit,    5),
-=======
-                (btnNavBackup,   3),
->>>>>>> BackupRecovery
+                (btnNavBackup,   6),
             };
 
             foreach (var (btn, idx) in map)

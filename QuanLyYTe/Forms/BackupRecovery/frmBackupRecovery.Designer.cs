@@ -437,7 +437,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.Controls.Add(this.tblMainLayout);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "frmBackupRecovery";
-            this.Text = "Sao lưu & Phục hồi dữ liệu";
+            this.Text = "Sao lưu và phục hồi dữ liệu";
             this.Load += new System.EventHandler(this.frmBackupRecovery_Load);
             this.tblMainLayout.ResumeLayout(false);
             this.grpCurrentData.ResumeLayout(false);
