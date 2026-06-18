@@ -426,17 +426,19 @@ SHOW ERRORS PACKAGE BODY hospital.PKG_BACKUP_RECOVERY;
 
 -- ==============================================================================
 -- 5. COMPATIBILITY WRAPPERS FOR WINFORMS
+-- Đặt sau PACKAGE BODY
+-- Gọi động để tránh lỗi PLS-00905 khi package tạm INVALID lúc compile
 -- ==============================================================================
 CREATE OR REPLACE PROCEDURE hospital.USP_MANUAL_BACKUP AS
 BEGIN
-    hospital.PKG_BACKUP_RECOVERY.USP_MANUAL_BACKUP;
+    EXECUTE IMMEDIATE 'BEGIN hospital.PKG_BACKUP_RECOVERY.USP_MANUAL_BACKUP; END;';
 END;
 /
 SHOW ERRORS PROCEDURE hospital.USP_MANUAL_BACKUP;
 
 CREATE OR REPLACE PROCEDURE hospital.USP_AUTO_BACKUP AS
 BEGIN
-    hospital.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP;
+    EXECUTE IMMEDIATE 'BEGIN hospital.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP; END;';
 END;
 /
 SHOW ERRORS PROCEDURE hospital.USP_AUTO_BACKUP;
@@ -458,55 +460,24 @@ SHOW ERRORS PROCEDURE hospital.USP_RESTORE_PRESCRIPTION_BY_AUDIT;
 
 CREATE OR REPLACE PROCEDURE hospital.USP_SIMULATE_WRONG_UPDATE AS
 BEGIN
-    hospital.PKG_BACKUP_RECOVERY.USP_SIMULATE_WRONG_UPDATE;
+    EXECUTE IMMEDIATE 'BEGIN hospital.PKG_BACKUP_RECOVERY.USP_SIMULATE_WRONG_UPDATE; END;';
 END;
 /
 SHOW ERRORS PROCEDURE hospital.USP_SIMULATE_WRONG_UPDATE;
 
 CREATE OR REPLACE PROCEDURE hospital.USP_SIMULATE_DELETE AS
 BEGIN
-    hospital.PKG_BACKUP_RECOVERY.USP_SIMULATE_DELETE;
+    EXECUTE IMMEDIATE 'BEGIN hospital.PKG_BACKUP_RECOVERY.USP_SIMULATE_DELETE; END;';
 END;
 /
 SHOW ERRORS PROCEDURE hospital.USP_SIMULATE_DELETE;
 
--- ==============================================================================
--- 6. UNIFIED AUDIT POLICY FOR REQUIREMENT 3 + RECOVERY TIMESTAMP
--- ==============================================================================
-BEGIN
-    EXECUTE IMMEDIATE 'NOAUDIT POLICY audit_prescription_recovery_policy';
-EXCEPTION
-    WHEN OTHERS THEN NULL;
-END;
-/
-
-BEGIN
-    EXECUTE IMMEDIATE 'DROP AUDIT POLICY audit_prescription_recovery_policy';
-EXCEPTION
-    WHEN OTHERS THEN NULL;
-END;
-/
-
-BEGIN
-    EXECUTE IMMEDIATE '
-        CREATE AUDIT POLICY audit_prescription_recovery_policy
-        ACTIONS UPDATE ON hospital.PRESCRIPTION,
-                DELETE ON hospital.PRESCRIPTION';
-
-    EXECUTE IMMEDIATE 'AUDIT POLICY audit_prescription_recovery_policy';
-
-    DBMS_OUTPUT.PUT_LINE('[OK] Unified Audit Policy enabled for PRESCRIPTION UPDATE/DELETE');
-EXCEPTION
-    WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('[WARNING] Unified Audit Policy setup failed: ' || SQLERRM);
-END;
-/
 
 -- Optional: audit HSBA and HSBA_DV illegal changes if your Requirement 3 scripts have not created them yet.
 -- Keep this separated from the core recovery demo.
 
 -- ==============================================================================
--- 7. DBMS_SCHEDULER AUTO BACKUP JOB
+-- 6. DBMS_SCHEDULER AUTO BACKUP JOB
 -- ==============================================================================
 BEGIN
     DBMS_SCHEDULER.DROP_JOB(

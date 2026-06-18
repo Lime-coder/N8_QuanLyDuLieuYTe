@@ -1,32 +1,76 @@
 -- ==============================================================================
 -- BackupRecoveryGrants.sql
--- Run as: SYS AS SYSDBA
--- Container: PDB_QLYT
---
--- Purpose:
---   Prepare Oracle privileges and the Data Pump directory for Requirement 4.
---
--- Windows prerequisite:
---   Create the physical folder first and grant write permission to Oracle service:
---     New-Item -ItemType Directory -Force C:\OracleBackups
---     icacls "C:\OracleBackups" /grant "NT SERVICE\OracleServiceXE:(OI)(CI)F"
+-- Run as     : SYS AS SYSDBA
+-- Container  : PDB_QLYT
+-- Purpose    : Prepare privileges, Data Pump directory, Scheduler privileges,
+--              Flashback Query access, and Unified Audit policy for Requirement 4.
 -- ==============================================================================
 
--- Data Pump directory object. The path must exist on the database server machine.
+ALTER SESSION SET CONTAINER = PDB_QLYT;
+SET SERVEROUTPUT ON;
+
+-- ==============================================================================
+-- 1. DATA PUMP DIRECTORY
+-- ==============================================================================
+-- Windows prerequisite:
+-- Create the physical folder first and grant write permission to Oracle service:
+--   New-Item -ItemType Directory -Force C:\OracleBackups
+--   icacls "C:\OracleBackups" /grant "NT SERVICE\OracleServiceXE:(OI)(CI)F"
+-- ==============================================================================
+
 CREATE OR REPLACE DIRECTORY HOSPITAL_BACKUP_DIR AS 'C:\OracleBackups';
 
 GRANT READ, WRITE ON DIRECTORY HOSPITAL_BACKUP_DIR TO HOSPITAL;
 GRANT READ, WRITE ON DIRECTORY HOSPITAL_BACKUP_DIR TO HOSPITAL_DBA;
 
--- DBMS_DATAPUMP is used by HOSPITAL.PKG_BACKUP_RECOVERY for export.
+
+-- ==============================================================================
+-- 2. BASIC SESSION AND TABLESPACE PRIVILEGES
+-- ==============================================================================
+
+GRANT CREATE SESSION TO HOSPITAL;
+GRANT CREATE TABLE TO HOSPITAL;
+GRANT UNLIMITED TABLESPACE TO HOSPITAL;
+
+GRANT CREATE SESSION TO HOSPITAL_DBA;
+GRANT UNLIMITED TABLESPACE TO HOSPITAL_DBA;
+
+
+-- ==============================================================================
+-- 3. PRIVILEGES FOR CREATING REQUIREMENT 4 OBJECTS UNDER HOSPITAL SCHEMA
+-- ==============================================================================
+
+GRANT CREATE ANY TABLE TO HOSPITAL_DBA;
+GRANT CREATE ANY SEQUENCE TO HOSPITAL_DBA;
+GRANT CREATE ANY PROCEDURE TO HOSPITAL_DBA;
+GRANT ALTER ANY PROCEDURE TO HOSPITAL_DBA;
+
+
+-- ==============================================================================
+-- 4. OBJECT ACCESS FOR DBA MODULE AND RESTORE VERIFICATION
+-- ==============================================================================
+
+GRANT SELECT ANY TABLE TO HOSPITAL_DBA;
+GRANT INSERT ANY TABLE TO HOSPITAL_DBA;
+GRANT UPDATE ANY TABLE TO HOSPITAL_DBA;
+GRANT DELETE ANY TABLE TO HOSPITAL_DBA;
+
+GRANT SELECT ANY SEQUENCE TO HOSPITAL_DBA;
+GRANT EXECUTE ANY PROCEDURE TO HOSPITAL_DBA;
+
+
+-- ==============================================================================
+-- 5. DBMS_DATAPUMP AND DATA PUMP ROLES
+-- ==============================================================================
+
 GRANT EXECUTE ON SYS.DBMS_DATAPUMP TO HOSPITAL;
 GRANT EXECUTE ON SYS.DBMS_DATAPUMP TO HOSPITAL_DBA;
 
--- Data Pump command-line roles for expdp/impdp scripts.
--- Oracle versions expose either EXP/IMP_FULL_DATABASE or DATAPUMP_* roles.
--- Grant every available role so REMAP_SCHEMA import can run as HOSPITAL_DBA.
 DECLARE
-    PROCEDURE GRANT_ROLE_IF_EXISTS(p_role IN VARCHAR2, p_grantee IN VARCHAR2) AS
+    PROCEDURE GRANT_ROLE_IF_EXISTS(
+        p_role    IN VARCHAR2,
+        p_grantee IN VARCHAR2
+    ) AS
         v_count NUMBER;
     BEGIN
         SELECT COUNT(*)
@@ -54,42 +98,74 @@ END;
 
 ALTER USER HOSPITAL_DBA DEFAULT ROLE ALL;
 
--- Scheduler privileges for auto backup jobs created from the DBA UI.
+
+-- ==============================================================================
+-- 6. DBMS_SCHEDULER PRIVILEGES FOR AUTOMATIC BACKUP JOBS
+-- ==============================================================================
+
 GRANT CREATE JOB TO HOSPITAL_DBA;
 GRANT CREATE ANY JOB TO HOSPITAL_DBA;
 GRANT MANAGE SCHEDULER TO HOSPITAL_DBA;
 
--- HOSPITAL_DBA creates Requirement 4 objects under schema HOSPITAL.
-GRANT CREATE ANY TABLE TO HOSPITAL_DBA;
-GRANT CREATE ANY SEQUENCE TO HOSPITAL_DBA;
-GRANT CREATE ANY PROCEDURE TO HOSPITAL_DBA;
 
--- HOSPITAL_DBA creates and resets HOSPITAL_RESTORE during Data Pump import tests.
+-- ==============================================================================
+-- 7. USER MANAGEMENT PRIVILEGES FOR DATA PUMP IMPORT TESTS
+-- ==============================================================================
+
 GRANT CREATE USER TO HOSPITAL_DBA;
 GRANT ALTER USER TO HOSPITAL_DBA;
 GRANT DROP USER TO HOSPITAL_DBA;
 GRANT CREATE TABLESPACE TO HOSPITAL_DBA;
 
--- Object access used by the WinForms DBA module and restore verification scripts.
-GRANT SELECT ANY TABLE TO HOSPITAL_DBA;
-GRANT INSERT ANY TABLE TO HOSPITAL_DBA;
-GRANT UPDATE ANY TABLE TO HOSPITAL_DBA;
-GRANT DELETE ANY TABLE TO HOSPITAL_DBA;
-GRANT SELECT ANY SEQUENCE TO HOSPITAL_DBA;
-GRANT EXECUTE ANY PROCEDURE TO HOSPITAL_DBA;
 
--- Tablespace quota for owner schemas.
-GRANT CREATE SESSION TO HOSPITAL;
-GRANT CREATE TABLE TO HOSPITAL;
-GRANT UNLIMITED TABLESPACE TO HOSPITAL;
-GRANT UNLIMITED TABLESPACE TO HOSPITAL_DBA;
+-- ==============================================================================
+-- 8. FLASHBACK QUERY PRIVILEGES
+-- ==============================================================================
 
--- Flashback Query recovery demo.
 GRANT FLASHBACK ANY TABLE TO HOSPITAL;
+GRANT FLASHBACK ANY TABLE TO HOSPITAL_DBA;
 
--- Unified Audit access/policy management. The policy is created in BackupRecoverySetup.sql.
+
+-- ==============================================================================
+-- 9. UNIFIED AUDIT PRIVILEGES
+-- ==============================================================================
+
 GRANT AUDIT_ADMIN TO HOSPITAL_DBA;
 GRANT AUDIT_VIEWER TO HOSPITAL_DBA;
 GRANT AUDIT_VIEWER TO HOSPITAL;
 
-PROMPT [OK] BackupRecovery privileges and HOSPITAL_BACKUP_DIR are ready.
+-- Direct SELECT grant is needed because stored PL/SQL does not use privileges
+-- obtained only through roles.
+GRANT SELECT ON UNIFIED_AUDIT_TRAIL TO HOSPITAL_DBA;
+
+
+-- ==============================================================================
+-- 10. UNIFIED AUDIT POLICY FOR PRESCRIPTION RECOVERY
+-- ==============================================================================
+-- This section requires HOSPITAL.PRESCRIPTION to already exist.
+-- It audits UPDATE and DELETE operations on HOSPITAL.PRESCRIPTION so that
+-- recovery can identify the incident timestamp and use Flashback Query.
+-- ==============================================================================
+
+BEGIN
+    EXECUTE IMMEDIATE 'NOAUDIT POLICY audit_prescription_recovery_policy';
+EXCEPTION
+    WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP AUDIT POLICY audit_prescription_recovery_policy';
+EXCEPTION
+    WHEN OTHERS THEN NULL;
+END;
+/
+
+
+CREATE AUDIT POLICY audit_prescription_recovery_policy
+ACTIONS
+    UPDATE ON HOSPITAL.PRESCRIPTION,
+    DELETE ON HOSPITAL.PRESCRIPTION;
+
+AUDIT POLICY audit_prescription_recovery_policy;
+
