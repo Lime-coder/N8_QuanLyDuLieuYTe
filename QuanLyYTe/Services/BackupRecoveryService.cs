@@ -28,31 +28,9 @@ namespace QuanLyYTe.Services
             return _repo.GetJobState();
         }
 
-        /// <summary>
-        /// Lấy nhật ký kiểm toán (Audit Logs) theo thứ tự ưu tiên:
-        /// 1. Tìm bảng kiểm toán từ Yêu cầu 3 (AUDIT_LOG hoặc NHATKY_KIEMTOAN).
-        /// 2. Nếu không tìm thấy, sử dụng UNIFIED_AUDIT_TRAIL.
-        /// </summary>
         public DataTable GetAuditLogs()
         {
-            try
-            {
-                // Ưu tiên 1a: Bảng AUDIT_LOG
-                return _repo.GetCustomAuditLogs("AUDIT_LOG");
-            }
-            catch
-            {
-                try
-                {
-                    // Ưu tiên 1b: Bảng NHATKY_KIEMTOAN
-                    return _repo.GetCustomAuditLogs("NHATKY_KIEMTOAN");
-                }
-                catch
-                {
-                    // Ưu tiên 2: Hệ thống UNIFIED_AUDIT_TRAIL
-                    return _repo.GetUnifiedAuditLogs();
-                }
-            }
+            return _repo.GetAuditLogs();
         }
 
         public void ManualBackup()

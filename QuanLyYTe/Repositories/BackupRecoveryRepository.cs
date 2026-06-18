@@ -22,12 +22,8 @@ namespace QuanLyYTe.Repositories
                     BACKUP_ID,
                     BACKUP_TIME,
                     BACKUP_TYPE,
-                    METHOD,
-                    DIRECTORY_NAME,
                     DUMP_FILE,
-                    LOG_FILE,
                     STATUS,
-                    NOTE,
                     ERROR_MESSAGE
                 FROM hospital.BACKUP_HISTORY
                 ORDER BY BACKUP_TIME DESC";
@@ -39,20 +35,28 @@ namespace QuanLyYTe.Repositories
             string sql = @"
                 SELECT EVENT_TIMESTAMP AS AUDIT_TIME, ACTION_NAME 
                 FROM UNIFIED_AUDIT_TRAIL 
-                WHERE OBJECT_SCHEMA = 'HOSPITAL' AND OBJECT_NAME = 'PRESCRIPTION' AND ACTION_NAME IN ('UPDATE', 'DELETE')
+                WHERE OBJECT_SCHEMA = 'HOSPITAL' 
+                  AND OBJECT_NAME = 'PRESCRIPTION' 
+                  AND ACTION_NAME IN ('UPDATE', 'DELETE')
                 ORDER BY EVENT_TIMESTAMP DESC";
             return _dbProvider.ExecuteQuery(sql);
         }
 
-        public DataTable GetCustomAuditLogs(string tableName)
+        public DataTable GetAuditLogs()
         {
-            string sql = $"SELECT DBUSERNAME, EVENT_TIMESTAMP, ACTION_NAME, OBJECT_NAME FROM hospital.{tableName} WHERE OBJECT_NAME = 'PRESCRIPTION' ORDER BY EVENT_TIMESTAMP DESC";
-            return _dbProvider.ExecuteQuery(sql);
-        }
-
-        public DataTable GetUnifiedAuditLogs()
-        {
-            string sql = "SELECT DBUSERNAME, EVENT_TIMESTAMP, ACTION_NAME, OBJECT_NAME FROM UNIFIED_AUDIT_TRAIL WHERE OBJECT_SCHEMA = 'HOSPITAL' AND OBJECT_NAME = 'PRESCRIPTION' ORDER BY EVENT_TIMESTAMP DESC";
+            string sql = @"
+                SELECT 
+                    CAST(DBUSERNAME AS VARCHAR2(128)) as USERNAME, 
+                    TO_CHAR(EVENT_TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
+                    CAST(OBJECT_NAME AS VARCHAR2(128)) as OBJECT, 
+                    CAST(ACTION_NAME AS VARCHAR2(128)) as ACTION, 
+                    'Success' AS STATUS, 
+                    CAST(SQL_TEXT AS VARCHAR2(4000)) as SQL_TEXT
+                FROM UNIFIED_AUDIT_TRAIL 
+                WHERE OBJECT_SCHEMA = 'HOSPITAL' 
+                  AND OBJECT_NAME = 'PRESCRIPTION' 
+                  AND ACTION_NAME IN ('UPDATE', 'DELETE')
+                ORDER BY EVENT_TIMESTAMP DESC";
             return _dbProvider.ExecuteQuery(sql);
         }
 

@@ -303,7 +303,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.btnSimulateWrongUpdate.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.btnSimulateWrongUpdate.Location = new System.Drawing.Point(3, 62);
             this.btnSimulateWrongUpdate.Name = "btnSimulateWrongUpdate";
-            this.btnSimulateWrongUpdate.Size = new System.Drawing.Size(240, 42);
+            this.btnSimulateWrongUpdate.Size = new System.Drawing.Size(350, 42);
             this.btnSimulateWrongUpdate.TabIndex = 1;
             this.btnSimulateWrongUpdate.Text = "Giả lập cập nhật sai dữ liệu BA000001";
             this.btnSimulateWrongUpdate.UseVisualStyleBackColor = true;
@@ -314,7 +314,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.btnSimulateDelete.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.btnSimulateDelete.Location = new System.Drawing.Point(3, 10);
             this.btnSimulateDelete.Name = "btnSimulateDelete";
-            this.btnSimulateDelete.Size = new System.Drawing.Size(240, 42);
+            this.btnSimulateDelete.Size = new System.Drawing.Size(350, 42);
             this.btnSimulateDelete.TabIndex = 0;
             this.btnSimulateDelete.Text = "Giả lập xóa dữ liệu BA000001";
             this.btnSimulateDelete.UseVisualStyleBackColor = true;

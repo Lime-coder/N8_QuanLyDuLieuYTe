@@ -129,17 +129,10 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 dgvBackupHistory.DataSource = dt;
                 GridViewStyler.Format(dgvBackupHistory);
 
-                if (dgvBackupHistory.Columns.Contains("METHOD")) dgvBackupHistory.Columns["METHOD"].HeaderText = "Method";
-                if (dgvBackupHistory.Columns.Contains("DIRECTORY_NAME")) dgvBackupHistory.Columns["DIRECTORY_NAME"].HeaderText = "Directory";
-                if (dgvBackupHistory.Columns.Contains("DUMP_FILE")) dgvBackupHistory.Columns["DUMP_FILE"].HeaderText = "Dump file";
-                if (dgvBackupHistory.Columns.Contains("LOG_FILE")) dgvBackupHistory.Columns["LOG_FILE"].HeaderText = "Log file";
-                if (dgvBackupHistory.Columns.Contains("ERROR_MESSAGE")) dgvBackupHistory.Columns["ERROR_MESSAGE"].HeaderText = "Error";
-
                 if (dgvBackupHistory.Columns.Contains("BACKUP_ID")) dgvBackupHistory.Columns["BACKUP_ID"].HeaderText = "ID";
                 if (dgvBackupHistory.Columns.Contains("BACKUP_TIME")) dgvBackupHistory.Columns["BACKUP_TIME"].HeaderText = "Thời gian";
                 if (dgvBackupHistory.Columns.Contains("BACKUP_TYPE")) dgvBackupHistory.Columns["BACKUP_TYPE"].HeaderText = "Loại sao lưu";
                 if (dgvBackupHistory.Columns.Contains("STATUS")) dgvBackupHistory.Columns["STATUS"].HeaderText = "Trạng thái";
-                if (dgvBackupHistory.Columns.Contains("NOTE")) dgvBackupHistory.Columns["NOTE"].HeaderText = "Ghi chú";
             }
             catch (Exception ex)
             {
@@ -226,11 +219,12 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 dgvAudit.DataSource = dt;
                 GridViewStyler.Format(dgvAudit);
 
-                if (dgvAudit.Columns.Contains("DBUSERNAME")) dgvAudit.Columns["DBUSERNAME"].HeaderText = "Người dùng";
-                if (dgvAudit.Columns.Contains("EVENT_TIMESTAMP")) dgvAudit.Columns["EVENT_TIMESTAMP"].HeaderText = "Thời gian";
-                if (dgvAudit.Columns.Contains("ACTION_NAME")) dgvAudit.Columns["ACTION_NAME"].HeaderText = "Hành động";
-                if (dgvAudit.Columns.Contains("OBJECT_NAME")) dgvAudit.Columns["OBJECT_NAME"].HeaderText = "Đối tượng";
+                if (dgvAudit.Columns.Contains("USERNAME")) dgvAudit.Columns["USERNAME"].HeaderText = "Người dùng";
+                if (dgvAudit.Columns.Contains("TIMESTAMP")) dgvAudit.Columns["TIMESTAMP"].HeaderText = "Thời điểm";
+                if (dgvAudit.Columns.Contains("ACTION")) dgvAudit.Columns["ACTION"].HeaderText = "Hành động";
+                if (dgvAudit.Columns.Contains("OBJECT")) dgvAudit.Columns["OBJECT"].HeaderText = "Đối tượng";
                 if (dgvAudit.Columns.Contains("SQL_TEXT")) dgvAudit.Columns["SQL_TEXT"].HeaderText = "Câu lệnh SQL";
+                if (dgvAudit.Columns.Contains("STATUS")) dgvAudit.Columns["STATUS"].HeaderText = "Trạng thái";
             }
             catch (Exception ex)
             {
