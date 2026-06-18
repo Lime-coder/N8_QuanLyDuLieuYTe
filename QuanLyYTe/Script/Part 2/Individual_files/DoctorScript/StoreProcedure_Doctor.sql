@@ -1,4 +1,5 @@
 -- Run as: hospital_dba
+--ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 BEGIN
@@ -53,15 +54,13 @@ END;
 /
 
 -- 2. Stored Procedure Doctors insert Service Record
-CREATE OR REPLACE PROCEDURE USP_ADD_SERVICE(p_id VARCHAR2, p_type NVARCHAR2, p_res NVARCHAR2) AS
-    v_count NUMBER; v_ktv_id VARCHAR2(10);
+CREATE OR REPLACE PROCEDURE USP_ADD_SERVICE(p_id VARCHAR2, p_type NVARCHAR2) AS
+    v_count NUMBER;
 BEGIN
     SELECT COUNT(*) INTO v_count FROM medical_record WHERE record_id = UPPER(TRIM(p_id));
     IF v_count = 0 THEN RAISE_APPLICATION_ERROR(-20001, 'Mã HSBA ' || p_id || ' không tồn tại!'); END IF;
 
-    SELECT staff_id INTO v_ktv_id FROM (SELECT staff_id FROM staff WHERE staff_role = N'Kỹ thuật viên' ORDER BY DBMS_RANDOM.VALUE) WHERE ROWNUM = 1;
-    
-    INSERT INTO service_record VALUES (UPPER(TRIM(p_id)), p_type, TRUNC(SYSDATE), v_ktv_id, p_res);
+    INSERT INTO service_record VALUES (UPPER(TRIM(p_id)), p_type, TRUNC(SYSDATE), NULL, NULL);
 END;
 /
 
@@ -134,13 +133,32 @@ END;
 CREATE OR REPLACE PROCEDURE USP_GET_PATIENTS(p_s NVARCHAR2, p_c OUT SYS_REFCURSOR) AS
 BEGIN 
     OPEN p_c FOR 
-    SELECT patient_id, full_name, gender, TO_CHAR(birthdate, 'DD/MM/YYYY') as birthdate, medical_history, family_medical_history, drug_allergies 
-    FROM patient 
-    WHERE full_name LIKE '%'||p_s||'%' 
-       OR patient_id LIKE '%'||UPPER(TRIM(p_s))||'%'
-       OR gender LIKE '%'||p_s||'%'
-       OR TO_CHAR(birthdate, 'DD/MM/YYYY') LIKE '%'||p_s||'%'
-       OR medical_history LIKE '%'||p_s||'%';
+    SELECT p.patient_id, p.full_name, p.gender, 
+           TO_CHAR(p.birthdate, 'DD/MM/YYYY') as birthdate, 
+           p.medical_history, p.family_medical_history, p.drug_allergies 
+    FROM patient p
+    WHERE (
+        -- 1. Tìm trong thông tin cá nhân bệnh nhân
+        p.full_name LIKE '%'||p_s||'%' 
+        OR p.patient_id LIKE '%'||UPPER(TRIM(p_s))||'%'
+        OR p.gender LIKE '%'||p_s||'%'
+        OR p.medical_history LIKE '%'||p_s||'%'
+        
+        -- 2. Tìm xuyên sang các trường của Hồ sơ bệnh án (HSBA)
+        -- Sử dụng EXISTS để tránh lỗi CLOB và lặp dòng dữ liệu
+        OR EXISTS (
+            SELECT 1 FROM medical_record m 
+            WHERE m.patient_id = p.patient_id
+            AND (
+                m.record_id LIKE '%'||UPPER(TRIM(p_s))||'%'
+                OR m.diagnosis LIKE '%'||p_s||'%'
+                OR m.treatment_plan LIKE '%'||p_s||'%'
+                OR m.conclusion LIKE '%'||p_s||'%'
+                OR TO_CHAR(m.record_date, 'DD/MM/YYYY') LIKE '%'||p_s||'%'
+            )
+        )
+    )
+    ORDER BY p.patient_id ASC;
 END;
 /
 

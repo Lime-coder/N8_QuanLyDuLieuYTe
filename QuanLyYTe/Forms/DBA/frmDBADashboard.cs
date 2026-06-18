@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using QuanLyYTe.Common;
 using QuanLyYTe.Services;
+using QuanLyYTe.Forms.DBA;
 
 namespace QuanLyYTe.Forms
 {
@@ -30,9 +31,11 @@ namespace QuanLyYTe.Forms
                 ("GRT", "Cấp Quyền",     "Cấp quyền cho user / role",                  () => new frmGrantPermission()),
                 ("REV", "Xem và thu hồi quyền", "Xem và thu hồi quyền đã cấp",                       () => new frmRevokePermission()),
                 ("OLS", "Thông báo OLS", "Xem thông báo bằng Oracle Label Security", () => new QuanLyYTe.Forms.Common.frmNotifications()),
-                ("ADD", "Tạo thông báo OLS", "Thêm thông báo mới có dán nhãn", () => new QuanLyYTe.Forms.DBA.frmAddNotification())
+                ("ADD", "Tạo thông báo OLS", "Thêm thông báo mới có dán nhãn", () => new QuanLyYTe.Forms.DBA.frmAddNotification()),
+                ("AUD", "Nhật ký kiểm toán", "Theo dõi hoạt động hệ thống và thay đổi dữ liệu",     () => new frmAuditManagement()),
             };
 
+            SetupManualNavigation();
             WireNavButtons();
         }
 
@@ -105,7 +108,7 @@ namespace QuanLyYTe.Forms
                 ForeColor = Color.White,
                 BackColor = Orange,
                 AutoSize = false,
-                Size = new Size(38, 22),
+                Size = new Size(40, 22),
                 Location = new Point(14, 18),
                 TextAlign = ContentAlignment.MiddleCenter,
             };
@@ -163,6 +166,11 @@ namespace QuanLyYTe.Forms
         }
 
 
+        private void SetupManualNavigation()
+        {
+            // Manual navigation is now handled in Designer
+        }
+
         private void WireNavButtons()
         {
             var map = new (Button Btn, int Index)[]
@@ -170,7 +178,9 @@ namespace QuanLyYTe.Forms
                 (btnNavUsers,    0),
                 (btnNavGrant,    1),
                 (btnNavRevoke,   2),
-                (btnNavAddOls,   4), // index in features array
+                (btnNavOls,      3),
+                (btnNavAddOls,   4),
+                (btnNavAudit,    5),
             };
 
             foreach (var (btn, idx) in map)

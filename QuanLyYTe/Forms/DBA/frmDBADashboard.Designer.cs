@@ -81,31 +81,33 @@ namespace QuanLyYTe.Forms
             // ── Nav Items ─────────────────────────────────────────────
             pnlNavItems.BackColor = System.Drawing.Color.FromArgb(24, 24, 28);
             pnlNavItems.Dock = System.Windows.Forms.DockStyle.Top;
-            pnlNavItems.Height = 332;
+            pnlNavItems.Height = 390;
             pnlNavItems.Name = "pnlNavItems";
             pnlNavItems.TabIndex = 1;
             pnlNavItems.Controls.Add(btnNavUsers);
-            // pnlNavItems.Controls.Add(btnNavRoles);
             pnlNavItems.Controls.Add(btnNavGrant);
             pnlNavItems.Controls.Add(btnNavRevoke);
+            btnNavOls = new System.Windows.Forms.Button();
+            pnlNavItems.Controls.Add(btnNavOls);
             btnNavAddOls = new System.Windows.Forms.Button();
             pnlNavItems.Controls.Add(btnNavAddOls);
-            // pnlNavItems.Controls.Add(btnNavPermView);
+            btnNavAudit = new System.Windows.Forms.Button();
+            pnlNavItems.Controls.Add(btnNavAudit);
 
             // Setup each nav button with proper position/style
             SetupNavButton(btnNavUsers, "  Quản lý user và role", 0);
-            // SetupNavButton(btnNavRoles, "  Quản lý Role", 1);
             SetupNavButton(btnNavGrant, "  Cấp Quyền", 1);
             SetupNavButton(btnNavRevoke, "  Xem và thu hồi quyền", 2);
-            SetupNavButton(btnNavAddOls, "  Tạo thông báo OLS", 3);
-            // SetupNavButton(btnNavPermView, "  Xem Quyền", 5);
+            SetupNavButton(btnNavOls, "  Thông báo OLS", 3);
+            SetupNavButton(btnNavAddOls, "  Tạo thông báo OLS", 4);
+            SetupNavButton(btnNavAudit, "  Nhật ký kiểm toán", 5);
 
             btnNavUsers.Name = "btnNavUsers"; btnNavUsers.TabIndex = 0;
-            // btnNavRoles.Name = "btnNavRoles"; btnNavRoles.TabIndex = 1;
-            btnNavGrant.Name = "btnNavGrant"; btnNavGrant.TabIndex = 2;
-            btnNavRevoke.Name = "btnNavRevoke"; btnNavRevoke.TabIndex = 3;
+            btnNavGrant.Name = "btnNavGrant"; btnNavGrant.TabIndex = 1;
+            btnNavRevoke.Name = "btnNavRevoke"; btnNavRevoke.TabIndex = 2;
+            btnNavOls.Name = "btnNavOls"; btnNavOls.TabIndex = 3;
             btnNavAddOls.Name = "btnNavAddOls"; btnNavAddOls.TabIndex = 4;
-            // btnNavPermView.Name = "btnNavPermView"; btnNavPermView.TabIndex = 5;
+            btnNavAudit.Name = "btnNavAudit"; btnNavAudit.TabIndex = 5;
 
             btnLogout = new System.Windows.Forms.Button();
             pnlNavItems.Controls.Add(btnLogout);
@@ -119,10 +121,10 @@ namespace QuanLyYTe.Forms
             btnLogout.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             btnLogout.Padding = new System.Windows.Forms.Padding(16, 0, 0, 0);
             btnLogout.Size = new System.Drawing.Size(216, 46);
-            btnLogout.Location = new System.Drawing.Point(12, 10 + 4 * 52); // index 4, below add ols
+            btnLogout.Location = new System.Drawing.Point(12, 10 + 6 * 52); // index 6, below audit
             btnLogout.Cursor = System.Windows.Forms.Cursors.Hand;
             btnLogout.Name = "btnLogout";
-            btnLogout.TabIndex = 5;
+            btnLogout.TabIndex = 6;
             btnLogout.Click += new System.EventHandler(this.btnLogout_Click);
 
             // ── Logo ──────────────────────────────────────────────────
@@ -313,7 +315,9 @@ namespace QuanLyYTe.Forms
         // private System.Windows.Forms.Button btnNavRoles;
         private System.Windows.Forms.Button btnNavGrant;
         private System.Windows.Forms.Button btnNavRevoke;
+        private System.Windows.Forms.Button btnNavOls;
         private System.Windows.Forms.Button btnNavAddOls;
+        private System.Windows.Forms.Button btnNavAudit;
         // private System.Windows.Forms.Button btnNavPermView;
         private System.Windows.Forms.Panel pnlSidebarFooter;
         private System.Windows.Forms.Label lblVersion;

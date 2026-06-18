@@ -59,5 +59,29 @@ namespace QuanLyYTe.Services
             try { _service.SetUserOlsLabel(username, label); }
             catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
         }
+
+        // Get 5 standard audit contexts (Requirement 3.2)
+        public DataTable GetStandardAudit()
+        {
+            return _service.GetStandardAuditLogs();
+        }
+
+        // Get FGA logs for Prescription updates (Requirement 3.3a)
+        public DataTable GetPrescriptionAudit()
+        {
+            return _service.GetFGAPrescriptionLogs();
+        }
+
+        // Get FGA + Unified logs for Medical Record (Requirement 3.3b, 3.3c)
+        public DataTable GetMedicalInfoAudit()
+        {
+            return _service.GetFGAMedicalRecordLogs();
+        }
+
+        // Get Unified logs for Service Record illegal actions (Requirement 3.3d)
+        public DataTable GetServiceRecordAudit()
+        {
+            return _service.GetUnifiedServiceRecordLogs();
+        }
     }
 }
