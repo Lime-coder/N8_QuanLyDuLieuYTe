@@ -31,209 +31,273 @@ namespace QuanLyYTe.Forms.Doctor
         /// </summary>
         private void InitializeComponent()
         {
-            this.pnlCard = new System.Windows.Forms.Panel();
-            this.lblName = new System.Windows.Forms.Label();
-            this.lblGender = new System.Windows.Forms.Label();
-            this.lblBirth = new System.Windows.Forms.Label();
-            this.lblCmnd = new System.Windows.Forms.Label();
-            this.lblHome = new System.Windows.Forms.Label();
-            this.lblPhone = new System.Windows.Forms.Label();
-            this.lblRole = new System.Windows.Forms.Label();
-            this.lblSpec = new System.Windows.Forms.Label();
-            System.Windows.Forms.Label title = new System.Windows.Forms.Label();
-            System.Windows.Forms.Label lblLabelName = new System.Windows.Forms.Label();
-            System.Windows.Forms.Label lblLabelGender = new System.Windows.Forms.Label();
-            System.Windows.Forms.Label lblLabelBirth = new System.Windows.Forms.Label();
-            System.Windows.Forms.Label lblLabelCmnd = new System.Windows.Forms.Label();
-            System.Windows.Forms.Label lblLabelHome = new System.Windows.Forms.Label();
-            System.Windows.Forms.Label lblLabelPhone = new System.Windows.Forms.Label();
-            System.Windows.Forms.Label lblLabelRole = new System.Windows.Forms.Label();
-            System.Windows.Forms.Label lblLabelSpec = new System.Windows.Forms.Label();
-            this.pnlCard.SuspendLayout();
-            this.SuspendLayout();
+            pnlCard = new Panel();
+            lblLabelName = new Label();
+            lblName = new Label();
+            lblLabelGender = new Label();
+            lblGender = new Label();
+            lblLabelBirth = new Label();
+            lblBirth = new Label();
+            lblLabelCmnd = new Label();
+            lblCmnd = new Label();
+            lblLabelHome = new Label();
+            lblHome = new Label();
+            lblLabelPhone = new Label();
+            lblPhone = new Label();
+            lblLabelRole = new Label();
+            lblRole = new Label();
+            lblLabelSpec = new Label();
+            lblSpec = new Label();
+            title = new Label();
+            pnlSearch.SuspendLayout();
+            pnlCard.SuspendLayout();
+            SuspendLayout();
             // 
-            // Dgv and pnlSearch removal (inherited from frmDoctorBase)
+            // pnlSearch
             // 
-            this.Controls.Remove(this.Dgv);
-            this.Controls.Remove(this.pnlSearch);
-            this.BackColor = System.Drawing.Color.FromArgb(245, 245, 250);
+            pnlSearch.Size = new Size(839, 75);
             // 
-            // title
+            // btnE
             // 
-            title.Text = "HỒ SƠ CÁ NHÂN BÁC SĨ";
-            title.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold);
-            title.Location = new System.Drawing.Point(40, 30);
-            title.AutoSize = true;
-            title.ForeColor = System.Drawing.Color.FromArgb(45, 45, 45);
+            btnE.BackColor = Color.Orange;
+            btnE.Cursor = Cursors.Hand;
+            btnE.FlatAppearance.BorderSize = 0;
+            btnE.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnE.Location = new Point(40, 525);
+            btnE.Size = new Size(220, 45);
+            btnE.Text = "CHỈNH SỬA THÔNG TIN";
             // 
             // pnlCard
             // 
-            this.pnlCard.Location = new System.Drawing.Point(40, 85);
-            this.pnlCard.Size = new System.Drawing.Size(700, 420);
-            this.pnlCard.BackColor = System.Drawing.Color.White;
-            this.pnlCard.Padding = new System.Windows.Forms.Padding(30);
-            this.pnlCard.Paint += new System.Windows.Forms.PaintEventHandler(this.pnlCard_Paint);
+            pnlCard.BackColor = Color.White;
+            pnlCard.Controls.Add(lblLabelName);
+            pnlCard.Controls.Add(lblName);
+            pnlCard.Controls.Add(lblLabelGender);
+            pnlCard.Controls.Add(lblGender);
+            pnlCard.Controls.Add(lblLabelBirth);
+            pnlCard.Controls.Add(lblBirth);
+            pnlCard.Controls.Add(lblLabelCmnd);
+            pnlCard.Controls.Add(lblCmnd);
+            pnlCard.Controls.Add(lblLabelHome);
+            pnlCard.Controls.Add(lblHome);
+            pnlCard.Controls.Add(lblLabelPhone);
+            pnlCard.Controls.Add(lblPhone);
+            pnlCard.Controls.Add(lblLabelRole);
+            pnlCard.Controls.Add(lblRole);
+            pnlCard.Controls.Add(lblLabelSpec);
+            pnlCard.Controls.Add(lblSpec);
+            pnlCard.Location = new Point(40, 85);
+            pnlCard.Name = "pnlCard";
+            pnlCard.Padding = new Padding(30);
+            pnlCard.Size = new Size(700, 420);
+            pnlCard.TabIndex = 3;
+            pnlCard.Paint += pnlCard_Paint;
             // 
             // lblLabelName
             // 
-            lblLabelName.Text = "Họ và tên:";
-            lblLabelName.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            lblLabelName.Location = new System.Drawing.Point(35, 35);
-            lblLabelName.ForeColor = System.Drawing.Color.DimGray;
             lblLabelName.AutoSize = true;
+            lblLabelName.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblLabelName.ForeColor = Color.DimGray;
+            lblLabelName.Location = new Point(35, 35);
+            lblLabelName.Name = "lblLabelName";
+            lblLabelName.Size = new Size(92, 23);
+            lblLabelName.TabIndex = 0;
+            lblLabelName.Text = "Họ và tên:";
             // 
             // lblName
             // 
-            this.lblName.Text = "...";
-            this.lblName.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular);
-            this.lblName.Location = new System.Drawing.Point(190, 33);
-            this.lblName.ForeColor = System.Drawing.Color.Black;
-            this.lblName.AutoSize = true;
+            lblName.AutoSize = true;
+            lblName.Font = new Font("Segoe UI", 11F);
+            lblName.ForeColor = Color.Black;
+            lblName.Location = new Point(190, 33);
+            lblName.Name = "lblName";
+            lblName.Size = new Size(24, 25);
+            lblName.TabIndex = 1;
+            lblName.Text = "...";
             // 
             // lblLabelGender
             // 
-            lblLabelGender.Text = "Giới tính:";
-            lblLabelGender.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            lblLabelGender.Location = new System.Drawing.Point(35, 77);
-            lblLabelGender.ForeColor = System.Drawing.Color.DimGray;
             lblLabelGender.AutoSize = true;
+            lblLabelGender.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblLabelGender.ForeColor = Color.DimGray;
+            lblLabelGender.Location = new Point(35, 77);
+            lblLabelGender.Name = "lblLabelGender";
+            lblLabelGender.Size = new Size(85, 23);
+            lblLabelGender.TabIndex = 2;
+            lblLabelGender.Text = "Giới tính:";
             // 
             // lblGender
             // 
-            this.lblGender.Text = "...";
-            this.lblGender.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular);
-            this.lblGender.Location = new System.Drawing.Point(190, 75);
-            this.lblGender.ForeColor = System.Drawing.Color.Black;
-            this.lblGender.AutoSize = true;
+            lblGender.AutoSize = true;
+            lblGender.Font = new Font("Segoe UI", 11F);
+            lblGender.ForeColor = Color.Black;
+            lblGender.Location = new Point(190, 75);
+            lblGender.Name = "lblGender";
+            lblGender.Size = new Size(24, 25);
+            lblGender.TabIndex = 3;
+            lblGender.Text = "...";
             // 
             // lblLabelBirth
             // 
-            lblLabelBirth.Text = "Ngày sinh:";
-            lblLabelBirth.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            lblLabelBirth.Location = new System.Drawing.Point(35, 119);
-            lblLabelBirth.ForeColor = System.Drawing.Color.DimGray;
             lblLabelBirth.AutoSize = true;
+            lblLabelBirth.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblLabelBirth.ForeColor = Color.DimGray;
+            lblLabelBirth.Location = new Point(35, 119);
+            lblLabelBirth.Name = "lblLabelBirth";
+            lblLabelBirth.Size = new Size(94, 23);
+            lblLabelBirth.TabIndex = 4;
+            lblLabelBirth.Text = "Ngày sinh:";
             // 
             // lblBirth
             // 
-            this.lblBirth.Text = "...";
-            this.lblBirth.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular);
-            this.lblBirth.Location = new System.Drawing.Point(190, 117);
-            this.lblBirth.ForeColor = System.Drawing.Color.Black;
-            this.lblBirth.AutoSize = true;
+            lblBirth.AutoSize = true;
+            lblBirth.Font = new Font("Segoe UI", 11F);
+            lblBirth.ForeColor = Color.Black;
+            lblBirth.Location = new Point(190, 117);
+            lblBirth.Name = "lblBirth";
+            lblBirth.Size = new Size(24, 25);
+            lblBirth.TabIndex = 5;
+            lblBirth.Text = "...";
             // 
             // lblLabelCmnd
             // 
-            lblLabelCmnd.Text = "CMND/CCCD:";
-            lblLabelCmnd.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            lblLabelCmnd.Location = new System.Drawing.Point(35, 161);
-            lblLabelCmnd.ForeColor = System.Drawing.Color.DimGray;
             lblLabelCmnd.AutoSize = true;
+            lblLabelCmnd.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblLabelCmnd.ForeColor = Color.DimGray;
+            lblLabelCmnd.Location = new Point(35, 161);
+            lblLabelCmnd.Name = "lblLabelCmnd";
+            lblLabelCmnd.Size = new Size(120, 23);
+            lblLabelCmnd.TabIndex = 6;
+            lblLabelCmnd.Text = "CMND/CCCD:";
             // 
             // lblCmnd
             // 
-            this.lblCmnd.Text = "...";
-            this.lblCmnd.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular);
-            this.lblCmnd.Location = new System.Drawing.Point(190, 159);
-            this.lblCmnd.ForeColor = System.Drawing.Color.Black;
-            this.lblCmnd.AutoSize = true;
+            lblCmnd.AutoSize = true;
+            lblCmnd.Font = new Font("Segoe UI", 11F);
+            lblCmnd.ForeColor = Color.Black;
+            lblCmnd.Location = new Point(190, 159);
+            lblCmnd.Name = "lblCmnd";
+            lblCmnd.Size = new Size(24, 25);
+            lblCmnd.TabIndex = 7;
+            lblCmnd.Text = "...";
             // 
             // lblLabelHome
             // 
-            lblLabelHome.Text = "Quê quán:";
-            lblLabelHome.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            lblLabelHome.Location = new System.Drawing.Point(35, 203);
-            lblLabelHome.ForeColor = System.Drawing.Color.DimGray;
             lblLabelHome.AutoSize = true;
+            lblLabelHome.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblLabelHome.ForeColor = Color.DimGray;
+            lblLabelHome.Location = new Point(35, 203);
+            lblLabelHome.Name = "lblLabelHome";
+            lblLabelHome.Size = new Size(92, 23);
+            lblLabelHome.TabIndex = 8;
+            lblLabelHome.Text = "Quê quán:";
             // 
             // lblHome
             // 
-            this.lblHome.Text = "...";
-            this.lblHome.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular);
-            this.lblHome.Location = new System.Drawing.Point(190, 201);
-            this.lblHome.ForeColor = System.Drawing.Color.Black;
-            this.lblHome.AutoSize = true;
+            lblHome.AutoSize = true;
+            lblHome.Font = new Font("Segoe UI", 11F);
+            lblHome.ForeColor = Color.Black;
+            lblHome.Location = new Point(190, 201);
+            lblHome.Name = "lblHome";
+            lblHome.Size = new Size(24, 25);
+            lblHome.TabIndex = 9;
+            lblHome.Text = "...";
             // 
             // lblLabelPhone
             // 
-            lblLabelPhone.Text = "Số điện thoại:";
-            lblLabelPhone.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            lblLabelPhone.Location = new System.Drawing.Point(35, 245);
-            lblLabelPhone.ForeColor = System.Drawing.Color.DimGray;
             lblLabelPhone.AutoSize = true;
+            lblLabelPhone.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblLabelPhone.ForeColor = Color.DimGray;
+            lblLabelPhone.Location = new Point(35, 245);
+            lblLabelPhone.Name = "lblLabelPhone";
+            lblLabelPhone.Size = new Size(121, 23);
+            lblLabelPhone.TabIndex = 10;
+            lblLabelPhone.Text = "Số điện thoại:";
             // 
             // lblPhone
             // 
-            this.lblPhone.Text = "...";
-            this.lblPhone.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular);
-            this.lblPhone.Location = new System.Drawing.Point(190, 243);
-            this.lblPhone.ForeColor = System.Drawing.Color.Black;
-            this.lblPhone.AutoSize = true;
+            lblPhone.AutoSize = true;
+            lblPhone.Font = new Font("Segoe UI", 11F);
+            lblPhone.ForeColor = Color.Black;
+            lblPhone.Location = new Point(190, 243);
+            lblPhone.Name = "lblPhone";
+            lblPhone.Size = new Size(24, 25);
+            lblPhone.TabIndex = 11;
+            lblPhone.Text = "...";
             // 
             // lblLabelRole
             // 
-            lblLabelRole.Text = "Vai trò:";
-            lblLabelRole.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            lblLabelRole.Location = new System.Drawing.Point(35, 287);
-            lblLabelRole.ForeColor = System.Drawing.Color.DimGray;
             lblLabelRole.AutoSize = true;
+            lblLabelRole.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblLabelRole.ForeColor = Color.DimGray;
+            lblLabelRole.Location = new Point(35, 287);
+            lblLabelRole.Name = "lblLabelRole";
+            lblLabelRole.Size = new Size(68, 23);
+            lblLabelRole.TabIndex = 12;
+            lblLabelRole.Text = "Vai trò:";
             // 
             // lblRole
             // 
-            this.lblRole.Text = "...";
-            this.lblRole.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular);
-            this.lblRole.Location = new System.Drawing.Point(190, 285);
-            this.lblRole.ForeColor = System.Drawing.Color.Black;
-            this.lblRole.AutoSize = true;
+            lblRole.AutoSize = true;
+            lblRole.Font = new Font("Segoe UI", 11F);
+            lblRole.ForeColor = Color.Black;
+            lblRole.Location = new Point(190, 285);
+            lblRole.Name = "lblRole";
+            lblRole.Size = new Size(24, 25);
+            lblRole.TabIndex = 13;
+            lblRole.Text = "...";
             // 
             // lblLabelSpec
             // 
-            lblLabelSpec.Text = "Chuyên khoa:";
-            lblLabelSpec.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            lblLabelSpec.Location = new System.Drawing.Point(35, 329);
-            lblLabelSpec.ForeColor = System.Drawing.Color.DimGray;
             lblLabelSpec.AutoSize = true;
+            lblLabelSpec.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblLabelSpec.ForeColor = Color.DimGray;
+            lblLabelSpec.Location = new Point(35, 329);
+            lblLabelSpec.Name = "lblLabelSpec";
+            lblLabelSpec.Size = new Size(118, 23);
+            lblLabelSpec.TabIndex = 14;
+            lblLabelSpec.Text = "Chuyên khoa:";
             // 
             // lblSpec
             // 
-            this.lblSpec.Text = "...";
-            this.lblSpec.Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Regular);
-            this.lblSpec.Location = new System.Drawing.Point(190, 327);
-            this.lblSpec.ForeColor = System.Drawing.Color.Black;
-            this.lblSpec.AutoSize = true;
+            lblSpec.AutoSize = true;
+            lblSpec.Font = new Font("Segoe UI", 11F);
+            lblSpec.ForeColor = Color.Black;
+            lblSpec.Location = new Point(190, 327);
+            lblSpec.Name = "lblSpec";
+            lblSpec.Size = new Size(24, 25);
+            lblSpec.TabIndex = 15;
+            lblSpec.Text = "...";
             // 
-            // btnE (inherited from frmDoctorBase)
+            // title
             // 
-            this.btnE.Text = "CHỈNH SỬA THÔNG TIN";
-            this.btnE.Location = new System.Drawing.Point(40, 525);
-            this.btnE.Size = new System.Drawing.Size(220, 45);
-            this.btnE.BackColor = System.Drawing.Color.Orange;
-            this.btnE.ForeColor = System.Drawing.Color.White;
-            this.btnE.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnE.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnE.FlatAppearance.BorderSize = 0;
-            this.btnE.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnE.Visible = true;
-            // 
-            // pnlCard Controls addition
-            // 
-            this.pnlCard.Controls.AddRange(new System.Windows.Forms.Control[] {
-                lblLabelName, this.lblName,
-                lblLabelGender, this.lblGender,
-                lblLabelBirth, this.lblBirth,
-                lblLabelCmnd, this.lblCmnd,
-                lblLabelHome, this.lblHome,
-                lblLabelPhone, this.lblPhone,
-                lblLabelRole, this.lblRole,
-                lblLabelSpec, this.lblSpec
-            });
+            title.AutoSize = true;
+            title.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+            title.ForeColor = Color.FromArgb(45, 45, 45);
+            title.Location = new Point(40, 30);
+            title.Name = "title";
+            title.Size = new Size(362, 41);
+            title.TabIndex = 2;
+            title.Text = "HỒ SƠ CÁ NHÂN BÁC SĨ";
             // 
             // frmDoctorProfile
             // 
-            this.Controls.AddRange(new System.Windows.Forms.Control[] { title, this.pnlCard, this.btnE });
-            this.pnlCard.ResumeLayout(false);
-            this.pnlCard.PerformLayout();
-            this.ResumeLayout(false);
+            BackColor = Color.FromArgb(245, 245, 250);
+            ClientSize = new Size(839, 598);
+            Controls.Add(title);
+            Controls.Add(pnlCard);
+            Controls.Add(btnE);
+            Name = "frmDoctorProfile";
+            Controls.SetChildIndex(btnE, 0);
+            Controls.SetChildIndex(pnlCard, 0);
+            Controls.SetChildIndex(title, 0);
+            Controls.SetChildIndex(pnlSearch, 0);
+            pnlSearch.ResumeLayout(false);
+            pnlSearch.PerformLayout();
+            pnlCard.ResumeLayout(false);
+            pnlCard.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -247,5 +311,14 @@ namespace QuanLyYTe.Forms.Doctor
         private System.Windows.Forms.Label lblPhone;
         private System.Windows.Forms.Label lblRole;
         private System.Windows.Forms.Label lblSpec;
+        private Label lblLabelName;
+        private Label lblLabelGender;
+        private Label lblLabelBirth;
+        private Label lblLabelCmnd;
+        private Label lblLabelHome;
+        private Label lblLabelPhone;
+        private Label lblLabelRole;
+        private Label lblLabelSpec;
+        private Label title;
     }
 }

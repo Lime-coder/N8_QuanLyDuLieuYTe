@@ -16,27 +16,26 @@ namespace QuanLyYTe.Forms.Doctor
             OpenPage("Quản lý HSBA", () => new frmMedicalRecordManagement());
         }
 
-        private void AddNav(Panel p, string t, Action a)
+        private void frmDoctor_Load(object sender, EventArgs e)
         {
-            Button b = new Button { 
-                Text = t, 
-                Dock = DockStyle.Top, 
-                Height = 55, 
-                FlatStyle = FlatStyle.Flat, 
-                ForeColor = Color.White, 
-                TextAlign = ContentAlignment.MiddleLeft, 
-                Padding = new Padding(20, 0, 0, 0) 
-            };
+            lblUserInfo.Text = "Bác sĩ: " + AppSession.CurrentUsername;
+            PositionUserInfo();
+        }
 
-            b.FlatAppearance.BorderSize = 0;
-            b.Click += (s, e) => a();
-            p.Controls.Add(b);
-            b.BringToFront();
+        private void pnlTop_Resize(object sender, EventArgs e)
+        {
+            PositionUserInfo();
+        }
+
+        private void PositionUserInfo()
+        {
+            lblUserInfo.Location = new Point(pnlTop.Width - lblUserInfo.Width - 25, 35);
         }
 
         private void OpenPage(string t, Func<Form> f)
         {
-            lblPageTitle.Text = t; lblBreadcrumb.Text = "Dashboard / " + t;
+            lblPageTitle.Text = t; 
+            lblBreadcrumb.Text = "Dashboard / " + t;
             pnlContent.Controls.Clear();
             Form c = f(); 
             c.TopLevel = false; 
@@ -44,6 +43,18 @@ namespace QuanLyYTe.Forms.Doctor
             c.Dock = DockStyle.Fill;
             pnlContent.Controls.Add(c); 
             c.Show();
+        }
+
+        private void btnNavHSBA_Click(object sender, EventArgs e) => OpenPage("Quản lý HSBA", () => new frmMedicalRecordManagement());
+        private void btnNavPrescription_Click(object sender, EventArgs e) => OpenPage("Đơn thuốc", () => new frmPrescriptionManagement());
+        private void btnNavPatient_Click(object sender, EventArgs e) => OpenPage("Bệnh nhân", () => new frmPatientManagement());
+        private void btnNavProfile_Click(object sender, EventArgs e) => OpenPage("Hồ sơ cá nhân", () => new frmDoctorProfile());
+        private void btnNavNotifications_Click(object sender, EventArgs e) => OpenPage("Thông báo OLS", () => new QuanLyYTe.Forms.Common.frmNotifications());
+
+        private void btnLogout_Click(object sender, EventArgs e)
+        {
+            var confirm = MessageBox.Show("Bạn có chắc chắn muốn đăng xuất?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (confirm == DialogResult.Yes) Application.Restart();
         }
     }
 }

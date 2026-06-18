@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace QuanLyYTe.Forms.Doctor
 {
-    public class frmPatientManagement : frmDoctorBase
+    public partial class frmPatientManagement : frmDoctorBase
     {
         public frmPatientManagement() { btnA.Visible = btnD.Visible = false; LoadD(); }
         protected override void LoadD()
@@ -16,11 +16,6 @@ namespace QuanLyYTe.Forms.Doctor
             if (Dgv.Columns.Contains("MEDICAL_HISTORY")) Dgv.Columns["FAMILY_MEDICAL_HISTORY"].HeaderText = "Tiền sử bệnh của gia đình";
             if (Dgv.Columns.Contains("MEDICAL_HISTORY")) Dgv.Columns["DRUG_ALLERGIES"].HeaderText = "Dị ứng thuốc";
             Helpers.GridViewStyler.Format(Dgv);
-        }
-
-        private void InitializeComponent()
-        {
-
         }
 
         protected override void FormE()

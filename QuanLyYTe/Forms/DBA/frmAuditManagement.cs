@@ -14,6 +14,7 @@ namespace QuanLyYTe.Forms.DBA
         public frmAuditManagement()
         {
             InitializeComponent();
+            cboAuditType.SelectedIndex = 0;
             LoadData();
         }
 

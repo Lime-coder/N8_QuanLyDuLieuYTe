@@ -11,6 +11,14 @@ namespace QuanLyYTe.Forms.Doctor
         public frmMedicalRecordManagement()
         {
             InitializeComponent();
+            
+            split.Panel1.Controls.Add(Dgv);
+            
+            // Use explicit Anchors to guarantee no docking overlaps with pnlSearch
+            split.Dock = DockStyle.None;
+            split.Location = new Point(0, pnlSearch.Height);
+            split.Size = new Size(this.ClientSize.Width, this.ClientSize.Height - pnlSearch.Height);
+            split.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 
             btnSubAdd = CreateBtn("Thêm", Color.DodgerBlue, 310);
             btnSubAdd.Size = new Size(80, 30);

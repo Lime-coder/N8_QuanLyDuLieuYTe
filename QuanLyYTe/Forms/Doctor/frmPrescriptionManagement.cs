@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using System.Globalization; // Thêm thư viện này
 
 namespace QuanLyYTe.Forms.Doctor
 {
-    public class frmPrescriptionManagement : frmDoctorBase
+    public partial class frmPrescriptionManagement : frmDoctorBase
     {
         public frmPrescriptionManagement() { LoadD(); }
         protected override void LoadD()
@@ -45,11 +45,6 @@ namespace QuanLyYTe.Forms.Doctor
                 Svc.SavePrescription("UPDATE", rid, res["Tên thuốc"], res["Liều dùng mới"], date, oldMed);
                 LoadD();
             });
-        }
-
-        private void InitializeComponent()
-        {
-
         }
 
         protected override void FormD()
