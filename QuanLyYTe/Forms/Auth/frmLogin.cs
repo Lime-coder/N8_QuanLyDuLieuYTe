@@ -63,6 +63,7 @@ namespace QuanLyYTe.Forms
             }
             catch (Exception ex)
             {
+                MessageBox.Show(ex.ToString(), "Lỗi chi tiết", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ShowError(ex.Message);
             }
             finally

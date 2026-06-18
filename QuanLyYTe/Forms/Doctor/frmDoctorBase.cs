@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -6,54 +6,28 @@ using QuanLyYTe.Services;
 
 namespace QuanLyYTe.Forms.Doctor
 {
-    public class frmDoctorBase : Form
+    public partial class frmDoctorBase : Form
     {
         protected readonly DoctorService Svc = new DoctorService();
-        protected DataGridView Dgv = new DataGridView { 
-            Dock = DockStyle.Fill, 
-            BackgroundColor = Color.White, 
-            BorderStyle = BorderStyle.None, 
-            AllowUserToAddRows = false, 
-            SelectionMode = DataGridViewSelectionMode.FullRowSelect 
-        };
-
-        protected TextBox TxtS = new TextBox { 
-            Width = 200, 
-            Location = new Point(70, 25) 
-        };
-
-        protected Panel pnlSearch;
-        protected Button btnS, btnA, btnE, btnD;
 
         public frmDoctorBase()
         {
-            pnlSearch = new Panel { 
-                Dock = DockStyle.Top, 
-                Height = 75, 
-                BackColor = Color.FromArgb(242, 242, 242) 
-            };
-
-            Label lblS = new Label { 
-                Text = "Tìm:", 
-                Location = new Point(25, 28), 
-                AutoSize = true 
-            };
-
-            btnS = CreateBtn("Tìm", Color.Gray, 290); 
-            btnS.Click += (s, e) => LoadD();
-
-            btnA = CreateBtn("Thêm", Color.DodgerBlue, 405); 
-            btnA.Click += (s, e) => FormA();
-
-            btnE = CreateBtn("Sửa", Color.Gold, 520); 
-            btnE.Click += (s, e) => FormE();
-
-            btnD = CreateBtn("Xóa", Color.Crimson, 635); 
-            btnD.Click += (s, e) => FormD();
-
-            pnlSearch.Controls.AddRange(new Control[] { lblS, TxtS, btnS, btnA, btnE, btnD });
-            this.Controls.AddRange(new Control[] { Dgv, pnlSearch });
+            InitializeComponent();
+            btnS = CreateBtn("Tìm", Color.Gray, 290);
+            btnS.Click += btnS_Click;
+            btnA = CreateBtn("Thêm", Color.DodgerBlue, 405);
+            btnA.Click += btnA_Click;
+            btnE = CreateBtn("Sửa", Color.Gold, 520);
+            btnE.Click += btnE_Click;
+            btnD = CreateBtn("Xóa", Color.Crimson, 635);
+            btnD.Click += btnD_Click;
+            pnlSearch.Controls.AddRange(new Control[] { btnS, btnA, btnE, btnD });
         }
+
+        private void btnS_Click(object sender, EventArgs e) => LoadD();
+        private void btnA_Click(object sender, EventArgs e) => FormA();
+        private void btnE_Click(object sender, EventArgs e) => FormE();
+        private void btnD_Click(object sender, EventArgs e) => FormD();
 
         protected virtual void LoadD() { }
         protected virtual void FormA() { }
