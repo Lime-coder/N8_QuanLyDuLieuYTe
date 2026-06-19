@@ -5,28 +5,10 @@ using QuanLyYTe.DataProvider;
 
 namespace QuanLyYTe.Repositories
 {
-    public class SecurityAdminRepository
+    public class SecurityAdminRepository : BaseRepository
     {
-        private readonly string? _spOwner;
-        private readonly OracleDbProvider _dbProvider = new OracleDbProvider();
-
-        public SecurityAdminRepository()
-        {
-            _spOwner = ConfigurationManager.AppSettings["ProcedureOwner"];
-            if (!string.IsNullOrWhiteSpace(_spOwner))
-                _spOwner = _spOwner.Trim().ToUpperInvariant();
-        }
-
-        private string Sp(string spName)
-        {
-            if (string.IsNullOrWhiteSpace(_spOwner)) return spName;
-            return $"{_spOwner}.{spName}";
-        }
-
-        /// <summary>
-        /// Lấy danh sách tất cả các User trong hệ thống
-        /// Sử dụng SP: USP_GET_ALL_USERS
-        /// </summary>
+        // Lấy danh sách tất cả các User trong hệ thống
+        // Sử dụng SP: USP_GET_ALL_USERS
         public DataTable GetAllUsers()
         {
             OracleParameter p_cursor = new OracleParameter
@@ -38,11 +20,8 @@ namespace QuanLyYTe.Repositories
 
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_ALL_USERS"), new[] { p_cursor });
         }
-
-        /// <summary>
-        /// Lấy danh sách tất cả các Role trong hệ thống
-        /// Sử dụng SP: USP_GET_ALL_ROLES
-        /// </summary>
+        // Lấy danh sách tất cả các Role trong hệ thống
+        // Sử dụng SP: USP_GET_ALL_ROLES
         public DataTable GetAllRoles()
         {
             OracleParameter p_cursor = new OracleParameter
@@ -54,10 +33,7 @@ namespace QuanLyYTe.Repositories
 
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_ALL_ROLES"), new[] { p_cursor });
         }
-
-        /// <summary>
-        /// Lấy danh sách phòng ban
-        /// </summary>
+        // Lấy danh sách phòng ban
         public DataTable GetAllDepartments()
         {
             OracleParameter[] p = {
@@ -65,10 +41,7 @@ namespace QuanLyYTe.Repositories
         };
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_ALL_DEPARTMENTS"), p);
         }
-
-        /// <summary>
-        /// Lấy thông tin chi tiết của user (từ staff hoặc patient)
-        /// </summary>
+        // Lấy thông tin chi tiết của user (từ staff hoặc patient)
         public DataTable GetUserInfo(string username)
         {
             OracleParameter[] p = {
@@ -77,10 +50,7 @@ namespace QuanLyYTe.Repositories
         };
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_USER_INFO"), p);
         }
-
-        /// <summary>
-        /// Tạo mới một User liên kết với dữ liệu NV/BN
-        /// </summary>
+        // Tạo mới một User liên kết với dữ liệu NV/BN
         public void CreateUser(string username, string password, string fullName, string gender, DateTime birthdate, string idCard, string role,
             string? phone = null, string? hometown = null, string? deptId = null,
             string? houseNo = null, string? street = null, string? district = null, string? cityProvince = null,
@@ -109,10 +79,7 @@ namespace QuanLyYTe.Repositories
 
             _dbProvider.ExecuteNonQuerySP(Sp("USP_CREATE_USER_LINKED"), p);
         }
-
-        /// <summary>
-        /// Cập nhật thông tin User liên kết
-        /// </summary>
+        // Cập nhật thông tin User liên kết
         public void UpdateUser(string username, string fullName, string gender, DateTime birthdate, string idCard, string role,
             string? phone = null, string? hometown = null, string? deptId = null,
             string? houseNo = null, string? street = null, string? district = null, string? cityProvince = null,
@@ -140,10 +107,7 @@ namespace QuanLyYTe.Repositories
 
             _dbProvider.ExecuteNonQuerySP(Sp("USP_UPDATE_USER_LINKED"), p);
         }
-
-        /// <summary>
-        /// Vô hiệu hóa User (Soft Delete: Lock and Set Inactive)
-        /// </summary>
+        // Vô hiệu hóa User (Soft Delete: Lock and Set Inactive)
         public void DeactivateUser(string username)
         {
             OracleParameter[] p =
@@ -153,10 +117,7 @@ namespace QuanLyYTe.Repositories
 
             _dbProvider.ExecuteNonQuerySP(Sp("USP_DROP_USER_LINKED"), p);
         }
-
-        /// <summary>
-        /// Đổi mật khẩu của một User
-        /// </summary>
+        // Đổi mật khẩu của một User
         public void ChangeUserPassword(string username, string newPassword)
         {
             OracleParameter[] p =
@@ -167,10 +128,7 @@ namespace QuanLyYTe.Repositories
 
             _dbProvider.ExecuteNonQuerySP(Sp("USP_UPDATE_USER_PASSWORD"), p);
         }
-
-        /// <summary>
-        /// Khóa tài khoản User
-        /// </summary>
+        // Khóa tài khoản User
         public void LockUser(string username)
         {
             OracleParameter[] p =
@@ -180,10 +138,7 @@ namespace QuanLyYTe.Repositories
 
             _dbProvider.ExecuteNonQuerySP(Sp("USP_LOCK_USER"), p);
         }
-
-        /// <summary>
-        /// Mở khóa tài khoản User
-        /// </summary>
+        // Mở khóa tài khoản User
         public void UnlockUser(string username)
         {
             OracleParameter[] p =
@@ -193,11 +148,8 @@ namespace QuanLyYTe.Repositories
 
             _dbProvider.ExecuteNonQuerySP(Sp("USP_UNLOCK_USER"), p);
         }
-
-        /// <summary>
-        /// Tạo mới một Role
-        /// Sử dụng SP: USP_CREATE_ROLE
-        /// </summary>
+        // Tạo mới một Role
+        // Sử dụng SP: USP_CREATE_ROLE
         public void CreateRole(string roleName, string? password = null)
         {
             OracleParameter[] p =
@@ -208,11 +160,8 @@ namespace QuanLyYTe.Repositories
 
             _dbProvider.ExecuteNonQuerySP(Sp("USP_CREATE_ROLE"), p);
         }
-
-        /// <summary>
-        /// Đổi mật khẩu của một Role
-        /// Sử dụng SP: USP_UPDATE_ROLE_PASSWORD
-        /// </summary>
+        // Đổi mật khẩu của một Role
+        // Sử dụng SP: USP_UPDATE_ROLE_PASSWORD
         public void ChangeRolePassword(string roleName, string? password)
         {
             OracleParameter[] p =
@@ -223,11 +172,8 @@ namespace QuanLyYTe.Repositories
 
             _dbProvider.ExecuteNonQuerySP(Sp("USP_UPDATE_ROLE_PASSWORD"), p);
         }
-
-        /// <summary>
-        /// Xóa Role khỏi hệ thống
-        /// Sử dụng SP: USP_DROP_ROLE
-        /// </summary>
+        // Xóa Role khỏi hệ thống
+        // Sử dụng SP: USP_DROP_ROLE
         public void DropRole(string roleName)
         {
             OracleParameter[] p =
@@ -237,11 +183,8 @@ namespace QuanLyYTe.Repositories
 
             _dbProvider.ExecuteNonQuerySP(Sp("USP_DROP_ROLE"), p);
         }
-
-        /// <summary>
-        /// Lấy nhãn OLS của User
-        /// Sử dụng SP: USP_GET_USER_OLS_LABEL
-        /// </summary>
+        // Lấy nhãn OLS của User
+        // Sử dụng SP: USP_GET_USER_OLS_LABEL
         public string GetUserOlsLabel(string username)
         {
             OracleParameter p_cursor = new OracleParameter
@@ -271,11 +214,8 @@ namespace QuanLyYTe.Repositories
             }
             return "";
         }
-
-        /// <summary>
-        /// Cập nhật nhãn OLS của User
-        /// Sử dụng SP: USP_SET_USER_OLS_LABEL
-        /// </summary>
+        // Cập nhật nhãn OLS của User
+        // Sử dụng SP: USP_SET_USER_OLS_LABEL
         public void SetUserOlsLabel(string username, string label)
         {
             OracleParameter[] p =
@@ -286,10 +226,7 @@ namespace QuanLyYTe.Repositories
 
             _dbProvider.ExecuteNonQuerySP(Sp("USP_SET_USER_OLS_LABEL"), p);
         }
-
-        /// <summary>
-        /// Fetch Standard Audit logs from Oracle (Req 3.2)
-        /// </summary>
+        // Fetch Standard Audit logs from Oracle (Req 3.2)
         public DataTable GetStandardAuditLogs()
         {
             OracleParameter[] p = {
@@ -298,10 +235,7 @@ namespace QuanLyYTe.Repositories
 
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_REQ32_LOGS"), p);
         }
-
-        /// <summary>
-        /// Fetch FGA Audit logs for Prescription (Req 3.3a)
-        /// </summary>
+        // Fetch FGA Audit logs for Prescription (Req 3.3a)
         public DataTable GetFGAPrescriptionLogs()
         {
             OracleParameter[] p = {
@@ -309,10 +243,7 @@ namespace QuanLyYTe.Repositories
         };
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_REQ33A_LOGS"), p);
         }
-
-        /// <summary>
-        /// Fetch FGA + Unified Audit logs for Medical Record (Req 3.3b, 3.3c)
-        /// </summary>
+        // Fetch FGA + Unified Audit logs for Medical Record (Req 3.3b, 3.3c)
         public DataTable GetFGAMedicalRecordLogs()
         {
             OracleParameter[] p = {
@@ -320,10 +251,7 @@ namespace QuanLyYTe.Repositories
         };
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_REQ33BC_LOGS"), p);
         }
-
-        /// <summary>
-        /// Fetch Unified Audit logs for Service Record (Req 3.3d)
-        /// </summary>
+        // Fetch Unified Audit logs for Service Record (Req 3.3d)
         public DataTable GetUnifiedServiceRecordLogs()
         {
             OracleParameter[] p = {

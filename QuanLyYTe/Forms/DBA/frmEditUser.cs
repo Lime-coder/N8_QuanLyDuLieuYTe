@@ -68,11 +68,8 @@ namespace QuanLyYTe.Forms.DBA
                 Text = "Tạo " + (_isPatient ? "bệnh nhân" : "nhân viên");
             }
         }
-
-        /// <summary>
-        /// Shows/hides patient vs staff controls and adjusts form size accordingly.
-        /// Called after InitializeComponent to configure the form based on _isPatient.
-        /// </summary>
+        // Shows/hides patient vs staff controls and adjusts form size accordingly.
+        // Called after InitializeComponent to configure the form based on _isPatient.
         private void ConfigureFormForMode()
         {
             int labelX = 20, inputX = 150, inputWidth = 250;

@@ -5,16 +5,17 @@ using QuanLyYTe.DataProvider;
 
 namespace QuanLyYTe.Repositories
 {
-    public class BackupRecoveryRepository
+    public class BackupRecoveryRepository : BaseRepository
     {
-        private readonly OracleDbProvider _dbProvider = new OracleDbProvider();
 
+        // Lấy dữ liệu hiện tại của bảng PRESCRIPTION
         public DataTable GetCurrentData()
         {
             string sql = "SELECT RECORD_ID, PRESCRIPTION_DATE, MEDICINE_NAME, DOSAGE FROM hospital.PRESCRIPTION ORDER BY RECORD_ID, MEDICINE_NAME";
             return _dbProvider.ExecuteQuery(sql);
         }
 
+        // Lấy lịch sử sao lưu từ BACKUP_HISTORY
         public DataTable GetBackupHistory()
         {
             string sql = @"
@@ -30,6 +31,7 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuery(sql);
         }
 
+        // Lấy các điểm phục hồi từ UNIFIED_AUDIT_TRAIL
         public DataTable GetAuditRecoveryPoints()
         {
             string sql = @"
@@ -42,6 +44,7 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuery(sql);
         }
 
+        // Lấy nhật ký Audit của PRESCRIPTION
         public DataTable GetAuditLogs()
         {
             string sql = @"
@@ -60,12 +63,14 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuery(sql);
         }
 
+        // Kiểm tra trạng thái của AUTO_BACKUP_JOB
         public DataTable GetJobState()
         {
             string sql = "SELECT STATE, REPEAT_INTERVAL FROM ALL_SCHEDULER_JOBS WHERE OWNER = 'HOSPITAL' AND JOB_NAME = 'AUTO_BACKUP_JOB'";
             return _dbProvider.ExecuteQuery(sql);
         }
 
+        // Thực hiện sao lưu thủ công (SP: USP_MANUAL_BACKUP)
         public void ManualBackup()
         {
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
@@ -79,6 +84,7 @@ namespace QuanLyYTe.Repositories
             }
         }
 
+        // Kích hoạt sao lưu tự động với chu kỳ lặp lại
         public void EnableAutoBackup(string repeatInterval)
         {
             string sql = $@"
@@ -117,6 +123,7 @@ namespace QuanLyYTe.Repositories
             }
         }
 
+        // Vô hiệu hóa sao lưu tự động
         public void DisableAutoBackup()
         {
             string sql = @"
@@ -134,6 +141,7 @@ namespace QuanLyYTe.Repositories
             }
         }
 
+        // Giả lập xóa dữ liệu (SP: USP_SIMULATE_DELETE)
         public int SimulateDelete()
         {
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
@@ -148,6 +156,7 @@ namespace QuanLyYTe.Repositories
             }
         }
 
+        // Giả lập cập nhật sai dữ liệu (SP: USP_SIMULATE_WRONG_UPDATE)
         public int SimulateWrongUpdate()
         {
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
@@ -162,6 +171,7 @@ namespace QuanLyYTe.Repositories
             }
         }
 
+        // Phục hồi dữ liệu dựa trên Audit (SP: USP_RESTORE_PRESCRIPTION_BY_AUDIT)
         public void BackupRestoreByAudit(string recordId, DateTime auditTime)
         {
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))

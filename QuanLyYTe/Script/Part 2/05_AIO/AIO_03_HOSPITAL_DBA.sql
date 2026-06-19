@@ -1,11 +1,10 @@
--- ==============================================================================
+﻿-- ==============================================================================
 -- AIO_03_HOSPITAL_DBA.sql
 -- Run as: HOSPITAL_DBA
 -- Container: PDB_QLYT (unless specified otherwise)
 -- ==============================================================================
 
 -- ==============================================================================
--- Source: 01_Combined_RQ1\01_Setup_All_Roles_Fixed.sql
 -- ==============================================================================
 
 -- ==============================================================================
@@ -16,7 +15,6 @@
 -- ==============================================================================
 
 -- ==============================================================================
--- Combined_Coordinator_Patient_Technician.sql
 -- Purpose: Run Coordinator + Patient + Technician SQL in one go.
 -- Excluded doctor files:
 --   - GrantPrivileges_Doctor.sql
@@ -44,22 +42,21 @@ PROMPT =========================================================================
 
 PROMPT ==============================================================================
 PROMPT SECTION: Coordinator VPD / views / staff self-policy
-PROMPT Source: VPD_Coordinator.sql
 PROMPT ==============================================================================
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 -- ==============================================================================
 -- File: VPD_Coordinator.sql
--- M?c d�ch:
--- 1. Gi? TC#5: nh�n vi�n query tr?c ti?p STAFF ch? th?y ch�nh m�nh.
--- 2. T?o b?ng ph? t?i thi?u cho �i?u ph?i vi�n ch?n B�c si/Y si v� K? thu?t vi�n.
--- Run as: HOSPITAL_DBA c� quy?n DBMS_RLS
+-- Mục đích:
+-- 1. Giữ TC#5: nhân viên query trực tiếp STAFF chỉ thấy chính mình.
+-- 2. Tạo bảng phụ tối thiểu cho Điều phối viên ch?n Bác sĩ/Y sĩ v� Kỹ thuật viên.
+-- Run as: HOSPITAL_DBA có quyền DBMS_RLS
 -- ==============================================================================
 
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 -- ==============================================================================
--- PH?N 1: DROP POLICY CU
+-- PHẦN 1: DROP POLICY CU
 -- ==============================================================================
 
 BEGIN
@@ -75,7 +72,7 @@ END;
 /
 
 -- ==============================================================================
--- PH?N 2: DROP FUNCTION CU
+-- PHẦN 2: DROP FUNCTION CU
 -- ==============================================================================
 
 BEGIN
@@ -89,7 +86,7 @@ END;
 /
 
 -- ==============================================================================
--- PH?N 3: T?O FUNCTION VPD CHO STAFF
+-- PHẦN 3: TẠO FUNCTION VPD CHO STAFF
 -- ==============================================================================
 
 CREATE OR REPLACE FUNCTION hospital.FN_VPD_STAFF_SELF (
@@ -102,12 +99,12 @@ AS
 BEGIN
     v_current_user := SYS_CONTEXT('USERENV', 'SESSION_USER');
     
-    -- Bypass cho schema owner, DBA app, v� khi trigger ch?y (CURRENT_USER = 'HOSPITAL')
+    -- Bypass cho schema owner, DBA app, và khi trigger chạy (CURRENT_USER = 'HOSPITAL')
     IF SYS_CONTEXT('USERENV', 'CURRENT_USER') IN ('HOSPITAL', 'HOSPITAL_DBA') THEN
         RETURN '1=1';
     END IF;
 
-    -- Nh�n vi�n ch? th?y / s?a d�ng c?a ch�nh m�nh
+    -- Nhân viên chỉ thấy / sửa dòng của chính mình
     RETURN 'username_db = SYS_CONTEXT(''USERENV'', ''SESSION_USER'')';
 
 EXCEPTION
@@ -117,11 +114,11 @@ END;
 /
 
 -- ==============================================================================
--- PH?N 4: G?N VPD POLICY CHO STAFF
+-- PHẦN 4: GÁN VPD POLICY CHO STAFF
 -- ==============================================================================
 
 BEGIN
-    -- Policy 1: SELECT tr?c ti?p STAFF ch? th?y ch�nh m�nh
+    -- Policy 1: SELECT trực tiếp STAFF chỉ thấy chính mình
     DBMS_RLS.ADD_POLICY(
         object_schema   => 'HOSPITAL',
         object_name     => 'STAFF',
@@ -130,7 +127,7 @@ BEGIN
         statement_types => 'SELECT'
     );
 
-    -- Policy 2: UPDATE phone, hometown ch? tr�n d�ng ch�nh m�nh
+    -- Policy 2: UPDATE phone, hometown chỉ trên dòng chính mình
     DBMS_RLS.ADD_POLICY(
         object_schema     => 'HOSPITAL',
         object_name       => 'STAFF',
@@ -144,7 +141,7 @@ END;
 /
 
 -- ==============================================================================
--- PH?N 5: T?O B?NG PH? T?I THI?U CHO �I?U PH?I VI�N PH�N C�NG
+-- PHẦN 5: TẠO BẢNG PHỤ TỐI THIỂU CHO ĐIỀU PHỐI VIÊN PHÂN CÔNG
 -- ==============================================================================
 
 BEGIN
@@ -167,7 +164,7 @@ CREATE TABLE hospital.COORD_ASSIGNMENT_STAFF (
 );
 
 -- ==============================================================================
--- PH?N 6: �? D? LI?U T?I THI?U T? STAFF SANG B?NG PH?
+-- PHẦN 6: �? D? LI?U T?I THI?U T? STAFF SANG B?NG PH?
 -- ==============================================================================
 
 INSERT INTO hospital.COORD_ASSIGNMENT_STAFF (
@@ -189,15 +186,15 @@ FROM hospital.staff s
 LEFT JOIN hospital.department d
     ON d.dept_id = s.dept_id
 WHERE s.staff_role IN (
-    N'B�c si',
-    N'B�c si/Y si',
-    N'K? thu?t vi�n'
+    N'Bác sĩ',
+    N'Bác sĩ/Y sĩ',
+    N'Kỹ thuật viên'
 );
 
 COMMIT;
 
 -- ==============================================================================
--- PH?N 7: T?O VIEW CHO �I?U PH?I VI�N
+-- PHẦN 7: TẠO VIEW CHO ĐIỀU PHỐI VIÊN
 -- ==============================================================================
 
 CREATE OR REPLACE VIEW hospital.VW_COORD_DOCTORS AS
@@ -208,7 +205,7 @@ SELECT
     dept_id,
     specialty
 FROM hospital.COORD_ASSIGNMENT_STAFF
-WHERE staff_role IN (N'B�c si', N'B�c si/Y si');
+WHERE staff_role IN (N'Bác sĩ', N'Bác sĩ/Y sĩ');
 
 CREATE OR REPLACE VIEW hospital.VW_COORD_TECHNICIANS AS
 SELECT
@@ -216,27 +213,27 @@ SELECT
     staff_id,
     full_name
 FROM hospital.COORD_ASSIGNMENT_STAFF
-WHERE staff_role = N'K? thu?t vi�n';
+WHERE staff_role = N'Kỹ thuật viên';
 
 
 -- ==============================================================================
--- PH?N 8: CH?NH S?A SCHEMA CHO PH�P �I?U PH?I VI�N PH�N C�NG (ALLOW NULL TECHNICIAN)
+-- PHẦN 8: CHỈNH SỬA SCHEMA CHO PHÉP ĐIỀU PHỐI VIÊN PHÂN CÔNG (ALLOW NULL TECHNICIAN)
 -- ==============================================================================
 
--- 8.1 Cho ph�p c?t technician_id nh?n gi� tr? NULL d? luu c�c d?ch v? chua ph�n c�ng
+-- 8.1 Cho phép cột technician_id nhận giá trị NULL để lưu các dịch vụ chưa phân công
 BEGIN
     EXECUTE IMMEDIATE 'ALTER TABLE hospital.service_record MODIFY technician_id NULL';
 EXCEPTION
     WHEN OTHERS THEN
         IF SQLCODE = -1451 THEN
-            NULL; -- B? qua n?u c?t d� cho ph�p NULL
+            NULL; -- Bỏ qua nếu cột đã cho phép NULL
         ELSE
             RAISE;
         END IF;
 END;
 /
 
--- 8.2 C?p nh?t trigger d? b? qua ki?m tra KTV n?u technician_id l� NULL
+-- 8.2 Cập nhật trigger để bỏ qua kiểm tra KTV nếu technician_id là NULL
 CREATE OR REPLACE TRIGGER hospital.TRG_VALIDATE_SERVICE_RECORD
 BEFORE INSERT OR UPDATE ON hospital.service_record
 FOR EACH ROW
@@ -246,20 +243,20 @@ BEGIN
     IF :NEW.technician_id IS NOT NULL THEN
         SELECT is_active INTO v_tech_active FROM hospital.staff WHERE staff_id = :NEW.technician_id;
         IF v_tech_active = 0 THEN
-            RAISE_APPLICATION_ERROR(-20012, 'Kh�ng th? t?o/c?p nh?t d?ch v?: K? thu?t vi�n n�y d� b? kh�a (Kh�ng ho?t d?ng).');
+            RAISE_APPLICATION_ERROR(-20012, 'Kh�ng th? t?o/c?p nh?t d?ch v?: Kỹ thuật viên n�y d� b? kh�a (Kh�ng ho?t d?ng).');
         END IF;
     END IF;
 END;
 /
 
--- 8.3 Th�m m?t record m?u chua ph�n c�ng l?y t? HSBA c� s?n d? tr�nh l?i Kh�a ngo?i
+-- 8.3 Thêm một record mẫu chưa phân công lấy từ HSBA có sẵn để tránh lỗi Khóa ngoại
 BEGIN
     FOR r IN (SELECT record_id FROM hospital.medical_record WHERE ROWNUM = 1) LOOP
         INSERT INTO hospital.service_record (record_id, service_type, service_date, technician_id, service_result)
-        SELECT r.record_id, N'X�t nghi?m m�u', SYSDATE - 1, NULL, NULL
+        SELECT r.record_id, N'Xét nghiệm máu', SYSDATE - 1, NULL, NULL
         FROM DUAL
         WHERE NOT EXISTS (
-            SELECT 1 FROM hospital.service_record WHERE record_id = r.record_id AND service_type = N'X�t nghi?m m�u'
+            SELECT 1 FROM hospital.service_record WHERE record_id = r.record_id AND service_type = N'Xét nghiệm máu'
         );
     END LOOP;
     COMMIT;
@@ -269,65 +266,63 @@ END;
 
 PROMPT ==============================================================================
 PROMPT SECTION: Coordinator grants
-PROMPT Source: GrantPrivileges_Coordinator.sql
 PROMPT ==============================================================================
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 -- ==============================================================================
 -- File: GrantPrivileges_Coordinator.sql
--- M?c d�ch: C?p quy?n t?i thi?u cho vai tr� �i?u ph?i vi�n
+-- Mục đích: Cấp quyền tối thiểu cho vai trò Điều phối viên
 -- Run as: HOSPITAL_DBA
 -- ==============================================================================
 
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
--- B?ng b?nh nh�n: �i?u ph?i vi�n du?c xem, th�m, s?a
+-- Bảng bệnh nhân: Điều phối viên được xem, thêm, sửa
 GRANT SELECT, INSERT, UPDATE ON hospital.patient TO rl_coordinator;
 
--- H? so b?nh �n:
--- �u?c xem, th�m h? so m?i
+-- Hồ sơ bệnh án:
+-- Được xem, thêm hồ sơ mới
 GRANT SELECT, INSERT ON hospital.medical_record TO rl_coordinator;
 
--- Ch? du?c ph�n c�ng b�c si/khoa
+-- Chỉ được phân công bác sĩ/khoa
 GRANT UPDATE (doctor_id, dept_id) ON hospital.medical_record TO rl_coordinator;
 
--- D?ch v? h? tr? ch?n do�n:
--- �u?c xem danh s�ch d?ch v?
+-- Dịch vụ hỗ trợ chẩn đoán:
+-- Được xem danh sách dịch vụ
 GRANT SELECT ON hospital.service_record TO rl_coordinator;
 
--- Ch? du?c ph�n c�ng k? thu?t vi�n
+-- Chỉ được phân công k? thu?t vi�n
 GRANT UPDATE (technician_id) ON hospital.service_record TO rl_coordinator;
 
--- Xem danh m?c khoa
+-- Xem danh mục khoa
 GRANT SELECT ON hospital.department TO rl_coordinator;
 
 -- STAFF:
--- Query tr?c ti?p STAFF s? b? VPD l?c ch? th?y ch�nh m�nh
+-- Query trực tiếp STAFF sẽ bị VPD lọc chỉ thấy chính mình
 GRANT SELECT ON hospital.staff TO rl_coordinator;
 
--- Ch? du?c c?p nh?t th�ng tin c� nh�n h?p l?
+-- Chỉ được cập nhật thông tin cá nhân hợp lệ
 GRANT UPDATE (phone, hometown) ON hospital.staff TO rl_coordinator;
 
--- View ph?c v? di?u ph?i b�c si/k? thu?t vi�n
+-- View phục vụ điều phối bác sĩ/k? thu?t vi�n
 GRANT SELECT ON hospital.VW_COORD_DOCTORS TO rl_coordinator;
 GRANT SELECT ON hospital.VW_COORD_TECHNICIANS TO rl_coordinator;
 
 
 PROMPT ==============================================================================
 PROMPT SECTION: Coordinator stored procedures
-PROMPT Source: SP_Coordinator.sql
 PROMPT ==============================================================================
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 -- ==============================================================================
 -- File: SP_Coordinator.sql
--- M?c d�ch: Stored Procedures thay th? cho raw SQL trong CoordinatorRepository
+-- Mục đích: Stored Procedures thay thế cho raw SQL trong CoordinatorRepository
 -- Run as: HOSPITAL_DBA
 -- ==============================================================================
 
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
--- 1. B�c si
+-- 1. Bác sĩ
 CREATE OR REPLACE PROCEDURE SP_COORD_GET_DOCTORS(p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
@@ -347,7 +342,7 @@ BEGIN
 END;
 /
 
--- 2. K? thu?t vi�n
+-- 2. Kỹ thuật viên
 CREATE OR REPLACE PROCEDURE SP_COORD_GET_TECHS(p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
@@ -365,7 +360,7 @@ BEGIN
 END;
 /
 
--- 4. Th�ng tin c� nh�n (�i?u ph?i vi�n)
+-- 4. Thông tin cá nhân (Điều phối viên)
 CREATE OR REPLACE PROCEDURE SP_COORD_GET_SELF(p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
@@ -383,7 +378,7 @@ BEGIN
 END;
 /
 
--- 5. B?nh nh�n
+-- 5. Bệnh nhân
 CREATE OR REPLACE PROCEDURE SP_COORD_GET_PATS(p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
@@ -455,7 +450,7 @@ BEGIN
 END;
 /
 
--- 6. H? so b?nh �n
+-- 6. Hồ sơ bệnh án
 CREATE OR REPLACE PROCEDURE SP_COORD_GET_ALL_MED(p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
@@ -466,7 +461,7 @@ END;
 CREATE OR REPLACE PROCEDURE SP_COORD_INS_MED(p_record_id IN VARCHAR2, p_patient_id IN VARCHAR2, p_record_date IN DATE, p_doctor_id IN VARCHAR2, p_dept_id IN VARCHAR2) AS
 BEGIN
     INSERT INTO hospital.medical_record (record_id, patient_id, record_date, doctor_id, dept_id, diagnosis, treatment_plan, conclusion) 
-    VALUES (p_record_id, p_patient_id, p_record_date, p_doctor_id, p_dept_id, N'Chua ch?n do�n', N'Chua di?u tr?', N'Chua k?t lu?n');
+    VALUES (p_record_id, p_patient_id, p_record_date, p_doctor_id, p_dept_id, N'Chưa chẩn đoán', N'Chưa điều trị', N'Chưa kết luận');
     COMMIT;
 END;
 /
@@ -478,7 +473,7 @@ BEGIN
 END;
 /
 
--- 7. D?ch v? h? tr? (Service Assignment)
+-- 7. Dịch vụ hỗ trợ (Service Assignment)
 CREATE OR REPLACE PROCEDURE SP_COORD_GET_SRV_ASS(p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
@@ -526,7 +521,6 @@ GRANT EXECUTE ON hospital.SP_COORD_UPD_TECH TO rl_coordinator;
 
 PROMPT ==============================================================================
 PROMPT SECTION: Patient RBAC views/procedures/grants
-PROMPT Source: Patient_RBAC.sql
 PROMPT ==============================================================================
 ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
@@ -538,7 +532,7 @@ ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 -- ------------------------------------------------------------
 -- VIEWS: Row-level security via SYS_CONTEXT SESSION_USER
--- B?nh nh�n ch? th?y d? li?u c?a ch�nh m�nh
+-- Bệnh nhân chỉ thấy dữ liệu của chính mình
 -- ------------------------------------------------------------
 
 CREATE OR REPLACE VIEW hospital_dba.V_PATIENT_SELF AS
@@ -585,7 +579,7 @@ GRANT SELECT ON hospital_dba.V_SERVICE_RECORD_PATIENT TO rl_patient;
 -- STORED PROCEDURES
 -- ------------------------------------------------------------
 
--- USP_GET_PATIENT_PROFILE: L?y th�ng tin c� nh�n b?nh nh�n dang dang nh?p
+-- USP_GET_PATIENT_PROFILE: Lấy thông tin cá nhân bệnh nhân đang đăng nhập
 CREATE OR REPLACE PROCEDURE USP_GET_PATIENT_PROFILE (
     p_cursor OUT SYS_REFCURSOR
 ) AUTHID CURRENT_USER AS
@@ -598,7 +592,7 @@ BEGIN
 END USP_GET_PATIENT_PROFILE;
 /
 
--- USP_GET_PATIENT_RECORDS: L?y danh s�ch h? so b?nh �n c?a b?nh nh�n
+-- USP_GET_PATIENT_RECORDS: L?y danh sách hồ sơ bệnh án c?a bệnh nhân
 CREATE OR REPLACE PROCEDURE USP_GET_PATIENT_RECORDS (
     p_cursor OUT SYS_REFCURSOR
 ) AUTHID CURRENT_USER AS
@@ -615,7 +609,7 @@ BEGIN
 END USP_GET_PATIENT_RECORDS;
 /
 
--- USP_GET_PATIENT_PRESCRIPTIONS: L?y don thu?c theo record_id
+-- USP_GET_PATIENT_PRESCRIPTIONS: Lấy đơn thuốc theo record_id
 CREATE OR REPLACE PROCEDURE USP_GET_PATIENT_PRESCRIPTIONS (
     p_record_id IN VARCHAR2,
     p_cursor    OUT SYS_REFCURSOR
@@ -629,7 +623,7 @@ BEGIN
 END USP_GET_PATIENT_PRESCRIPTIONS;
 /
 
--- USP_GET_PATIENT_SERVICES: L?y d?ch v? y t? theo record_id
+-- USP_GET_PATIENT_SERVICES: Lấy dịch vụ y tế theo record_id
 CREATE OR REPLACE PROCEDURE USP_GET_PATIENT_SERVICES (
     p_record_id IN VARCHAR2,
     p_cursor    OUT SYS_REFCURSOR
@@ -646,7 +640,7 @@ BEGIN
 END USP_GET_PATIENT_SERVICES;
 /
 
--- USP_UPDATE_PATIENT_CONTACT: B?nh nh�n t? c?p nh?t th�ng tin li�n l?c v� ti?n s? b?nh l� (TC#5)
+-- USP_UPDATE_PATIENT_CONTACT: Bệnh nhân tự cập nhật thông tin liên lạc và tiền sử bệnh lý (TC#5)
 CREATE OR REPLACE PROCEDURE USP_UPDATE_PATIENT_CONTACT (
     p_house_no               IN NVARCHAR2,
     p_street                 IN NVARCHAR2,
@@ -692,7 +686,6 @@ COMMIT;
 
 PROMPT ==============================================================================
 PROMPT SECTION: Technician view/procedures/grants
-PROMPT Source: Grant_technician.sql
 PROMPT ==============================================================================
 ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
@@ -769,7 +762,7 @@ FROM HOSPITAL.SERVICE_RECORD SR
 JOIN HOSPITAL.STAFF ST
     ON SR.TECHNICIAN_ID = ST.STAFF_ID
 WHERE UPPER(ST.USERNAME_DB) = SYS_CONTEXT('USERENV', 'SESSION_USER')
-  AND ST.STAFF_ROLE = N'K? thu?t vi�n'
+  AND ST.STAFF_ROLE = N'Kỹ thuật viên'
   AND ST.IS_ACTIVE = 1;
 
 -- ============================================================
@@ -815,7 +808,7 @@ BEGIN
             SELECT ST.STAFF_ID
             FROM HOSPITAL.STAFF ST
             WHERE UPPER(ST.USERNAME_DB) = SYS_CONTEXT('USERENV', 'SESSION_USER')
-              AND ST.STAFF_ROLE = N'K? thu?t vi�n'
+              AND ST.STAFF_ROLE = N'Kỹ thuật viên'
               AND ST.IS_ACTIVE = 1
       );
 
@@ -824,7 +817,7 @@ BEGIN
     IF V_ROWS_UPDATED = 0 THEN
         RAISE_APPLICATION_ERROR(
             -20031,
-            N'Kh�ng du?c ph�p c?p nh?t: d?ch v? kh�ng thu?c k? thu?t vi�n hi?n t?i.'
+            N'Không được phép cập nhật: dịch vụ không thuộc kỹ thuật viên hiện tại.'
         );
     END IF;
 END;
@@ -851,7 +844,7 @@ BEGIN
             ST.HOMETOWN
         FROM HOSPITAL.STAFF ST
         WHERE UPPER(ST.USERNAME_DB) = SYS_CONTEXT('USERENV', 'SESSION_USER')
-          AND ST.STAFF_ROLE = N'K? thu?t vi�n'
+          AND ST.STAFF_ROLE = N'Kỹ thuật viên'
           AND ST.IS_ACTIVE = 1;
 END;
 /
@@ -879,13 +872,13 @@ BEGIN
                           ELSE P_HOMETOWN 
                       END
     WHERE UPPER(ST.USERNAME_DB) = SYS_CONTEXT('USERENV', 'SESSION_USER')
-      AND ST.STAFF_ROLE = N'K? thu?t vi�n'
+      AND ST.STAFF_ROLE = N'Kỹ thuật viên'
       AND ST.IS_ACTIVE = 1;
 
     V_ROWS_UPDATED := SQL%ROWCOUNT;
 
     IF V_ROWS_UPDATED = 0 THEN
-        RAISE_APPLICATION_ERROR(-20032, N'Kh�ng t�m th?y k? thu?t vi�n hi?n t?i ho?c kh�ng c� quy?n c?p nh?t.');
+        RAISE_APPLICATION_ERROR(-20032, N'Không tìm thấy kỹ thuật viên hiện tại hoặc không có quyền cập nhật.');
     END IF;
 END;
 /
@@ -1143,8 +1136,8 @@ BEGIN
     END IF;
 
     IF NOT (
-        v_staff_role IN (N'B�c si', N'B�c si/Y si')
-        OR LOWER(v_staff_role) LIKE N'%b�c%'
+        v_staff_role IN (N'Bác sĩ', N'Bác sĩ/Y sĩ')
+        OR LOWER(v_staff_role) LIKE N'%bác%'
         OR LOWER(v_staff_role) LIKE '%doctor%'
     ) THEN
         -- Coordinator/technician/staff self procedures must not be restricted by doctor rules.
@@ -1190,8 +1183,8 @@ BEGIN
     END IF;
 
     IF NOT (
-        v_staff_role IN (N'B�c si', N'B�c si/Y si')
-        OR LOWER(v_staff_role) LIKE N'%b�c%'
+        v_staff_role IN (N'Bác sĩ', N'Bác sĩ/Y sĩ')
+        OR LOWER(v_staff_role) LIKE N'%bác%'
         OR LOWER(v_staff_role) LIKE '%doctor%'
     ) THEN
         RETURN '1=1';
@@ -1238,8 +1231,8 @@ BEGIN
     END IF;
 
     IF NOT (
-        v_staff_role IN (N'B�c si', N'B�c si/Y si')
-        OR LOWER(v_staff_role) LIKE N'%b�c%'
+        v_staff_role IN (N'Bác sĩ', N'Bác sĩ/Y sĩ')
+        OR LOWER(v_staff_role) LIKE N'%bác%'
         OR LOWER(v_staff_role) LIKE '%doctor%'
     ) THEN
         RETURN '1=1';
@@ -1394,7 +1387,7 @@ BEGIN
     WHERE record_id = UPPER(TRIM(p_id));
 
     IF SQL%ROWCOUNT = 0 THEN
-        RAISE_APPLICATION_ERROR(-20002, N'L?i: Kh�ng t�m th?y h? so b?nh �n ho?c b�c si kh�ng c� quy?n c?p nh?t h? so n�y.');
+        RAISE_APPLICATION_ERROR(-20002, N'Lỗi: Không tìm thấy hồ sơ bệnh án hoặc bác sĩ không có quyền cập nhật hồ sơ này.');
     END IF;
 END;
 /
@@ -1440,7 +1433,7 @@ BEGIN
     WHERE record_id = v_id;
 
     IF v_count = 0 THEN
-        RAISE_APPLICATION_ERROR(-20001, N'M� HSBA kh�ng t?n t?i ho?c b�c si kh�ng c� quy?n t?o d?ch v? cho HSBA n�y.');
+        RAISE_APPLICATION_ERROR(-20001, N'Mã HSBA không tồn tại hoặc bác sĩ không có quyền tạo dịch vụ cho HSBA này.');
     END IF;
 
     -- Coordinator assigns the technician later. Do not randomly assign one here.
@@ -1460,7 +1453,7 @@ BEGIN
     );
 EXCEPTION
     WHEN DUP_VAL_ON_INDEX THEN
-        RAISE_APPLICATION_ERROR(-20006, N'L?i: D?ch v? n�y d� t?n t?i cho HSBA/ng�y hi?n t?i.');
+        RAISE_APPLICATION_ERROR(-20006, N'Lỗi: Dịch vụ này đã tồn tại cho HSBA/ngày hiện tại.');
 END;
 /
 
@@ -1478,7 +1471,7 @@ BEGIN
       AND TRUNC(service_date) = TRUNC(p_date);
 
     IF SQL%ROWCOUNT = 0 THEN
-        RAISE_APPLICATION_ERROR(-20007, N'L?i: Kh�ng t�m th?y d?ch v? ho?c b�c si kh�ng c� quy?n x�a d?ch v? n�y.');
+        RAISE_APPLICATION_ERROR(-20007, N'Lỗi: Không tìm thấy dịch vụ hoặc bác sĩ không có quyền xóa dịch vụ này.');
     END IF;
 END;
 /
@@ -1521,7 +1514,7 @@ AS
     v_action VARCHAR2(20) := UPPER(TRIM(p_action));
 BEGIN
     IF v_action NOT IN ('INSERT', 'UPDATE', 'DELETE') THEN
-        RAISE_APPLICATION_ERROR(-20008, N'L?i: H�nh d?ng don thu?c kh�ng h?p l?.');
+        RAISE_APPLICATION_ERROR(-20008, N'Lỗi: Hành động đơn thuốc không hợp lệ.');
     END IF;
 
     IF v_action IN ('INSERT', 'UPDATE') THEN
@@ -1532,7 +1525,7 @@ BEGIN
         WHERE record_id = v_id;
 
         IF v_count = 0 THEN
-            RAISE_APPLICATION_ERROR(-20003, N'L?i: M� HSBA kh�ng t?n t?i ho?c b�c si kh�ng c� quy?n k� don cho HSBA n�y.');
+            RAISE_APPLICATION_ERROR(-20003, N'Lỗi: Mã HSBA không tồn tại hoặc bác sĩ không có quyền kê đơn cho HSBA này.');
         END IF;
     END IF;
 
@@ -1545,7 +1538,7 @@ BEGIN
           AND medicine_name = p_med_name;
 
         IF v_count > 0 THEN
-            RAISE_APPLICATION_ERROR(-20005, N'L?i: Thu?c n�y d� du?c k� trong don c?a ng�y h�m nay.');
+            RAISE_APPLICATION_ERROR(-20005, N'Lỗi: Thuốc này đã được kê trong đơn của ngày hôm nay.');
         END IF;
 
         INSERT INTO hospital.prescription (
@@ -1562,7 +1555,7 @@ BEGIN
 
     ELSIF v_action = 'UPDATE' THEN
         IF p_date IS NULL OR p_old_med_name IS NULL THEN
-            RAISE_APPLICATION_ERROR(-20009, N'L?i: C?p nh?t don thu?c c?n ng�y k� don v� t�n thu?c cu.');
+            RAISE_APPLICATION_ERROR(-20009, N'Lỗi: Cập nhật đơn thuốc cần ngày kê đơn và tên thuốc cũ.');
         END IF;
 
         UPDATE hospital.prescription
@@ -1573,12 +1566,12 @@ BEGIN
           AND medicine_name = p_old_med_name;
 
         IF SQL%ROWCOUNT = 0 THEN
-            RAISE_APPLICATION_ERROR(-20010, N'L?i: Kh�ng t�m th?y don thu?c ho?c b�c si kh�ng c� quy?n c?p nh?t.');
+            RAISE_APPLICATION_ERROR(-20010, N'Lỗi: Không tìm thấy đơn thuốc hoặc bác sĩ không có quyền cập nhật.');
         END IF;
 
     ELSIF v_action = 'DELETE' THEN
         IF p_date IS NULL THEN
-            RAISE_APPLICATION_ERROR(-20011, N'L?i: X�a don thu?c c?n ng�y k� don.');
+            RAISE_APPLICATION_ERROR(-20011, N'Lỗi: Xóa đơn thuốc cần ngày kê đơn.');
         END IF;
 
         DELETE FROM hospital.prescription
@@ -1587,7 +1580,7 @@ BEGIN
           AND medicine_name = p_med_name;
 
         IF SQL%ROWCOUNT = 0 THEN
-            RAISE_APPLICATION_ERROR(-20012, N'L?i: Kh�ng t�m th?y don thu?c ho?c b�c si kh�ng c� quy?n x�a.');
+            RAISE_APPLICATION_ERROR(-20012, N'Lỗi: Không tìm thấy đơn thuốc hoặc bác sĩ không có quyền xóa.');
         END IF;
     END IF;
 END;
@@ -1652,7 +1645,7 @@ BEGIN
     WHERE patient_id = UPPER(TRIM(p_id));
 
     IF SQL%ROWCOUNT = 0 THEN
-        RAISE_APPLICATION_ERROR(-20004, N'L?i: Kh�ng t�m th?y b?nh nh�n ho?c b�c si kh�ng c� quy?n c?p nh?t b?nh nh�n n�y.');
+        RAISE_APPLICATION_ERROR(-20004, N'Lỗi: Không tìm thấy bệnh nhân hoặc bác sĩ không có quyền cập nhật bệnh nhân này.');
     END IF;
 END;
 /
@@ -1701,7 +1694,7 @@ BEGIN
       AND is_active = 1;
 
     IF SQL%ROWCOUNT = 0 THEN
-        RAISE_APPLICATION_ERROR(-20013, N'L?i: Kh�ng t�m th?y th�ng tin b�c si hi?n t?i ho?c t�i kho?n d� b? kh�a.');
+        RAISE_APPLICATION_ERROR(-20013, N'Lỗi: Không tìm thấy thông tin bác sĩ hiện tại hoặc tài khoản đã bị khóa.');
     END IF;
 END;
 /
@@ -1782,7 +1775,6 @@ PROMPT =========================================================================
 
 
 -- ==============================================================================
--- Source: 04_BackupRecovery\BackupRecoverySetup.sql
 -- ==============================================================================
 
 -- ==============================================================================
@@ -2213,8 +2205,8 @@ SHOW ERRORS PACKAGE BODY hospital.PKG_BACKUP_RECOVERY;
 
 -- ==============================================================================
 -- 5. COMPATIBILITY WRAPPERS FOR WINFORMS
--- �?t sau PACKAGE BODY
--- G?i d?ng d? tr�nh l?i PLS-00905 khi package t?m INVALID l�c compile
+-- �?t sau PACKAGE BODY
+-- Gọi rỗng để tránh lỗi PLS-00905 khi package t?m INVALID lúc compile
 -- ==============================================================================
 CREATE OR REPLACE PROCEDURE hospital.USP_MANUAL_BACKUP AS
 BEGIN

@@ -5,10 +5,10 @@ using QuanLyYTe.DataProvider;
 
 namespace QuanLyYTe.Repositories
 {
-    public class NotificationRepository
+    public class NotificationRepository : BaseRepository
     {
-        private readonly OracleDbProvider _dbProvider = new OracleDbProvider();
 
+        // Lấy danh sách thông báo OLS (SP: USP_GET_NOTIFICATIONS)
         public DataTable GetNotifications()
         {
             var parameters = new OracleParameter[] {
@@ -29,6 +29,7 @@ namespace QuanLyYTe.Repositories
             }
         }
 
+        // Thêm mới thông báo OLS (SP: USP_ADD_NOTIFICATION)
         public void AddNotification(string description, string location, string labelStr)
         {
             var parameters = new OracleParameter[] {

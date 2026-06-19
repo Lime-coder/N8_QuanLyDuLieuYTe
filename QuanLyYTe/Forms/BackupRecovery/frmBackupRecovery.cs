@@ -26,10 +26,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             LoadAuditRecoveryPoints();
             UpdateSchedulerStatusUI();
         }
-
-        /// <summary>
-        /// Áp dụng các kiểu nút hiện đại tương tự các Form quản trị khác trong hệ thống
-        /// </summary>
+        // Áp dụng các kiểu nút hiện đại tương tự các Form quản trị khác trong hệ thống
         private void ApplyButtonStyles()
         {
             void StylePrimary(Button b)
@@ -94,10 +91,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             LoadAuditRecoveryPoints();
             UpdateSchedulerStatusUI();
         }
-
-        /// <summary>
-        /// Tải dữ liệu hiện tại của bảng PRESCRIPTION
-        /// </summary>
+        // Tải dữ liệu hiện tại của bảng PRESCRIPTION
         private void LoadCurrentData()
         {
             try
@@ -117,10 +111,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 MessageBox.Show("Lỗi tải dữ liệu bảng PRESCRIPTION: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        /// <summary>
-        /// Tải lịch sử các phiên bản sao lưu từ BACKUP_HISTORY
-        /// </summary>
+        // Tải lịch sử các phiên bản sao lưu từ BACKUP_HISTORY
         private void LoadBackupHistory()
         {
             try
@@ -139,10 +130,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 MessageBox.Show("Lỗi tải lịch sử sao lưu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        /// <summary>
-        /// Tải danh sách các thời điểm kiểm toán khả dụng cho ComboBox phục hồi
-        /// </summary>
+        // Tải danh sách các thời điểm kiểm toán khả dụng cho ComboBox phục hồi
         private void LoadAuditRecoveryPoints()
         {
             try
@@ -171,10 +159,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 System.Diagnostics.Debug.WriteLine("Lỗi tải danh sách điểm khôi phục: " + ex.Message);
             }
         }
-
-        /// <summary>
-        /// Cập nhật nhãn trạng thái của Oracle Job (DBMS_SCHEDULER)
-        /// </summary>
+        // Cập nhật nhãn trạng thái của Oracle Job (DBMS_SCHEDULER)
         private void UpdateSchedulerStatusUI()
         {
             try
@@ -207,10 +192,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 lblSchedulerStatus.ForeColor = Color.OrangeRed;
             }
         }
-
-        /// <summary>
-        /// Nạp nhật ký kiểm toán (Audit Log) từ Service
-        /// </summary>
+        // Nạp nhật ký kiểm toán (Audit Log) từ Service
         private void LoadAuditLogs()
         {
             try
@@ -231,10 +213,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 MessageBox.Show("Không thể nạp nhật ký kiểm toán. Vui lòng kiểm tra lại quyền truy cập hoặc cấu hình Audit của hệ thống.\nChi tiết: " + ex.Message, "Lỗi tải Nhật ký", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
-
-        /// <summary>
-        /// Thực hiện sao lưu thủ công thông qua Service
-        /// </summary>
+        // Thực hiện sao lưu thủ công thông qua Service
         private void ManualBackup()
         {
             try
@@ -273,10 +252,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 btnBackupNow.Text = "Sao lưu chủ động";
             }
         }
-
-        /// <summary>
-        /// Kích hoạt sao lưu tự động dùng DBMS_SCHEDULER thông qua Service
-        /// </summary>
+        // Kích hoạt sao lưu tự động dùng DBMS_SCHEDULER thông qua Service
         private void EnableAutoBackup()
         {
             if (cboInterval.SelectedIndex == -1)
@@ -300,10 +276,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 MessageBox.Show("Kích hoạt sao lưu tự động thất bại: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        /// <summary>
-        /// Tắt sao lưu tự động thông qua Service
-        /// </summary>
+        // Tắt sao lưu tự động thông qua Service
         private void DisableAutoBackup()
         {
             try
@@ -318,10 +291,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 MessageBox.Show("Tắt sao lưu tự động thất bại: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        /// <summary>
-        /// Giả lập sự cố: Xóa bản ghi BA000001
-        /// </summary>
+        // Giả lập sự cố: Xóa bản ghi BA000001
         private void SimulateDelete()
         {
             try
@@ -337,10 +307,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 MessageBox.Show("Lỗi giả lập sự cố xóa: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        /// <summary>
-        /// Giả lập sự cố: Cập nhật sai thông tin bản ghi BA000001
-        /// </summary>
+        // Giả lập sự cố: Cập nhật sai thông tin bản ghi BA000001
         private void SimulateWrongUpdate()
         {
             try
@@ -356,10 +323,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 MessageBox.Show("Lỗi giả lập sự cố cập nhật: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
-        /// <summary>
-        /// Thực hiện khôi phục dữ liệu cho bản ghi BA000001
-        /// </summary>
+        // Thực hiện khôi phục dữ liệu cho bản ghi BA000001
         private void BackupRestore()
         {
             if (cboBackupVersion.SelectedValue == null)

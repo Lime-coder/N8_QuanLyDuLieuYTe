@@ -5,13 +5,14 @@ using QuanLyYTe.DataProvider;
 
 namespace QuanLyYTe.Repositories
 {
-    public class DoctorRepository
+    public class DoctorRepository : BaseRepository
     {
-        private readonly OracleDbProvider _dbProvider = new OracleDbProvider();
-        private string ProcedureOwner = "hospital";
+        public DoctorRepository()
+        {
+            _spOwner = "hospital";
+        }
 
-        private string Sp(string name) => $"{ProcedureOwner}.{name}";
-
+        // Lấy danh sách hồ sơ bệnh án (SP: USP_GET_MEDICAL_RECORD)
         public DataTable GetMedicalRecordList(string s = "")
         {
             OracleParameter[] p = {
@@ -21,6 +22,7 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_MEDICAL_RECORD"), p);
         }
 
+        // Cập nhật hồ sơ bệnh án (SP: USP_UPDATE_MEDICAL_RECORD)
         public void UpdateMedicalRecord(string id, string dg, string tr, string cl)
         {
             OracleParameter[] p = {
@@ -32,6 +34,7 @@ namespace QuanLyYTe.Repositories
             _dbProvider.ExecuteNonQuerySP(Sp("USP_UPDATE_MEDICAL_RECORD"), p);
         }
 
+        // Lấy danh sách dịch vụ y tế (SP: USP_GET_SERVICES)
         public DataTable GetServices(string s = "")
         {
             OracleParameter[] p = {
@@ -41,6 +44,7 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_SERVICES"), p);
         }
 
+        // Đăng ký dịch vụ y tế (SP: USP_ADD_SERVICE)
         public void AddService(string id, string type)
         {
             OracleParameter[] p = {
@@ -50,6 +54,7 @@ namespace QuanLyYTe.Repositories
             _dbProvider.ExecuteNonQuerySP(Sp("USP_ADD_SERVICE"), p);
         }
 
+        // Hủy đăng ký dịch vụ y tế (SP: USP_DELETE_SERVICE)
         public void DeleteService(string id, string type, DateTime date)
         {
             OracleParameter[] p = {
@@ -60,6 +65,7 @@ namespace QuanLyYTe.Repositories
             _dbProvider.ExecuteNonQuerySP(Sp("USP_DELETE_SERVICE"), p);
         }
 
+        // Lấy danh sách đơn thuốc (SP: USP_GET_PRESCRIPTION)
         public DataTable GetPrescriptions(string s = "")
         {
             OracleParameter[] p = {
@@ -69,6 +75,7 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_PRESCRIPTION"), p);
         }
 
+        // Quản lý (Thêm/Sửa/Xóa) đơn thuốc (SP: USP_MANAGE_PRESCRIPTION)
         public void ManagePrescription(string act, string id, string med, string dos, DateTime? dt = null, string oldMed = null)
         {
             OracleParameter[] p = {
@@ -82,6 +89,7 @@ namespace QuanLyYTe.Repositories
             _dbProvider.ExecuteNonQuerySP(Sp("USP_MANAGE_PRESCRIPTION"), p);
         }
 
+        // Lấy danh sách bệnh nhân (SP: USP_GET_PATIENTS)
         public DataTable GetPatients(string s = "")
         {
             OracleParameter[] p = {
@@ -91,6 +99,7 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_PATIENTS"), p);
         }
 
+        // Cập nhật thông tin bệnh nhân (SP: USP_UPDATE_PATIENT)
         public void UpdatePatient(string id, string hist, string fam, string allergy)
         {
             OracleParameter[] p = {
@@ -102,12 +111,14 @@ namespace QuanLyYTe.Repositories
             _dbProvider.ExecuteNonQuerySP(Sp("USP_UPDATE_PATIENT"), p);
         }
 
+        // Lấy thông tin cá nhân của bác sĩ (SP: USP_GET_SELF_INFO)
         public DataTable GetSelf()
         {
             OracleParameter[] p = { new OracleParameter("p_c", OracleDbType.RefCursor, ParameterDirection.Output) };
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_SELF_INFO"), p);
         }
 
+        // Cập nhật thông tin cá nhân của bác sĩ (SP: USP_UPDATE_SELF_INFO)
         public void UpdateSelf(string home, string phone)
         {
             OracleParameter[] p = {
