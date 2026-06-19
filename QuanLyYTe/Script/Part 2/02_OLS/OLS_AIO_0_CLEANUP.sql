@@ -31,12 +31,22 @@ PROMPT =========================================================================
 PROMPT 2. Dropping Target Table & Procedure
 PROMPT ==============================================================================
 BEGIN
-    EXECUTE IMMEDIATE 'DROP TABLE hospital.thongbao CASCADE CONSTRAINTS';
-    DBMS_OUTPUT.PUT_LINE('[OK] Table hospital.thongbao dropped.');
+    EXECUTE IMMEDIATE 'DROP TABLE hospital.notification CASCADE CONSTRAINTS';
+    DBMS_OUTPUT.PUT_LINE('[OK] Table hospital.notification dropped.');
 EXCEPTION 
     WHEN OTHERS THEN 
         IF SQLCODE != -942 THEN DBMS_OUTPUT.PUT_LINE('[ERROR] ' || SQLERRM); 
-        ELSE DBMS_OUTPUT.PUT_LINE('[SKIP] Table hospital.thongbao not found.'); END IF;
+        ELSE DBMS_OUTPUT.PUT_LINE('[SKIP] Table hospital.notification not found.'); END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE hospital.seq_notification_id';
+    DBMS_OUTPUT.PUT_LINE('[OK] Sequence hospital.seq_notification_id dropped.');
+EXCEPTION 
+    WHEN OTHERS THEN 
+        IF SQLCODE != -2289 THEN DBMS_OUTPUT.PUT_LINE('[ERROR] ' || SQLERRM); 
+        ELSE DBMS_OUTPUT.PUT_LINE('[SKIP] Sequence hospital.seq_notification_id not found.'); END IF;
 END;
 /
 
@@ -47,6 +57,16 @@ EXCEPTION
     WHEN OTHERS THEN 
         IF SQLCODE != -4043 THEN DBMS_OUTPUT.PUT_LINE('[ERROR] ' || SQLERRM); 
         ELSE DBMS_OUTPUT.PUT_LINE('[SKIP] Procedure hospital.USP_GET_NOTIFICATIONS not found.'); END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP PROCEDURE hospital.USP_ADD_NOTIFICATION';
+    DBMS_OUTPUT.PUT_LINE('[OK] Procedure hospital.USP_ADD_NOTIFICATION dropped.');
+EXCEPTION 
+    WHEN OTHERS THEN 
+        IF SQLCODE != -4043 THEN DBMS_OUTPUT.PUT_LINE('[ERROR] ' || SQLERRM); 
+        ELSE DBMS_OUTPUT.PUT_LINE('[SKIP] Procedure hospital.USP_ADD_NOTIFICATION not found.'); END IF;
 END;
 /
 
