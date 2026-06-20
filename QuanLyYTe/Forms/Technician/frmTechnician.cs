@@ -61,6 +61,16 @@ namespace QuanLyYTe.Forms.Technician
             txtSearchRecord.TextChanged += (s, ev) => FilterServices();
             LoadServices();
             try { LoadPersonalInfo(); } catch { /* ignore if not available */ }
+
+            // Add OLS Notification Tab
+            TabPage tabOls = new TabPage("Thông báo OLS");
+            QuanLyYTe.Forms.Common.frmNotifications frm = new QuanLyYTe.Forms.Common.frmNotifications();
+            frm.TopLevel = false;
+            frm.FormBorderStyle = FormBorderStyle.None;
+            frm.Dock = DockStyle.Fill;
+            tabOls.Controls.Add(frm);
+            tabControlMain.TabPages.Add(tabOls);
+            frm.Show();
         }
 
         // ─────────────────────────────────────────────────────────────

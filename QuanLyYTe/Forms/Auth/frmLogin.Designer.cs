@@ -1,4 +1,4 @@
-﻿namespace QuanLyYTe.Forms
+namespace QuanLyYTe.Forms
 {
     partial class frmLogin
     {
@@ -79,7 +79,7 @@
             lblVersion.Name = "lblVersion";
             lblVersion.Size = new Size(101, 17);
             lblVersion.TabIndex = 0;
-            lblVersion.Text = "Phân Hệ 1 · v1.0";
+            lblVersion.Text = "v1.1";
             // 
             // pnlLogo
             // 
@@ -102,18 +102,18 @@
             lblAppSub.Name = "lblAppSub";
             lblAppSub.Size = new Size(164, 17);
             lblAppSub.TabIndex = 0;
-            lblAppSub.Text = "DBA Management Console";
+            lblAppSub.Text = "Hệ thống quản lý bệnh viện";
             // 
             // lblAppTitle
             // 
             lblAppTitle.AutoSize = true;
-            lblAppTitle.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            lblAppTitle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
             lblAppTitle.ForeColor = Color.FromArgb(255, 140, 40);
             lblAppTitle.Location = new Point(23, 24);
             lblAppTitle.Name = "lblAppTitle";
             lblAppTitle.Size = new Size(163, 32);
             lblAppTitle.TabIndex = 1;
-            lblAppTitle.Text = "HospitalAdmin";
+            lblAppTitle.Text = "Hospital Management";
             // 
             // pnlMain
             // 
@@ -302,7 +302,7 @@
             MinimumSize = new Size(683, 571);
             Name = "LoginForm";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "HospitalAdmin — Đăng nhập";
+            Text = "Hospital Management — Đăng nhập";
             Load += new System.EventHandler(this.LoginForm_Load);
             pnlSidebar.ResumeLayout(false);
             pnlVersion.ResumeLayout(false);

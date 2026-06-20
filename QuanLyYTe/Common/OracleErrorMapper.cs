@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Oracle.ManagedDataAccess.Client;
 
 namespace QuanLyYTe.Common
@@ -7,6 +7,9 @@ namespace QuanLyYTe.Common
     {
         public static string GetUserMessage(Exception ex)
         {
+            // Ghi log lỗi thật ra file để dễ debug
+            Logger.LogError(ex);
+
             OracleException oracleException = ex as OracleException ?? ex.InnerException as OracleException;
 
             if (oracleException != null)

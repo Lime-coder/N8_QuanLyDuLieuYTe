@@ -5,20 +5,15 @@ using QuanLyYTe.DataProvider;
 
 namespace QuanLyYTe.Repositories
 {
-    public class PatientRepository
+    public class PatientRepository : BaseRepository
     {
-        private readonly OracleDbProvider _dbProvider = new OracleDbProvider();
-
-        private string Sp(string name)
+        public PatientRepository()
         {
-            string owner = ConfigurationManager.AppSettings["ProcedureOwner"];
-            return string.IsNullOrEmpty(owner) ? name : $"{owner}.{name}";
+            _spOwner = "hospital";
         }
 
-        /// <summary>
-        /// Lấy thông tin cá nhân bệnh nhân đang đăng nhập
-        /// Sử dụng SP: USP_GET_PATIENT_PROFILE
-        /// </summary>
+        // Lấy thông tin cá nhân bệnh nhân đang đăng nhập
+        // Sử dụng SP: USP_GET_PATIENT_PROFILE
         public DataTable GetProfile()
         {
             OracleParameter[] p =
@@ -28,11 +23,8 @@ namespace QuanLyYTe.Repositories
             };
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_PATIENT_PROFILE"), p);
         }
-
-        /// <summary>
-        /// Lấy danh sách hồ sơ bệnh án của bệnh nhân đang đăng nhập
-        /// Sử dụng SP: USP_GET_PATIENT_RECORDS
-        /// </summary>
+        // Lấy danh sách hồ sơ bệnh án của bệnh nhân đang đăng nhập
+        // Sử dụng SP: USP_GET_PATIENT_RECORDS
         public DataTable GetMedicalRecords()
         {
             OracleParameter[] p =
@@ -42,11 +34,8 @@ namespace QuanLyYTe.Repositories
             };
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_PATIENT_RECORDS"), p);
         }
-
-        /// <summary>
-        /// Lấy danh sách đơn thuốc theo mã hồ sơ bệnh án
-        /// Sử dụng SP: USP_GET_PATIENT_PRESCRIPTIONS
-        /// </summary>
+        // Lấy danh sách đơn thuốc theo mã hồ sơ bệnh án
+        // Sử dụng SP: USP_GET_PATIENT_PRESCRIPTIONS
         public DataTable GetPrescriptions(string recordId)
         {
             OracleParameter[] p =
@@ -57,11 +46,8 @@ namespace QuanLyYTe.Repositories
             };
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_PATIENT_PRESCRIPTIONS"), p);
         }
-
-        /// <summary>
-        /// Lấy danh sách dịch vụ y tế theo mã hồ sơ bệnh án
-        /// Sử dụng SP: USP_GET_PATIENT_SERVICES
-        /// </summary>
+        // Lấy danh sách dịch vụ y tế theo mã hồ sơ bệnh án
+        // Sử dụng SP: USP_GET_PATIENT_SERVICES
         public DataTable GetServices(string recordId)
         {
             OracleParameter[] p =
@@ -72,11 +58,8 @@ namespace QuanLyYTe.Repositories
             };
             return _dbProvider.ExecuteQuerySP(Sp("USP_GET_PATIENT_SERVICES"), p);
         }
-
-        /// <summary>
-        /// Cập nhật thông tin liên lạc và tiền sử bệnh lý của bệnh nhân đang đăng nhập
-        /// Sử dụng SP: USP_UPDATE_PATIENT_CONTACT
-        /// </summary>
+        // Cập nhật thông tin liên lạc và tiền sử bệnh lý của bệnh nhân đang đăng nhập
+        // Sử dụng SP: USP_UPDATE_PATIENT_CONTACT
         public void UpdateContact(string houseNo, string street, string district, string cityProvince, string medHistory, string famHistory, string allergies)
         {
             OracleParameter[] p =

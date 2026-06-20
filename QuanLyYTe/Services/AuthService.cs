@@ -28,18 +28,22 @@ namespace QuanLyYTe.Services
                 }
                 
                 AppSession.CurrentUsername = username;
-                string role = GetSessionRole();
+                string role = null;
+
+                role = GetSessionRole();
                 AppSession.CurrentUserRole = role;
 
-                if (role == null)
-                    throw new Exception("Tài khoản này chưa được gán vai trò (Role) nào trong hệ thống.");
+                    if (role == null)
+                    {
+                        throw new Exception("Tài khoản này chưa được gán vai trò (Role) nào trong hệ thống.");
+                    }
 
-                if (role != "RL_DBA")
-                {
-                    AppSession.CurrentUserId = _authRepo.GetUserId(username, role);
-                    if (AppSession.CurrentUserId == null)
-                        throw new Exception("Không tìm thấy dữ liệu người dùng liên kết với tài khoản này.");
-                }
+                    if (role != "RL_DBA")
+                    {
+                        AppSession.CurrentUserId = _authRepo.GetUserId(username, role);
+                        if (AppSession.CurrentUserId == null)
+                            throw new Exception("Không tìm thấy dữ liệu người dùng liên kết với tài khoản này.");
+                    }
 
                 return true;
             }

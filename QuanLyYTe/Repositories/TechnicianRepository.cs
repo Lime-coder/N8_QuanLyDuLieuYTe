@@ -6,16 +6,9 @@ using QuanLyYTe.DataProvider;
 
 namespace QuanLyYTe.Repositories
 {
-    public class TechnicianRepository
+    public class TechnicianRepository : BaseRepository
     {
-        private readonly OracleDbProvider _dbProvider = new OracleDbProvider();
-
-        private string Sp(string name)
-        {
-            string owner = ConfigurationManager.AppSettings["ProcedureOwner"];
-            return string.IsNullOrEmpty(owner) ? name : $"{owner}.{name}";
-        }
-
+        // Lấy danh sách dịch vụ được phân công (SP: GET_TECHNICIAN_SERVICE_RECORDS)
         public DataTable GetAssignedServiceRecords()
         {
             OracleParameter[] parameters =
@@ -29,6 +22,7 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuerySP(Sp("GET_TECHNICIAN_SERVICE_RECORDS"), parameters);
         }
 
+        // Lấy thông tin cá nhân của kỹ thuật viên (SP: GET_TECHNICIAN_PERSONAL_INFO)
         public DataTable GetPersonalInfo()
         {
             OracleParameter[] parameters =
@@ -39,6 +33,7 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuerySP(Sp("GET_TECHNICIAN_PERSONAL_INFO"), parameters);
         }
 
+        // Cập nhật thông tin cá nhân (SP: UPDATE_TECHNICIAN_PERSONAL_INFO)
         public void UpdatePersonalInfo(string phone, string hometown)
         {
             OracleParameter[] parameters =
@@ -50,6 +45,7 @@ namespace QuanLyYTe.Repositories
             _dbProvider.ExecuteNonQuerySP(Sp("UPDATE_TECHNICIAN_PERSONAL_INFO"), parameters);
         }
 
+        // Cập nhật kết quả dịch vụ (SP: UPDATE_TECHNICIAN_SERVICE_RESULT)
         public void UpdateServiceResult(string recordId, string serviceType, DateTime serviceDate, string serviceResult)
         {
             OracleParameter[] parameters =

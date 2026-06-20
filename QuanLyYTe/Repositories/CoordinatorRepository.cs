@@ -5,9 +5,8 @@ using QuanLyYTe.DataProvider;
 
 namespace QuanLyYTe.Repositories
 {
-    public class CoordinatorRepository
+    public class CoordinatorRepository : BaseRepository
     {
-        private readonly OracleDbProvider _dbProvider = new OracleDbProvider();
         private const string AssignmentContext = "COORD_ASSIGN";
 
         private DataTable ExecuteAssignmentSP(string spName, OracleParameter[] parameters = null)
@@ -34,9 +33,12 @@ namespace QuanLyYTe.Repositories
             return dt;
         }
 
+        // Lấy danh sách bác sĩ
         public DataTable GetDoctors() => GetDoctorsForAssignment();
+        // Lấy danh sách kỹ thuật viên
         public DataTable GetTechnicians() => GetTechniciansForAssignment();
 
+        // Lấy danh sách bác sĩ để phân công (SP: SP_COORD_GET_DOCTORS)
         public DataTable GetDoctorsForAssignment()
         {
             var parameters = new OracleParameter[] {
@@ -45,6 +47,7 @@ namespace QuanLyYTe.Repositories
             return ExecuteAssignmentSP("hospital.SP_COORD_GET_DOCTORS", parameters);
         }
 
+        // Lấy danh sách bác sĩ theo khoa (SP: SP_COORD_GET_DOC_DEPT)
         public DataTable GetDoctorsByDepartment(string deptId)
         {
             var parameters = new OracleParameter[] {
@@ -54,6 +57,7 @@ namespace QuanLyYTe.Repositories
             return ExecuteAssignmentSP("hospital.SP_COORD_GET_DOC_DEPT", parameters);
         }
 
+        // Lấy danh sách kỹ thuật viên để phân công (SP: SP_COORD_GET_TECHS)
         public DataTable GetTechniciansForAssignment()
         {
             var parameters = new OracleParameter[] {
@@ -62,6 +66,7 @@ namespace QuanLyYTe.Repositories
             return ExecuteAssignmentSP("hospital.SP_COORD_GET_TECHS", parameters);
         }
 
+        // Lấy danh sách các khoa (SP: SP_COORD_GET_DEPTS)
         public DataTable GetDepartments()
         {
             var parameters = new OracleParameter[] {
@@ -70,6 +75,7 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_DEPTS", parameters);
         }
 
+        // Cập nhật phân công hồ sơ bệnh án (SP: SP_COORD_UPD_MED_REC)
         public void UpdateMedicalRecord(string recordId, string doctorId, string deptId)
         {
             var parameters = new OracleParameter[] {
@@ -80,6 +86,7 @@ namespace QuanLyYTe.Repositories
             _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_UPD_MED_REC", parameters);
         }
 
+        // Cập nhật phân công dịch vụ (SP: SP_COORD_UPD_SRV_REC)
         public void UpdateServiceRecord(string recordId, string technicianId)
         {
             var parameters = new OracleParameter[] {
@@ -89,6 +96,7 @@ namespace QuanLyYTe.Repositories
             _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_UPD_SRV_REC", parameters);
         }
 
+        // Lấy thông tin cá nhân của nhân viên điều phối (SP: SP_COORD_GET_SELF)
         public DataTable GetSelfStaffInfo()
         {
             var parameters = new OracleParameter[] {
@@ -97,6 +105,7 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_SELF", parameters);
         }
 
+        // Cập nhật thông tin cá nhân (SP: SP_COORD_UPD_SELF)
         public void UpdateSelfStaffInfo(string phone, string hometown)
         {
             var parameters = new OracleParameter[] {
@@ -115,6 +124,7 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_PATS", parameters);
         }
 
+        // Tìm kiếm bệnh nhân theo từ khóa (SP: SP_COORD_SEARCH_PATS)
         public DataTable SearchPatients(string keyword)
         {
             var parameters = new OracleParameter[] {
@@ -157,6 +167,7 @@ namespace QuanLyYTe.Repositories
             return Convert.ToInt32(parameters[2].Value.ToString()) > 0;
         }
 
+        // Thêm mới bệnh nhân (SP: SP_COORD_INS_PAT)
         public void InsertPatient(string patientId, string fullName, string gender, DateTime birthDate, string idCard, string houseNo, string street, string district, string cityProvince, string medicalHistory, string familyMedicalHistory, string drugAllergies, string usernameDb)
         {
             if (PatientIdExists(patientId)) throw new InvalidOperationException("Mã bệnh nhân đã tồn tại.");
@@ -181,6 +192,7 @@ namespace QuanLyYTe.Repositories
             _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_INS_PAT", parameters);
         }
 
+        // Cập nhật thông tin bệnh nhân (SP: SP_COORD_UPD_PAT)
         public void UpdatePatient(string patientId, string fullName, string gender, DateTime birthDate, string idCard, string houseNo, string street, string district, string cityProvince, string medicalHistory, string familyMedicalHistory, string drugAllergies, string usernameDb)
         {
             if (!PatientIdExists(patientId)) throw new InvalidOperationException("Không tìm thấy bệnh nhân.");
@@ -214,6 +226,7 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_ALL_MED", parameters);
         }
 
+        // Thêm mới hồ sơ bệnh án (SP: SP_COORD_INS_MED)
         public void InsertMedicalRecord(string recordId, string patientId, DateTime recordDate, string doctorId, string deptId)
         {
             var parameters = new OracleParameter[] {
@@ -226,6 +239,7 @@ namespace QuanLyYTe.Repositories
             _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_INS_MED", parameters);
         }
 
+        // Cập nhật phân công bác sĩ cho HSBA (SP: SP_COORD_UPD_MED_REC)
         public void UpdateCoordinatorFields(string recordId, string doctorId, string deptId)
         {
             var parameters = new OracleParameter[] {
@@ -245,6 +259,7 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_SRV_ASS", parameters);
         }
 
+        // Phân công kỹ thuật viên cho dịch vụ (SP: SP_COORD_UPD_TECH)
         public void UpdateTechnician(string recordId, string serviceType, DateTime serviceDate, string technicianId)
         {
             var parameters = new OracleParameter[] {

@@ -47,10 +47,23 @@ namespace QuanLyYTe.Forms
                 Form mainForm = RoleRouter.Resolve(user);
                 mainForm.Show();
                 this.Hide();
-                mainForm.FormClosed += (s, args) => this.Close();
+                mainForm.FormClosed += (s, args) => {
+                    if (string.IsNullOrEmpty(QuanLyYTe.Common.AppSession.CurrentUsername))
+                    {
+                        this.Show();
+                        txtPassword.Clear();
+                        btnConnect.Enabled = true;
+                        btnConnect.Text = "Kết nối";
+                    }
+                    else
+                    {
+                        this.Close();
+                    }
+                };
             }
             catch (Exception ex)
             {
+                MessageBox.Show(ex.ToString(), "Lỗi chi tiết", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 ShowError(ex.Message);
             }
             finally

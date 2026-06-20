@@ -6,66 +6,40 @@ using System.Globalization;
 
 namespace QuanLyYTe.Forms.Doctor
 {
-    public class frmMedicalRecordManagement : frmDoctorBase
+    public partial class frmMedicalRecordManagement : frmDoctorBase
     {
-        private DataGridView dgvSub = new DataGridView { 
-            Dock = DockStyle.Fill, 
-            BackgroundColor = Color.White, 
-            BorderStyle = BorderStyle.None, 
-            AllowUserToAddRows = false, 
-            ReadOnly = true, 
-            SelectionMode = DataGridViewSelectionMode.FullRowSelect 
-        };
-
-        private Label lblSubTitle = new Label { 
-            Text = "▶ CHI TIẾT DỊCH VỤ CẬN LÂM SÀNG", 
-            Dock = DockStyle.Left, 
-            Width = 300, 
-            Font = new Font("Segoe UI", 9, FontStyle.Bold), 
-            ForeColor = Color.FromArgb(0, 120, 215), 
-            TextAlign = ContentAlignment.MiddleLeft, 
-            Padding = new Padding(10, 0, 0, 0) 
-        };
-
         public frmMedicalRecordManagement()
         {
-            this.Controls.Remove(Dgv);
-            SplitContainer split = new SplitContainer { 
-                Dock = DockStyle.Fill, 
-                Orientation = Orientation.Horizontal, 
-                SplitterDistance = 450, 
-                SplitterWidth = 5, 
-                BackColor = Color.FromArgb(200, 200, 200) 
-            };
+            InitializeComponent();
+            
             split.Panel1.Controls.Add(Dgv);
+            
+            // Use explicit Anchors to guarantee no docking overlaps with pnlSearch
+            split.Dock = DockStyle.None;
+            split.Location = new Point(0, pnlSearch.Height);
+            split.Size = new Size(this.ClientSize.Width, this.ClientSize.Height - pnlSearch.Height);
+            split.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
 
-            Panel pnlSubAction = new Panel { 
-                Dock = DockStyle.Top, 
-                Height = 40, 
-                BackColor = Color.FromArgb(235, 235, 235) 
-            };
-
-            Button btnSubAdd = CreateBtn("Thêm", Color.DodgerBlue, 310); 
-            btnSubAdd.Size = new Size(80, 30); 
+            btnSubAdd = CreateBtn("Thêm", Color.DodgerBlue, 310);
+            btnSubAdd.Size = new Size(80, 30);
             btnSubAdd.Location = new Point(310, 5);
+            btnSubAdd.Click += btnSubAdd_Click;
 
-            Button btnSubDel = CreateBtn("Xóa", Color.Crimson, 400); 
-            btnSubDel.Size = new Size(80, 30); 
+            btnSubDel = CreateBtn("Xóa", Color.Crimson, 400);
+            btnSubDel.Size = new Size(80, 30);
             btnSubDel.Location = new Point(400, 5);
+            btnSubDel.Click += btnSubDel_Click;
 
-            btnSubAdd.Click += (s, e) => AddSubService();
-            btnSubDel.Click += (s, e) => DeleteSubService();
-
-            pnlSubAction.Controls.AddRange(new Control[] { lblSubTitle, btnSubAdd, btnSubDel });
-            split.Panel2.Controls.AddRange(new Control[] { dgvSub, pnlSubAction });
-
-            this.Controls.Add(split);
-            split.BringToFront();
+            pnlSubAction.Controls.AddRange(new Control[] { btnSubAdd, btnSubDel });
 
             LoadD();
             btnA.Visible = btnD.Visible = false;
-            Dgv.SelectionChanged += (s, e) => LoadSubData();
+            Dgv.SelectionChanged += Dgv_SelectionChanged;
         }
+
+        private void btnSubAdd_Click(object sender, EventArgs e) => AddSubService();
+        private void btnSubDel_Click(object sender, EventArgs e) => DeleteSubService();
+        private void Dgv_SelectionChanged(object sender, EventArgs e) => LoadSubData();
 
         private void LoadSubData()
         {

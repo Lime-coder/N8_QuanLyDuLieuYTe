@@ -1,8 +1,11 @@
 -- ==============================================================================
--- Cleanup_All_Roles.sql
--- Purpose: One-shot cleanup for Doctor + Coordinator + Patient + Technician setup.
---
--- Run as: HOSPITAL_DBA
+-- AIO_00_Cleanup_SYSDBA.sql
+-- Run as: SYS AS SYSDBA
+-- Container: PDB_QLYT (unless specified otherwise)
+-- ==============================================================================
+
+-- ==============================================================================
+-- Source: 01_Combined_RQ1\Cleanup_All_Roles.sql
 -- ==============================================================================
 
 -- ==============================================================================
@@ -316,10 +319,10 @@ WHERE object_owner = 'HOSPITAL'
   )
 ORDER BY object_name, policy_name;
 
-SELECT owner, table_name, privilege, grantee
+SELECT table_schema as owner, table_name, privilege, grantee
 FROM all_tab_privs
 WHERE grantee = 'RL_DOCTOR'
-  AND owner IN ('HOSPITAL', 'HOSPITAL_DBA')
+  AND table_schema IN ('HOSPITAL', 'HOSPITAL_DBA')
   AND (
         table_name IN (
             'PATIENT',
@@ -736,3 +739,165 @@ PROMPT =========================================================================
 PROMPT ==============================================================================
 PROMPT DONE: Cleanup_All_Roles.sql finished
 PROMPT ==============================================================================
+
+
+
+-- ==============================================================================
+-- Source: 02_OLS\OLS_AIO_0_CLEANUP.sql
+-- ==============================================================================
+
+-- ==============================================================================
+-- File: OLS_AIO_0_CLEANUP.sql
+-- Run as: HOSPITAL_DBA
+-- Connect to: PDB_QLYT
+-- Purpose: Surgically tear down the OLS Requirement 2 environment.
+-- ==============================================================================
+
+ALTER SESSION SET CURRENT_SCHEMA = hospital;
+-- CRITICAL: Ensure LBAC_DBA and DROP USER roles are active for the cleanup
+SET ROLE ALL; 
+-- CRITICAL: Turn off substitution prompts for ampersands (&)
+SET DEFINE OFF; 
+SET SERVEROUTPUT ON;
+
+PROMPT ==============================================================================
+PROMPT 1. Dropping OLS Policy (Removes Levels, Compartments, Groups, and Labels)
+PROMPT ==============================================================================
+BEGIN
+    SA_SYSDBA.DROP_POLICY(
+        policy_name => 'HOSP_OLS_POL',
+        drop_column => TRUE
+    );
+    DBMS_OUTPUT.PUT_LINE('[OK] Policy HOSP_OLS_POL dropped successfully.');
+EXCEPTION 
+    WHEN OTHERS THEN 
+        DBMS_OUTPUT.PUT_LINE('[SKIP] Policy HOSP_OLS_POL not found or already dropped.');
+END;
+/
+
+PROMPT ==============================================================================
+PROMPT 2. Dropping Target Table & Procedure
+PROMPT ==============================================================================
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE hospital.notification CASCADE CONSTRAINTS';
+    DBMS_OUTPUT.PUT_LINE('[OK] Table hospital.notification dropped.');
+EXCEPTION 
+    WHEN OTHERS THEN 
+        IF SQLCODE != -942 THEN DBMS_OUTPUT.PUT_LINE('[ERROR] ' || SQLERRM); 
+        ELSE DBMS_OUTPUT.PUT_LINE('[SKIP] Table hospital.notification not found.'); END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP SEQUENCE hospital.seq_notification_id';
+    DBMS_OUTPUT.PUT_LINE('[OK] Sequence hospital.seq_notification_id dropped.');
+EXCEPTION 
+    WHEN OTHERS THEN 
+        IF SQLCODE != -2289 THEN DBMS_OUTPUT.PUT_LINE('[ERROR] ' || SQLERRM); 
+        ELSE DBMS_OUTPUT.PUT_LINE('[SKIP] Sequence hospital.seq_notification_id not found.'); END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP PROCEDURE hospital.USP_GET_NOTIFICATIONS';
+    DBMS_OUTPUT.PUT_LINE('[OK] Procedure hospital.USP_GET_NOTIFICATIONS dropped.');
+EXCEPTION 
+    WHEN OTHERS THEN 
+        IF SQLCODE != -4043 THEN DBMS_OUTPUT.PUT_LINE('[ERROR] ' || SQLERRM); 
+        ELSE DBMS_OUTPUT.PUT_LINE('[SKIP] Procedure hospital.USP_GET_NOTIFICATIONS not found.'); END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP PROCEDURE hospital.USP_ADD_NOTIFICATION';
+    DBMS_OUTPUT.PUT_LINE('[OK] Procedure hospital.USP_ADD_NOTIFICATION dropped.');
+EXCEPTION 
+    WHEN OTHERS THEN 
+        IF SQLCODE != -4043 THEN DBMS_OUTPUT.PUT_LINE('[ERROR] ' || SQLERRM); 
+        ELSE DBMS_OUTPUT.PUT_LINE('[SKIP] Procedure hospital.USP_ADD_NOTIFICATION not found.'); END IF;
+END;
+/
+
+PROMPT ==============================================================================
+PROMPT 3. Dropping OLS Test Users (U1 - U8)
+PROMPT ==============================================================================
+DECLARE
+BEGIN
+    FOR i IN 1..8 LOOP
+        BEGIN
+            EXECUTE IMMEDIATE 'DROP USER U' || i || ' CASCADE';
+            DBMS_OUTPUT.PUT_LINE('[OK] User U' || i || ' dropped.');
+        EXCEPTION 
+            WHEN OTHERS THEN 
+                IF SQLCODE != -1918 THEN DBMS_OUTPUT.PUT_LINE('[ERROR] U' || i || ': ' || SQLERRM); 
+                ELSE DBMS_OUTPUT.PUT_LINE('[SKIP] User U' || i || ' not found.'); END IF;
+        END;
+    END LOOP;
+END;
+/
+
+PROMPT ==============================================================================
+PROMPT DONE: OLS Environment successfully cleaned up.
+PROMPT ==============================================================================
+
+
+-- ==============================================================================
+-- ADDITIONAL CLEANUP FOR AUDIT, BACKUP, AND ROLES
+-- ==============================================================================
+PROMPT ==============================================================================
+PROMPT Cleaning up Audit Policies
+PROMPT ==============================================================================
+BEGIN
+    -- Standard Audit
+    EXECUTE IMMEDIATE 'NOAUDIT ALL ON hospital.staff';
+    EXECUTE IMMEDIATE 'NOAUDIT ALL ON hospital.patient';
+    EXECUTE IMMEDIATE 'NOAUDIT ALL ON hospital.VW_COORD_DOCTORS';
+    EXECUTE IMMEDIATE 'NOAUDIT ALL ON hospital.USP_UPDATE_MEDICAL_RECORD';
+    EXECUTE IMMEDIATE 'NOAUDIT ALL ON hospital_dba.F_GET_DOCTOR_STATS';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+
+BEGIN
+    -- FGA
+    DBMS_FGA.DROP_POLICY('HOSPITAL', 'PRESCRIPTION', 'FGA_PRESCRIPTION_COLS');
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN
+    DBMS_FGA.DROP_POLICY('HOSPITAL', 'MEDICAL_RECORD', 'FGA_MEDICAL_RECORD_COLS');
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+
+BEGIN
+    -- Unified Auditing
+    EXECUTE IMMEDIATE 'NOAUDIT POLICY AUD_ILLEGAL_MR_POLICY';
+    EXECUTE IMMEDIATE 'DROP AUDIT POLICY AUD_ILLEGAL_MR_POLICY';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN
+    EXECUTE IMMEDIATE 'NOAUDIT POLICY AUD_ILLEGAL_SR_POLICY';
+    EXECUTE IMMEDIATE 'DROP AUDIT POLICY AUD_ILLEGAL_SR_POLICY';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+
+BEGIN
+    -- Audit Stored Procedures
+    EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_GET_REQ32_LOGS';
+    EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_GET_REQ33A_LOGS';
+    EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_GET_REQ33BC_LOGS';
+    EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_GET_REQ33D_LOGS';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+
+PROMPT ==============================================================================
+PROMPT Cleaning up Backup Jobs
+PROMPT ==============================================================================
+BEGIN
+    DBMS_SCHEDULER.DROP_JOB(job_name => 'HOSPITAL_DBA.JOB_BACKUP_HOSPITAL');
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE hospital_dba.BACKUP_LOGS';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+
+PROMPT Cleanup of Part 2 specific objects completed.

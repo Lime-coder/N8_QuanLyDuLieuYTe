@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using QuanLyYTe.Services;
 
 namespace QuanLyYTe.Forms.DBA
@@ -9,39 +9,11 @@ namespace QuanLyYTe.Forms.DBA
         Edit
     }
 
-    public class frmEditUser : Form
+    public partial class frmEditUser : Form
     {
         private readonly EditUserDialogMode _mode;
         private readonly bool _isPatient;
         private readonly SecurityAdminService _service = new SecurityAdminService();
-
-        // Common Fields
-        private TextBox txtUsername = null!;
-        private TextBox txtPassword = null!;
-        private TextBox txtConfirmPassword = null!;
-        private TextBox txtFullName = null!;
-        private ComboBox cmbGender = null!;
-        private DateTimePicker dtpBirthdate = null!;
-        private TextBox txtIdCard = null!;
-
-        // Staff Fields
-        private TextBox txtPhone = null!;
-        private TextBox txtHometown = null!;
-        private ComboBox cmbRole = null!;
-        private ComboBox cmbDept = null!;
-        private Label lblDept = null!;
-
-        // Patient Fields
-        private TextBox txtHouseNo = null!;
-        private TextBox txtStreet = null!;
-        private TextBox txtDistrict = null!;
-        private TextBox txtCityProvince = null!;
-        private TextBox txtMedicalHistory = null!;
-        private TextBox txtFamilyMedicalHistory = null!;
-        private TextBox txtDrugAllergies = null!;
-
-        private Button btnOk = null!;
-        private Button btnCancel = null!;
 
         public string Username => txtUsername.Text;
         public string Password => txtPassword.Text;
@@ -70,6 +42,14 @@ namespace QuanLyYTe.Forms.DBA
             _mode = mode;
             _isPatient = isPatient;
             InitializeComponent();
+
+            btnOk.Click += btnOk_Click;
+            if (!_isPatient)
+            {
+                cmbRole.SelectedIndexChanged += cmbRole_SelectedIndexChanged;
+            }
+
+            ConfigureFormForMode();
             LoadData();
 
             if (!string.IsNullOrWhiteSpace(presetUsername))
@@ -87,6 +67,60 @@ namespace QuanLyYTe.Forms.DBA
             {
                 Text = "Tạo " + (_isPatient ? "bệnh nhân" : "nhân viên");
             }
+        }
+        // Shows/hides patient vs staff controls and adjusts form size accordingly.
+        // Called after InitializeComponent to configure the form based on _isPatient.
+        private void ConfigureFormForMode()
+        {
+            int labelX = 20, inputX = 150, inputWidth = 250;
+
+            // Hide/show patient-specific controls
+            lblHouseNo.Visible = _isPatient;
+            txtHouseNo.Visible = _isPatient;
+            lblStreet.Visible = _isPatient;
+            txtStreet.Visible = _isPatient;
+            lblDistrict.Visible = _isPatient;
+            txtDistrict.Visible = _isPatient;
+            lblCity.Visible = _isPatient;
+            txtCityProvince.Visible = _isPatient;
+            lblMedHist.Visible = _isPatient;
+            txtMedicalHistory.Visible = _isPatient;
+            lblFamHist.Visible = _isPatient;
+            txtFamilyMedicalHistory.Visible = _isPatient;
+            lblAllergy.Visible = _isPatient;
+            txtDrugAllergies.Visible = _isPatient;
+
+            // Hide/show staff-specific controls
+            lblPhone.Visible = !_isPatient;
+            txtPhone.Visible = !_isPatient;
+            lblHometown.Visible = !_isPatient;
+            txtHometown.Visible = !_isPatient;
+            lblRole.Visible = !_isPatient;
+            cmbRole.Visible = !_isPatient;
+            lblDept.Visible = !_isPatient;
+            cmbDept.Visible = !_isPatient;
+
+            // Calculate the bottom Y based on which set of controls is visible
+            int bottomY;
+            if (_isPatient)
+            {
+                // Patient mode: last visible control is txtDrugAllergies
+                bottomY = txtDrugAllergies.Location.Y + txtDrugAllergies.Height;
+            }
+            else
+            {
+                // Staff mode: last visible control is cmbDept
+                bottomY = cmbDept.Location.Y + cmbDept.Height;
+            }
+
+            // Position buttons relative to visible content
+            btnOk.Location = new Point(inputX + inputWidth - 160, bottomY + 15);
+            btnCancel.Location = new Point(inputX + inputWidth - 75, bottomY + 15);
+
+            // Adjust form size
+            ClientSize = new Size(labelX + inputX + inputWidth + 20, bottomY + 60);
+
+            if (!_isPatient) UpdateDeptVisibility();
         }
 
         private void LoadData()
@@ -188,110 +222,17 @@ namespace QuanLyYTe.Forms.DBA
             }
         }
 
-        private void InitializeComponent()
-        {
-            SuspendLayout();
-
-            int labelX = 20, inputX = 150, startY = 20, spacing = 35, inputWidth = 250;
-
-            Label AddLabel(string text, int y) {
-                var l = new Label { Text = text, Location = new Point(labelX, y), AutoSize = true };
-                Controls.Add(l);
-                return l;
-            }
-
-            AddLabel("Tên đăng nhập:", startY);
-            txtUsername = new TextBox { Location = new Point(inputX, startY), Width = inputWidth };
-            
-            AddLabel("Mật khẩu:", startY += spacing);
-            txtPassword = new TextBox { Location = new Point(inputX, startY), Width = inputWidth, UseSystemPasswordChar = true };
-
-            AddLabel("Xác nhận MK:", startY += spacing);
-            txtConfirmPassword = new TextBox { Location = new Point(inputX, startY), Width = inputWidth, UseSystemPasswordChar = true };
-
-            AddLabel("Họ và tên:", startY += spacing);
-            txtFullName = new TextBox { Location = new Point(inputX, startY), Width = inputWidth };
-
-            AddLabel("Giới tính:", startY += spacing);
-            cmbGender = new ComboBox { Location = new Point(inputX, startY), Width = inputWidth, DropDownStyle = ComboBoxStyle.DropDownList };
-
-            AddLabel("Ngày sinh:", startY += spacing);
-            dtpBirthdate = new DateTimePicker { Location = new Point(inputX, startY), Width = inputWidth, Format = DateTimePickerFormat.Short };
-
-            AddLabel("CCCD:", startY += spacing);
-            txtIdCard = new TextBox { Location = new Point(inputX, startY), Width = inputWidth };
-
-            Controls.AddRange(new Control[] { txtUsername, txtPassword, txtConfirmPassword, txtFullName, cmbGender, dtpBirthdate, txtIdCard });
-
-            if (_isPatient)
-            {
-                AddLabel("Số nhà:", startY += spacing);
-                txtHouseNo = new TextBox { Location = new Point(inputX, startY), Width = inputWidth };
-
-                AddLabel("Tên đường:", startY += spacing);
-                txtStreet = new TextBox { Location = new Point(inputX, startY), Width = inputWidth };
-
-                AddLabel("Quận/Huyện:", startY += spacing);
-                txtDistrict = new TextBox { Location = new Point(inputX, startY), Width = inputWidth };
-
-                AddLabel("Tỉnh/Thành phố:", startY += spacing);
-                txtCityProvince = new TextBox { Location = new Point(inputX, startY), Width = inputWidth };
-
-                AddLabel("Tiền sử bệnh lý:", startY += spacing);
-                txtMedicalHistory = new TextBox { Location = new Point(inputX, startY), Width = inputWidth, Multiline = true, Height = 50 };
-                startY += 30; // Extra space for multiline
-
-                AddLabel("Bệnh lý gia đình:", startY += spacing);
-                txtFamilyMedicalHistory = new TextBox { Location = new Point(inputX, startY), Width = inputWidth, Multiline = true, Height = 50 };
-                startY += 30;
-
-                AddLabel("Dị ứng thuốc:", startY += spacing);
-                txtDrugAllergies = new TextBox { Location = new Point(inputX, startY), Width = inputWidth, Multiline = true, Height = 50 };
-                startY += 30;
-
-                Controls.AddRange(new Control[] { txtHouseNo, txtStreet, txtDistrict, txtCityProvince, txtMedicalHistory, txtFamilyMedicalHistory, txtDrugAllergies });
-            }
-            else
-            {
-                AddLabel("Số điện thoại:", startY += spacing);
-                txtPhone = new TextBox { Location = new Point(inputX, startY), Width = inputWidth };
-
-                AddLabel("Quê quán:", startY += spacing);
-                txtHometown = new TextBox { Location = new Point(inputX, startY), Width = inputWidth };
-
-                AddLabel("Vai trò:", startY += spacing);
-                cmbRole = new ComboBox { Location = new Point(inputX, startY), Width = inputWidth, DropDownStyle = ComboBoxStyle.DropDownList };
-                cmbRole.SelectedIndexChanged += (s, e) => UpdateDeptVisibility();
-
-                lblDept = AddLabel("Chuyên khoa:", startY += spacing);
-                cmbDept = new ComboBox { Location = new Point(inputX, startY), Width = inputWidth, DropDownStyle = ComboBoxStyle.DropDownList };
-
-                Controls.AddRange(new Control[] { txtPhone, txtHometown, cmbRole, cmbDept });
-            }
-
-            btnOk = new Button { Text = "Đồng ý", Location = new Point(inputX + inputWidth - 160, startY + 45), Size = new Size(75, 30) };
-            btnOk.Click += btnOk_Click;
-
-            btnCancel = new Button { Text = "Hủy", Location = new Point(inputX + inputWidth - 75, startY + 45), Size = new Size(75, 30), DialogResult = DialogResult.Cancel };
-
-            Controls.AddRange(new Control[] { btnOk, btnCancel });
-
-            ClientSize = new Size(labelX + inputX + inputWidth + 20, startY + 90);
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            StartPosition = FormStartPosition.CenterParent;
-            MaximizeBox = false;
-
-            if (!_isPatient) UpdateDeptVisibility();
-            
-            ResumeLayout(false);
-        }
-
         private void UpdateDeptVisibility()
         {
             if (_isPatient) return;
             bool isDoctor = Role == "RL_DOCTOR";
             lblDept.Visible = isDoctor;
             cmbDept.Visible = isDoctor;
+        }
+
+        private void cmbRole_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            UpdateDeptVisibility();
         }
 
         private void btnOk_Click(object? sender, EventArgs e)
@@ -324,4 +265,3 @@ namespace QuanLyYTe.Forms.DBA
         }
     }
 }
-

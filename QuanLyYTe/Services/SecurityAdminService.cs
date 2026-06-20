@@ -48,6 +48,18 @@ namespace QuanLyYTe.Services
             catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
         }
 
+        public string GetUserOlsLabel(string username)
+        {
+            try { return _service.GetUserOlsLabel(username); }
+            catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
+        }
+
+        public void SetUserOlsLabel(string username, string label)
+        {
+            try { _service.SetUserOlsLabel(username, label); }
+            catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
+        }
+
         // Get 5 standard audit contexts (Requirement 3.2)
         public DataTable GetStandardAudit()
         {

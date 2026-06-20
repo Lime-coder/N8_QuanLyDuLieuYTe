@@ -40,8 +40,17 @@ namespace QuanLyYTe.Forms.Coordinator
     	private DataGridView dgvPatients;
     
     	private Panel panel1;
+	private Panel pnlSearchAssignDoctor;
+	private TextBox txtSearchAssignDoctor;
+	private Button btnSearchAssignDoctor;
+	private Label lblSearchAssignDoctor;
+	private Panel pnlSearchAssignTech;
+	private TextBox txtSearchAssignTech;
+	private Button btnSearchAssignTech;
+	private Label lblSearchAssignTech;
     
     	private Button btnRefreshPatient;
+    	private Button btnLogout;
     
     	private Button btnSearchPatient;
     
@@ -55,7 +64,7 @@ namespace QuanLyYTe.Forms.Coordinator
     
     	private Label lblPatientId;
     
-    	private TextBox txtPatientGender;
+    	private ComboBox cmbPatientGender;
     
     	private Label lblPatientGender;
     
@@ -63,7 +72,7 @@ namespace QuanLyYTe.Forms.Coordinator
     
     	private Label lblPatientFullName;
     
-    	private TextBox txtPatientBirthDate;
+    	private DateTimePicker dtpPatientBirthDate;
     
     	private Label lblPatientBirthDate;
     
@@ -167,7 +176,7 @@ namespace QuanLyYTe.Forms.Coordinator
     
     	private Label label6;
     
-    	private TextBox txtAssignMRDate;
+    	private DateTimePicker dtpAssignMRDate;
     
     	private Label label8;
     
@@ -199,7 +208,7 @@ namespace QuanLyYTe.Forms.Coordinator
     
     	private Label label15;
     
-    	private TextBox txtAssignSRDate;
+    	private DateTimePicker dtpAssignSRDate;
     
     	private Label label13;
     
@@ -238,8 +247,87 @@ namespace QuanLyYTe.Forms.Coordinator
     	private TextBox txtSelfSpecialty;
     
     	private Label label18;
+    	
+    	private Button btnRefreshAssignDoctor;
+    	
+    	private Button btnRefreshAssignTech;
     
-    	public frmCoordinator()
+    	private TextBox txtSelfGender;
+    	private Label lblSelfGender;
+    	private DateTimePicker dtpSelfBirthDate;
+    	private Label lblSelfBirthDate;
+    	private TextBox txtSelfIdCard;
+    	private Label lblSelfIdCard;
+    
+    	
+    private void btnSearchAssignDoctor_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            dtMedicalRecords = _coordinatorService.GetAllMedicalRecords();
+            if (dtMedicalRecords != null)
+            {
+                string keyword = txtSearchAssignDoctor.Text.Trim();
+                if (string.IsNullOrEmpty(keyword))
+                {
+                    dtMedicalRecords.DefaultView.RowFilter = "";
+                }
+                else
+                {
+                    dtMedicalRecords.DefaultView.RowFilter = $"RECORD_ID LIKE '%{keyword}%' OR PATIENT_ID LIKE '%{keyword}%'";
+                }
+                dgvMedicalRecords.DataSource = null;
+                dgvMedicalRecords.DataSource = dtMedicalRecords;
+                FormatMedicalRecordsGrid();
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex);
+        }
+    }
+
+    private void btnSearchAssignTech_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            dtServiceRecords = _coordinatorService.GetAllServiceAssignments();
+            if (dtServiceRecords != null)
+            {
+                string keyword = txtSearchAssignTech.Text.Trim();
+                if (string.IsNullOrEmpty(keyword))
+                {
+                    dtServiceRecords.DefaultView.RowFilter = "";
+                }
+                else
+                {
+                    dtServiceRecords.DefaultView.RowFilter = $"MAHSBA LIKE '%{keyword}%' OR LOAIDV LIKE '%{keyword}%'";
+                }
+                dgvServiceRecords.DataSource = null;
+                dgvServiceRecords.DataSource = dtServiceRecords;
+                FormatServiceRecordsGrid();
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex);
+        }
+    }
+
+    private void btnLogout_Click(object sender, EventArgs e)
+    {
+        var confirm = MessageBox.Show(
+            "Bạn có chắc chắn muốn đăng xuất?", "Đăng xuất",
+            MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+        if (confirm == DialogResult.Yes)
+        {
+            new AuthService().Logout();
+            this.Close();
+        }
+    }
+
+	public frmCoordinator()
     	{
     		InitializeComponent();
     	}
@@ -259,7 +347,33 @@ namespace QuanLyYTe.Forms.Coordinator
     		
     		txtPatientUsernameDb.ReadOnly = true;
     		txtMRRecordId.ReadOnly = true;
+    		
+    		// Fix Z-order docking layout issue where the search panels overlap and hide the grid headers/rows
+    		pnlSearchAssignDoctor.SendToBack();
+    		pnlSearchAssignTech.SendToBack();
+    		btnLogout.BringToFront();
+    		
     		LoadData();
+
+            // Add OLS Notification Tab
+            TabPage tabOls = new TabPage("Thông báo OLS");
+            QuanLyYTe.Forms.Common.frmNotifications frm = new QuanLyYTe.Forms.Common.frmNotifications();
+            frm.TopLevel = false;
+            frm.FormBorderStyle = FormBorderStyle.None;
+            frm.Dock = DockStyle.Fill;
+            tabOls.Controls.Add(frm);
+            tabCoordinator.TabPages.Add(tabOls);
+            frm.Show();
+
+            // Add Add OLS Notification Tab
+            TabPage tabAddOls = new TabPage("Tạo thông báo OLS");
+            QuanLyYTe.Forms.DBA.frmAddNotification frmAdd = new QuanLyYTe.Forms.DBA.frmAddNotification();
+            frmAdd.TopLevel = false;
+            frmAdd.FormBorderStyle = FormBorderStyle.None;
+            frmAdd.Dock = DockStyle.Fill;
+            tabAddOls.Controls.Add(frmAdd);
+            tabCoordinator.TabPages.Add(tabAddOls);
+            frmAdd.Show();
     	}
 
     	private void EnableDoubleBuffered(DataGridView dgv)
@@ -281,7 +395,11 @@ namespace QuanLyYTe.Forms.Coordinator
     			if (dgvPatients.Columns.Contains("patient_id")) dgvPatients.Columns["patient_id"].HeaderText = "Mã bệnh nhân";
     			if (dgvPatients.Columns.Contains("full_name")) dgvPatients.Columns["full_name"].HeaderText = "Tên bệnh nhân";
     			if (dgvPatients.Columns.Contains("gender")) dgvPatients.Columns["gender"].HeaderText = "Giới tính";
-    			if (dgvPatients.Columns.Contains("birthdate")) dgvPatients.Columns["birthdate"].HeaderText = "Ngày sinh";
+    			if (dgvPatients.Columns.Contains("birthdate")) 
+                {
+                    dgvPatients.Columns["birthdate"].HeaderText = "Ngày sinh";
+                    dgvPatients.Columns["birthdate"].DefaultCellStyle.Format = "dd/MM/yyyy";
+                }
     			if (dgvPatients.Columns.Contains("medical_history")) dgvPatients.Columns["medical_history"].HeaderText = "Tiền sử bệnh";
     			if (dgvPatients.Columns.Contains("family_medical_history")) dgvPatients.Columns["family_medical_history"].HeaderText = "Tiền sử bệnh gia đình";
     			if (dgvPatients.Columns.Contains("drug_allergies")) dgvPatients.Columns["drug_allergies"].HeaderText = "Dị ứng thuốc";
@@ -304,39 +422,13 @@ namespace QuanLyYTe.Forms.Coordinator
     			cmbAssignDept.ValueMember = "dept_id";
     			dtMedicalRecords = _coordinatorService.GetAllMedicalRecords();
     			dgvMedicalRecords.DataSource = dtMedicalRecords;
-    			if (dgvMedicalRecords.Columns.Contains("RECORD_ID")) dgvMedicalRecords.Columns["RECORD_ID"].HeaderText = "Mã HSBA";
-    			if (dgvMedicalRecords.Columns.Contains("PATIENT_ID")) dgvMedicalRecords.Columns["PATIENT_ID"].HeaderText = "Mã Bệnh nhân";
-    			if (dgvMedicalRecords.Columns.Contains("RECORD_DATE")) dgvMedicalRecords.Columns["RECORD_DATE"].HeaderText = "Ngày lập";
-    			if (dgvMedicalRecords.Columns.Contains("DIAGNOSIS")) dgvMedicalRecords.Columns["DIAGNOSIS"].HeaderText = "Chẩn đoán";
-    			if (dgvMedicalRecords.Columns.Contains("TREATMENT_PLAN")) dgvMedicalRecords.Columns["TREATMENT_PLAN"].HeaderText = "Hướng điều trị";
-    			if (dgvMedicalRecords.Columns.Contains("DOCTOR_ID")) dgvMedicalRecords.Columns["DOCTOR_ID"].HeaderText = "Mã Bác sĩ";
-    			if (dgvMedicalRecords.Columns.Contains("DEPT_ID")) dgvMedicalRecords.Columns["DEPT_ID"].HeaderText = "Mã Khoa";
-    			if (dgvMedicalRecords.Columns.Contains("CONCLUSION")) dgvMedicalRecords.Columns["CONCLUSION"].HeaderText = "Kết luận";
+    			FormatMedicalRecordsGrid();
     			txtMRRecordId.Text = GenerateNewMRId();
     			dtServiceRecords = _coordinatorService.GetAllServiceAssignments();
     			if (dtServiceRecords != null)
     			{
     				dgvServiceRecords.DataSource = dtServiceRecords;
-    				if (dgvServiceRecords.Columns.Contains("KETQUA"))
-    				{
-    					dgvServiceRecords.Columns["KETQUA"].Visible = false;
-    				}
-    				if (dgvServiceRecords.Columns.Contains("MAHSBA"))
-    				{
-    					dgvServiceRecords.Columns["MAHSBA"].HeaderText = "Ma HSBA";
-    				}
-    				if (dgvServiceRecords.Columns.Contains("LOAIDV"))
-    				{
-    					dgvServiceRecords.Columns["LOAIDV"].HeaderText = "Loại dịch vụ";
-    				}
-    				if (dgvServiceRecords.Columns.Contains("NGAYDV"))
-    				{
-    					dgvServiceRecords.Columns["NGAYDV"].HeaderText = "Ngày dịch vụ";
-    				}
-    				if (dgvServiceRecords.Columns.Contains("MAKTV"))
-    				{
-    					dgvServiceRecords.Columns["MAKTV"].HeaderText = "Kỹ thuật viên";
-    				}
+    				FormatServiceRecordsGrid();
     			}
     			DataTable techniciansForAssignment = _coordinatorService.GetTechniciansForAssignment();
     			cmbAssignTech.DataSource = techniciansForAssignment;
@@ -382,8 +474,11 @@ namespace QuanLyYTe.Forms.Coordinator
     			DataGridViewRow dataGridViewRow = dgvPatients.Rows[e.RowIndex];
     			txtPatientId.Text = dataGridViewRow.Cells["patient_id"].Value?.ToString();
     			txtPatientFullName.Text = dataGridViewRow.Cells["full_name"].Value?.ToString();
-    			txtPatientGender.Text = dataGridViewRow.Cells["gender"].Value?.ToString();
-    			txtPatientBirthDate.Text = Convert.ToDateTime(dataGridViewRow.Cells["birthdate"].Value).ToString("dd/MM/yyyy");
+    			cmbPatientGender.Text = dataGridViewRow.Cells["gender"].Value?.ToString();
+    			if (dataGridViewRow.Cells["birthdate"].Value != DBNull.Value)
+    			{
+    				dtpPatientBirthDate.Value = Convert.ToDateTime(dataGridViewRow.Cells["birthdate"].Value);
+    			}
     			txtPatientIdCard.Text = dataGridViewRow.Cells["id_card"].Value?.ToString();
     			txtPatientHouseNo.Text = dataGridViewRow.Cells["house_no"].Value?.ToString();
     			txtPatientStreet.Text = dataGridViewRow.Cells["street"].Value?.ToString();
@@ -407,8 +502,8 @@ namespace QuanLyYTe.Forms.Coordinator
     				return;
     			}
     			string fullName = txtPatientFullName.Text.Trim();
-    			string gender = txtPatientGender.Text.Trim();
-    			DateTime birthDate = DateTime.ParseExact(txtPatientBirthDate.Text.Trim(), "dd/MM/yyyy", null);
+    			string gender = cmbPatientGender.Text.Trim();
+    			DateTime birthDate = dtpPatientBirthDate.Value.Date;
     			string idCard = txtPatientIdCard.Text.Trim();
     			// Khi thêm mới, username_db thường được đặt giống mã bệnh nhân
     			string usernameDb = patientId; 
@@ -436,8 +531,8 @@ namespace QuanLyYTe.Forms.Coordinator
     			if (array.Length != 0)
     			{
     				string fullName = txtPatientFullName.Text.Trim();
-    				string gender = txtPatientGender.Text.Trim();
-    				DateTime birthDate = DateTime.ParseExact(txtPatientBirthDate.Text.Trim(), "dd/MM/yyyy", null);
+    				string gender = cmbPatientGender.Text.Trim();
+    				DateTime birthDate = dtpPatientBirthDate.Value.Date;
     				string idCard = txtPatientIdCard.Text.Trim();
     				string usernameDb = array[0]["username_db"].ToString() ?? "";
     				_coordinatorService.UpdatePatient(text, fullName, gender, birthDate, idCard, txtPatientHouseNo.Text, txtPatientStreet.Text, txtPatientDistrict.Text, txtPatientCityProvince.Text, txtPatientMedicalHistory.Text, txtPatientFamilyMedicalHistory.Text, txtPatientDrugAllergies.Text, usernameDb);
@@ -455,8 +550,8 @@ namespace QuanLyYTe.Forms.Coordinator
     	{
     		txtPatientId.Clear();
     		txtPatientFullName.Clear();
-    		txtPatientGender.Clear();
-    		txtPatientBirthDate.Clear();
+    		cmbPatientGender.SelectedIndex = -1;
+    		dtpPatientBirthDate.Value = DateTime.Now;
     		txtPatientIdCard.Clear();
     		txtPatientHouseNo.Clear();
     		txtPatientStreet.Clear();
@@ -540,7 +635,7 @@ namespace QuanLyYTe.Forms.Coordinator
     			txtAssignMRPatient.Text = dataGridViewRow.Cells["patient_id"].Value?.ToString();
     			if (dataGridViewRow.Cells["record_date"].Value != DBNull.Value)
     			{
-    				txtAssignMRDate.Text = Convert.ToDateTime(dataGridViewRow.Cells["record_date"].Value).ToString("dd/MM/yyyy");
+    				dtpAssignMRDate.Value = Convert.ToDateTime(dataGridViewRow.Cells["record_date"].Value);
     			}
     			string text = dataGridViewRow.Cells["dept_id"].Value?.ToString();
     			if (!string.IsNullOrEmpty(text))
@@ -595,8 +690,7 @@ namespace QuanLyYTe.Forms.Coordinator
     			if (dataGridViewRow.Cells["NGAYDV"].Value != DBNull.Value)
     			{
     				DateTime originalDate = Convert.ToDateTime(dataGridViewRow.Cells["NGAYDV"].Value);
-    				txtAssignSRDate.Text = originalDate.ToString("dd/MM/yyyy");
-    				txtAssignSRDate.Tag = originalDate;
+    				dtpAssignSRDate.Value = originalDate;
     			}
     		}
     	}
@@ -616,21 +710,12 @@ namespace QuanLyYTe.Forms.Coordinator
     		{
     			string text = txtAssignSRId.Text.Trim();
     			string text2 = txtAssignSRType.Text.Trim();
-    			string text3 = txtAssignSRDate.Text.Trim();
-    			if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(text2) || string.IsNullOrEmpty(text3))
+    			if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(text2))
     			{
     				MessageBox.Show("Vui lòng chọn Dịch vụ từ danh sách trước khi cập nhật.");
     				return;
     			}
-    			DateTime serviceDate;
-    			if (txtAssignSRDate.Tag != null)
-    			{
-    				serviceDate = (DateTime)txtAssignSRDate.Tag;
-    			}
-    			else
-    			{
-    				serviceDate = DateTime.ParseExact(text3, "dd/MM/yyyy", null);
-    			}
+    			DateTime serviceDate = dtpAssignSRDate.Value;
     			
     			string text4 = "";
     			if (cmbAssignTech.SelectedItem is DataRowView drvTech) text4 = drvTech["staff_id"].ToString();
@@ -653,6 +738,90 @@ namespace QuanLyYTe.Forms.Coordinator
     			ShowError(ex);
     		}
     	}
+
+    	private void btnRefreshAssignTech_Click(object sender, EventArgs e)
+    	{
+    		try
+    		{
+    			txtSearchAssignTech.Clear();
+    			dtServiceRecords = _coordinatorService.GetAllServiceAssignments();
+    			if (dtServiceRecords != null)
+    			{
+    				dtServiceRecords.DefaultView.RowFilter = "";
+    				dgvServiceRecords.DataSource = null;
+    				dgvServiceRecords.DataSource = dtServiceRecords;
+    				FormatServiceRecordsGrid();
+    			}
+    		}
+    		catch (Exception ex)
+    		{
+    			ShowError(ex);
+    		}
+    	}
+
+    	private void btnRefreshAssignDoctor_Click(object sender, EventArgs e)
+    	{
+    		try
+    		{
+    			txtSearchAssignDoctor.Clear();
+    			dtMedicalRecords = _coordinatorService.GetAllMedicalRecords();
+    			if (dtMedicalRecords != null)
+    			{
+    				dtMedicalRecords.DefaultView.RowFilter = "";
+    				dgvMedicalRecords.DataSource = null;
+    				dgvMedicalRecords.DataSource = dtMedicalRecords;
+    				FormatMedicalRecordsGrid();
+    			}
+    		}
+    		catch (Exception ex)
+    		{
+    			ShowError(ex);
+    		}
+    	}
+
+    	private void FormatMedicalRecordsGrid()
+    	{
+    		if (dgvMedicalRecords.Columns.Contains("RECORD_ID")) dgvMedicalRecords.Columns["RECORD_ID"].HeaderText = "Mã HSBA";
+    		if (dgvMedicalRecords.Columns.Contains("PATIENT_ID")) dgvMedicalRecords.Columns["PATIENT_ID"].HeaderText = "Mã Bệnh nhân";
+    		if (dgvMedicalRecords.Columns.Contains("RECORD_DATE")) 
+    		{
+    			dgvMedicalRecords.Columns["RECORD_DATE"].HeaderText = "Ngày lập";
+    			dgvMedicalRecords.Columns["RECORD_DATE"].DefaultCellStyle.Format = "dd/MM/yyyy";
+    		}
+    		if (dgvMedicalRecords.Columns.Contains("DIAGNOSIS")) dgvMedicalRecords.Columns["DIAGNOSIS"].HeaderText = "Chẩn đoán";
+    		if (dgvMedicalRecords.Columns.Contains("TREATMENT_PLAN")) dgvMedicalRecords.Columns["TREATMENT_PLAN"].HeaderText = "Hướng điều trị";
+    		if (dgvMedicalRecords.Columns.Contains("DOCTOR_ID")) dgvMedicalRecords.Columns["DOCTOR_ID"].HeaderText = "Mã Bác sĩ";
+    		if (dgvMedicalRecords.Columns.Contains("DEPT_ID")) dgvMedicalRecords.Columns["DEPT_ID"].HeaderText = "Mã Khoa";
+    		if (dgvMedicalRecords.Columns.Contains("CONCLUSION")) dgvMedicalRecords.Columns["CONCLUSION"].HeaderText = "Kết luận";
+    	}
+
+    	private void FormatServiceRecordsGrid()
+    	{
+    		if (dtServiceRecords != null)
+    		{
+    			if (dgvServiceRecords.Columns.Contains("KETQUA"))
+    			{
+    				dgvServiceRecords.Columns["KETQUA"].Visible = false;
+    			}
+    			if (dgvServiceRecords.Columns.Contains("MAHSBA"))
+    			{
+    				dgvServiceRecords.Columns["MAHSBA"].HeaderText = "Mã HSBA";
+    			}
+    			if (dgvServiceRecords.Columns.Contains("LOAIDV"))
+    			{
+    				dgvServiceRecords.Columns["LOAIDV"].HeaderText = "Loại dịch vụ";
+    			}
+    			if (dgvServiceRecords.Columns.Contains("NGAYDV"))
+    			{
+    				dgvServiceRecords.Columns["NGAYDV"].HeaderText = "Ngày dịch vụ";
+    				dgvServiceRecords.Columns["NGAYDV"].DefaultCellStyle.Format = "dd/MM/yyyy";
+    			}
+    			if (dgvServiceRecords.Columns.Contains("MAKTV"))
+    			{
+    				dgvServiceRecords.Columns["MAKTV"].HeaderText = "Kỹ thuật viên";
+    			}
+    		}
+    	}
     
     	private void LoadProfile()
     	{
@@ -668,6 +837,9 @@ namespace QuanLyYTe.Forms.Coordinator
     				txtSelfSpecialty.Text = dataRow["specialty"].ToString();
     				txtSelfPhone.Text = dataRow["phone"].ToString();
     				txtSelfHometown.Text = dataRow["hometown"].ToString();
+                    if (selfStaffInfo.Columns.Contains("gender")) txtSelfGender.Text = dataRow["gender"].ToString();
+                    if (selfStaffInfo.Columns.Contains("birthdate") && dataRow["birthdate"] != DBNull.Value) dtpSelfBirthDate.Value = Convert.ToDateTime(dataRow["birthdate"]);
+                    if (selfStaffInfo.Columns.Contains("id_card")) txtSelfIdCard.Text = dataRow["id_card"].ToString();
     			}
     		}
     		catch (Exception ex)

@@ -10,12 +10,13 @@ namespace QuanLyYTe.Forms
     public partial class frmGrantPermission : Form
     {
         private readonly PrivilegeService _service;
+        private readonly SecurityAdminService _secService;
 
         public frmGrantPermission()
         {
             InitializeComponent();
             _service = new PrivilegeService();
-
+            _secService = new SecurityAdminService();
 
             cbGranteeType.SelectedIndexChanged += (s, e) => LoadGrantees();
             cbObjectType.SelectedIndexChanged += (s, e) => LoadObjects();
@@ -35,6 +36,20 @@ namespace QuanLyYTe.Forms
                 if (!chkWithAdminOptionSys.Enabled) chkWithAdminOptionSys.Checked = false;
             };
             btnGrantSystem.Click += btnGrantSystem_Click;
+
+            // OLS Label Tab Events
+            lbOlsUsers.SelectedIndexChanged += LbOlsUsers_SelectedIndexChanged;
+            txtOlsSearch.TextChanged += TxtOlsSearch_TextChanged;
+            radBGD.CheckedChanged += OlsConfig_Changed;
+            radLDK.CheckedChanged += OlsConfig_Changed;
+            radNV.CheckedChanged += OlsConfig_Changed;
+            chkTH.CheckedChanged += OlsConfig_Changed;
+            chkTK.CheckedChanged += OlsConfig_Changed;
+            chkTM.CheckedChanged += OlsConfig_Changed;
+            chkHCM.CheckedChanged += OlsConfig_Changed;
+            chkHN.CheckedChanged += OlsConfig_Changed;
+            chkHP.CheckedChanged += OlsConfig_Changed;
+            btnSaveOlsLabel.Click += BtnSaveOlsLabel_Click;
 
             cbGranteeType.SelectedIndex = 0;
             cbObjectType.SelectedIndex = 0;
@@ -169,6 +184,10 @@ namespace QuanLyYTe.Forms
                 LoadSysGrantees();
                 LoadAllSystemPrivileges();
             }
+            else if (tcMain.SelectedTab == tpOlsLabel)
+            {
+                LoadOlsUsers();
+            }
         }
 
         private void btnGrantRole_Click(object? sender, EventArgs e)
@@ -246,6 +265,219 @@ namespace QuanLyYTe.Forms
             catch (Exception ex) { MessageBox.Show(CleanOracleError(ex.Message), "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
         #endregion 
+
+        #region Logic Tab 4: OLS Label Management
+        private DataTable _dtOlsUsers;
+        private bool _isParsingOls = false;
+
+        private void LoadOlsUsers()
+        {
+            try
+            {
+                _dtOlsUsers = _service.GetGrantees("USER");
+                if (_dtOlsUsers != null && _dtOlsUsers.Columns.Count > 0)
+                {
+                    FilterOlsUsers("");
+                }
+            }
+            catch (Exception ex) { MessageBox.Show("Lỗi tải danh sách User: " + ex.Message); }
+        }
+
+        private void FilterOlsUsers(string searchText)
+        {
+            if (_dtOlsUsers == null) return;
+            var filteredRows = _dtOlsUsers.AsEnumerable()
+                .Where(r => r[0].ToString().IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0)
+                .Select(r => r[0].ToString())
+                .ToArray();
+            
+            lbOlsUsers.Items.Clear();
+            lbOlsUsers.Items.AddRange(filteredRows);
+        }
+
+        private void TxtOlsSearch_TextChanged(object? sender, EventArgs e)
+        {
+            FilterOlsUsers(txtOlsSearch.Text.Trim());
+        }
+
+        private void LbOlsUsers_SelectedIndexChanged(object? sender, EventArgs e)
+        {
+            if (lbOlsUsers.SelectedItem == null) return;
+            string username = lbOlsUsers.SelectedItem.ToString();
+            
+            try
+            {
+                string oldLabel = _secService.GetUserOlsLabel(username);
+                ParseOlsLabel(oldLabel);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi lấy nhãn OLS: " + ex.Message);
+            }
+        }
+
+        private void ParseOlsLabel(string label)
+        {
+            _isParsingOls = true;
+            
+            // Reset
+            radBGD.Checked = radLDK.Checked = radNV.Checked = false;
+            chkTH.Checked = chkTK.Checked = chkTM.Checked = false;
+            chkHCM.Checked = chkHN.Checked = chkHP.Checked = false;
+
+            if (!string.IsNullOrEmpty(label))
+            {
+                string[] parts = label.Split(':');
+                if (parts.Length > 0)
+                {
+                    string level = parts[0];
+                    if (level == "BGD") radBGD.Checked = true;
+                    else if (level == "LDK") radLDK.Checked = true;
+                    else if (level == "NV") radNV.Checked = true;
+                }
+                if (parts.Length > 1)
+                {
+                    string[] comps = parts[1].Split(',');
+                    if (comps.Contains("TH")) chkTH.Checked = true;
+                    if (comps.Contains("TK")) chkTK.Checked = true;
+                    if (comps.Contains("TM")) chkTM.Checked = true;
+                }
+                if (parts.Length > 2)
+                {
+                    string[] groups = parts[2].Split(',');
+                    if (groups.Contains("HCM")) chkHCM.Checked = true;
+                    if (groups.Contains("HN")) chkHN.Checked = true;
+                    if (groups.Contains("HP")) chkHP.Checked = true;
+                }
+            }
+
+            _isParsingOls = false;
+            UpdateOlsPreview();
+        }
+
+        private string BuildOlsLabel()
+        {
+            string level = "NV";
+            if (radBGD.Checked) level = "BGD";
+            else if (radLDK.Checked) level = "LDK";
+
+            List<string> comps = new List<string>();
+            if (chkTH.Checked) comps.Add("TH");
+            if (chkTK.Checked) comps.Add("TK");
+            if (chkTM.Checked) comps.Add("TM");
+
+            List<string> groups = new List<string>();
+            if (chkHCM.Checked) groups.Add("HCM");
+            if (chkHN.Checked) groups.Add("HN");
+            if (chkHP.Checked) groups.Add("HP");
+
+            string label = level;
+            if (comps.Count > 0) label += ":" + string.Join(",", comps);
+            if (groups.Count > 0) label += ":" + string.Join(",", groups);
+
+            return label;
+        }
+
+        private void AppendPreviewText(RichTextBox rtb, string text, bool highlight)
+        {
+            rtb.SelectionStart = rtb.TextLength;
+            rtb.SelectionLength = 0;
+            
+            if (highlight)
+            {
+                rtb.SelectionColor = Color.FromArgb(255, 140, 40); // Orange
+                rtb.SelectionFont = new Font(rtb.Font, FontStyle.Bold);
+            }
+            else
+            {
+                rtb.SelectionColor = Color.DimGray;
+                rtb.SelectionFont = new Font(rtb.Font, FontStyle.Italic);
+            }
+            
+            rtb.AppendText(text);
+        }
+
+        private void UpdateOlsPreview()
+        {
+            if (_isParsingOls) return;
+            
+            rtbOlsPreview.Clear();
+            string label = BuildOlsLabel();
+            if (string.IsNullOrEmpty(label)) return;
+
+            AppendPreviewText(rtbOlsPreview, "Chuỗi nhãn được tạo: ", false);
+            AppendPreviewText(rtbOlsPreview, label + "\n\n", true);
+
+            string levelText = "";
+            if (radBGD.Checked) levelText = "Ban Giám đốc";
+            else if (radLDK.Checked) levelText = "Lãnh đạo Khoa";
+            else if (radNV.Checked) levelText = "Toàn bộ Nhân viên";
+
+            List<string> compText = new List<string>();
+            if (chkTH.Checked) compText.Add("Khoa Tiêu hóa");
+            if (chkTK.Checked) compText.Add("Khoa Thần kinh");
+            if (chkTM.Checked) compText.Add("Khoa Tim mạch");
+
+            List<string> groupText = new List<string>();
+            if (chkHCM.Checked) groupText.Add("Hồ Chí Minh");
+            if (chkHN.Checked) groupText.Add("Hà Nội");
+            if (chkHP.Checked) groupText.Add("Hải Phòng");
+
+            AppendPreviewText(rtbOlsPreview, "Tức là người dùng này sẽ có quyền truy cập dữ liệu của ", false);
+            AppendPreviewText(rtbOlsPreview, levelText, true);
+
+            if (compText.Count > 0)
+            {
+                AppendPreviewText(rtbOlsPreview, " thuộc ", false);
+                AppendPreviewText(rtbOlsPreview, string.Join(", ", compText), true);
+            }
+            else
+            {
+                AppendPreviewText(rtbOlsPreview, " thuộc ", false);
+                AppendPreviewText(rtbOlsPreview, "Bất kỳ khoa nào", true);
+            }
+
+            if (groupText.Count > 0)
+            {
+                AppendPreviewText(rtbOlsPreview, " tại cơ sở ", false);
+                AppendPreviewText(rtbOlsPreview, string.Join(", ", groupText), true);
+                AppendPreviewText(rtbOlsPreview, ".", false);
+            }
+            else
+            {
+                AppendPreviewText(rtbOlsPreview, " tại ", false);
+                AppendPreviewText(rtbOlsPreview, "Bất kỳ cơ sở nào", true);
+                AppendPreviewText(rtbOlsPreview, ".", false);
+            }
+        }
+
+        private void OlsConfig_Changed(object? sender, EventArgs e)
+        {
+            UpdateOlsPreview();
+        }
+
+        private void BtnSaveOlsLabel_Click(object? sender, EventArgs e)
+        {
+            if (lbOlsUsers.SelectedItem == null)
+            {
+                MessageBox.Show("Vui lòng chọn một User để cấp nhãn!");
+                return;
+            }
+
+            string username = lbOlsUsers.SelectedItem.ToString();
+            string label = BuildOlsLabel();
+
+            try
+            {
+                _secService.SetUserOlsLabel(username, label);
+                MessageBox.Show($"Đã gán nhãn OLS: [{label}] cho User: {username} thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi lưu nhãn OLS: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        #endregion
 
         #region Helpers
         private string CleanOracleError(string message)

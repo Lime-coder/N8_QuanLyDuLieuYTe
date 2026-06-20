@@ -2,9 +2,7 @@ namespace QuanLyYTe.Forms.Technician
 {
     partial class frmTechnician
     {
-        /// <summary>
-        ///  Required designer variable.
-        /// </summary>
+        //  Required designer variable.
         private System.ComponentModel.IContainer components = null;
 
         protected override void Dispose(bool disposing)
