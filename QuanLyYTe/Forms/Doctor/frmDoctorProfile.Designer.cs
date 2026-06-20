@@ -48,6 +48,7 @@ namespace QuanLyYTe.Forms.Doctor
             // pnlSearch
             // 
             pnlSearch.Size = new Size(839, 75);
+            pnlSearch.Visible = false;
             // 
             // btnE
             // 

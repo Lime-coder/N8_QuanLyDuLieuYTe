@@ -7,12 +7,18 @@ namespace QuanLyYTe.Forms.Doctor
 {
     public partial class frmDoctor : Form
     {
+        private static readonly Color Orange = Color.FromArgb(255, 140, 40);
+        private static readonly Color OrangeHov = Color.FromArgb(255, 165, 80);
+        private static readonly Color ActiveBg = Color.FromArgb(45, 255, 140, 40);
+        private Button _activeNavBtn = null;
+
         public frmDoctor()
         {
             this.Size = new Size(1300, 850);
             this.Text = "Hospital Management - Doctor";
             this.WindowState = FormWindowState.Maximized;
             InitializeComponent();
+            SetActiveNav(btnNavHSBA);
             OpenPage("Quản lý HSBA", () => new frmMedicalRecordManagement());
         }
 
@@ -20,6 +26,18 @@ namespace QuanLyYTe.Forms.Doctor
         {
             lblUserInfo.Text = "Bác sĩ: " + AppSession.CurrentUsername;
             PositionUserInfo();
+        }
+
+        private void SetActiveNav(Button btn)
+        {
+            if (_activeNavBtn != null)
+            {
+                _activeNavBtn.ForeColor = Color.FromArgb(190, 190, 200);
+                _activeNavBtn.BackColor = Color.Transparent;
+            }
+            btn.ForeColor = Orange;
+            btn.BackColor = ActiveBg;
+            _activeNavBtn = btn;
         }
 
         private void pnlTop_Resize(object sender, EventArgs e)
@@ -45,11 +63,35 @@ namespace QuanLyYTe.Forms.Doctor
             c.Show();
         }
 
-        private void btnNavHSBA_Click(object sender, EventArgs e) => OpenPage("Quản lý HSBA", () => new frmMedicalRecordManagement());
-        private void btnNavPrescription_Click(object sender, EventArgs e) => OpenPage("Đơn thuốc", () => new frmPrescriptionManagement());
-        private void btnNavPatient_Click(object sender, EventArgs e) => OpenPage("Bệnh nhân", () => new frmPatientManagement());
-        private void btnNavProfile_Click(object sender, EventArgs e) => OpenPage("Hồ sơ cá nhân", () => new frmDoctorProfile());
-        private void btnNavNotifications_Click(object sender, EventArgs e) => OpenPage("Thông báo OLS", () => new QuanLyYTe.Forms.Common.frmNotifications());
+        private void btnNavHSBA_Click(object sender, EventArgs e)
+        {
+            SetActiveNav((Button)sender);
+            OpenPage("Quản lý HSBA", () => new frmMedicalRecordManagement());
+        }
+
+        private void btnNavPrescription_Click(object sender, EventArgs e)
+        {
+            SetActiveNav((Button)sender);
+            OpenPage("Đơn thuốc", () => new frmPrescriptionManagement());
+        }
+
+        private void btnNavPatient_Click(object sender, EventArgs e)
+        {
+            SetActiveNav((Button)sender);
+            OpenPage("Bệnh nhân", () => new frmPatientManagement());
+        }
+
+        private void btnNavProfile_Click(object sender, EventArgs e)
+        {
+            SetActiveNav((Button)sender);
+            OpenPage("Hồ sơ cá nhân", () => new frmDoctorProfile());
+        }
+
+        private void btnNavNotifications_Click(object sender, EventArgs e)
+        {
+            SetActiveNav((Button)sender);
+            OpenPage("Thông báo OLS", () => new QuanLyYTe.Forms.Common.frmNotifications());
+        }
 
         private void btnLogout_Click(object sender, EventArgs e)
         {
