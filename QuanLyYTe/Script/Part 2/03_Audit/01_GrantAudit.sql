@@ -1,13 +1,16 @@
 -- Run as-- Run as: SYSDBA
--- 1. Kích hoạt Standard Audit (Yêu cầu 3.1) - Cần thực hiện ở mức CDB và restart (nếu chưa bật)
+-- ============================================================
+-- 1. Kích hoạt kiểm toán hệ thống và cấp quyền cần thiết cho hospital_dba
+-- ============================================================
+-- 1. Kích hoạt Standard Audit - Cần thực hiện ở mức CDB và restart (nếu chưa bật)
 ALTER SESSION SET CONTAINER = CDB$ROOT;
 ALTER SYSTEM SET audit_trail = DB, EXTENDED SCOPE = SPFILE;
--- Lưu ý: Lệnh trên cần khởi động lại Database để có hiệu lực hoàn toàn.
-
+SHOW PARAMETER AUDIT_TRAIL;
+ 
 -- 2. Chuyển vào PDB để cấp quyền cho User cục bộ
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 
--- Cấp các Role đặc quyền về Audit
+-- Cấp các Role đặc quyền về Audit cho hospital_dba
 GRANT AUDIT_ADMIN TO HOSPITAL_DBA;   -- Quyền quản trị chính sách
 GRANT AUDIT_VIEWER TO HOSPITAL_DBA;  -- Quyền xem nhật ký (Bao gồm UNIFIED_AUDIT_TRAIL)
 

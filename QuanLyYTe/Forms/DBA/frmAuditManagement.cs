@@ -71,7 +71,7 @@ namespace QuanLyYTe.Forms.DBA
                     case "TIMESTAMP": col.HeaderText = "Thời điểm"; break;
                     case "OBJECT": col.HeaderText = "Đối tượng"; break;
                     case "ACTION": col.HeaderText = "Hành động"; break;
-                    case "STATUS": col.HeaderText = "Trạng thái"; break;
+                    case "RETURNCODE": col.HeaderText = "Mã trả về"; break;
                     case "SQL_TEXT": col.HeaderText = "Câu lệnh SQL"; break;
                     case "OBJECT_NAME": col.HeaderText = "Tên bảng"; break;
                     case "POLICY_NAME": col.HeaderText = "Tên chính sách"; break;

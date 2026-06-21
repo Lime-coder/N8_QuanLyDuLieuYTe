@@ -27,7 +27,10 @@ CONNECT NV000121/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Kỹ thuật viên cố tình tự tạo hồ sơ bệnh án
-INSERT INTO hospital.medical_record (record_id, diagnosis, treatment_plan, conclusion) VALUES ('BA_TEST002', N'Hack dữ liệu', N'Chưa điều trị', N'Chưa kết luận');
+BEGIN
+    EXECUTE IMMEDIATE q'[INSERT INTO hospital.medical_record (record_id, diagnosis, treatment_plan, conclusion) VALUES ('BA_TEST002', N'Hack dữ liệu', N'Chưa điều trị', N'Chưa kết luận')]';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
 
 
 -- ============================================================
@@ -47,11 +50,14 @@ CONNECT NV000121/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Kỹ thuật viên cố sửa thông tin bệnh nhân trực tiếp
-UPDATE hospital.patient SET drug_allergies = 'Dị ứng hải sản' WHERE patient_id = 'BN000001';
+BEGIN
+    EXECUTE IMMEDIATE q'[UPDATE hospital.patient SET drug_allergies = 'Dị ứng hải sản' WHERE patient_id = 'BN000001']';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
 
 
 -- ============================================================
--- NC#3 – VIEW: SELECT trên VW_COORD_DOCTORS       │
+-- NC#3 – VIEW: SELECT trên VW_COORD_DOCTORS       
 -- ============================================================
 
 -- *** Chạy với tài khoản: NV000001 (Điều phối viên – có quyền) ***
@@ -66,7 +72,10 @@ CONNECT BN000001/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Bệnh nhân cố xem danh sách bác sĩ
-SELECT * FROM hospital.VW_COORD_DOCTORS;
+BEGIN
+    EXECUTE IMMEDIATE q'[SELECT * FROM hospital.VW_COORD_DOCTORS]';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
 
 
 -- ============================================================
@@ -119,7 +128,10 @@ CONNECT BN000001/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Bệnh nhân cố gọi function trích xuất bệnh sử của người khác
-SELECT hospital_dba.F_EXTRACT_MEDICAL_HISTORY('BN000002') FROM DUAL;
+BEGIN
+    EXECUTE IMMEDIATE q'[SELECT hospital_dba.F_EXTRACT_MEDICAL_HISTORY('BN000002') FROM DUAL]';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
 
 -- ============================================================
 -- PHẦN 2: TEST YÊU CẦU 3.3 — FGA + UNIFIED AUDIT
@@ -152,15 +164,21 @@ COMMIT;
 CONNECT NV000121/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
-UPDATE hospital.medical_record
+BEGIN
+    EXECUTE IMMEDIATE q'[UPDATE hospital.medical_record
 SET    diagnosis      = N'Viêm gan',
        treatment_plan = N'Uống thuốc đều đặn',
        conclusion     = N'Theo dõi định kỳ'
-WHERE  record_id = 'BA999999';
+WHERE  record_id = 'BA999999']';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/
 
 -- 3.3d – UNIFIED: Thao tác BẤT HỢP PHÁP trên SERVICE_RECORD 
 CONNECT BN000001/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
-INSERT INTO hospital.service_record (record_id, service_type, service_date, technician_id, service_result)
-VALUES ('BA_Test002', N'Xét nghiệm máu', SYSDATE, 'NV000021', N'Bình thường');
+BEGIN
+    EXECUTE IMMEDIATE q'[INSERT INTO hospital.service_record (record_id, service_type, service_date, technician_id, service_result)
+VALUES ('BA_Test002', N'Xét nghiệm máu', SYSDATE, 'NV000021', N'Bình thường')]';
+EXCEPTION WHEN OTHERS THEN NULL; END;
+/

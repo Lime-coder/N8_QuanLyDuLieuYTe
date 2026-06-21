@@ -5,10 +5,15 @@
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 -- ============================================================
--- 1. Thực hiện kiểm toán dùng Standard audit: 5 ngữ cảnh
+-- 2. Thực hiện kiểm toán dùng Standard audit: 5 ngữ cảnh
 -- ============================================================
-
--- 1.1. Tạo function để demo audit (Hàm trích xuất dữ liệu tiền sử bệnh)
+-- Xóa các chính sách cũ
+NOAUDIT INSERT ON hospital.medical_record;
+NOAUDIT UPDATE ON hospital.patient;
+NOAUDIT SELECT ON hospital.VW_COORD_DOCTORS;
+NOAUDIT EXECUTE ON hospital.USP_MANAGE_PRESCRIPTION;
+NOAUDIT EXECUTE ON hospital_dba.F_EXTRACT_MEDICAL_HISTORY;
+-- 2.1. Tạo function để demo audit (Hàm trích xuất dữ liệu tiền sử bệnh)
 CREATE OR REPLACE FUNCTION hospital_dba.F_EXTRACT_MEDICAL_HISTORY(p_patient_id IN VARCHAR2) 
 RETURN NCLOB AS
     v_history NCLOB;
@@ -19,7 +24,7 @@ END;
 /   
 GRANT EXECUTE ON hospital_dba.F_EXTRACT_MEDICAL_HISTORY TO rl_doctor, rl_coordinator;
 
--- 1.2. 5 ngữ cảnh (có cả SUCCESSFUL và NOT SUCCESSFUL theo yêu cầu đề bài)
+-- 2.2. 5 ngữ cảnh (có cả SUCCESSFUL và NOT SUCCESSFUL theo yêu cầu đề bài)
 -- NC#1: TABLE - Thêm mới HSBA
 AUDIT INSERT ON hospital.medical_record BY ACCESS WHENEVER SUCCESSFUL;
 AUDIT INSERT ON hospital.medical_record BY ACCESS WHENEVER NOT SUCCESSFUL;
@@ -40,14 +45,34 @@ AUDIT EXECUTE ON hospital.USP_MANAGE_PRESCRIPTION BY ACCESS WHENEVER NOT SUCCESS
 AUDIT EXECUTE ON hospital_dba.F_EXTRACT_MEDICAL_HISTORY BY ACCESS WHENEVER SUCCESSFUL;
 AUDIT EXECUTE ON hospital_dba.F_EXTRACT_MEDICAL_HISTORY BY ACCESS WHENEVER NOT SUCCESSFUL;
 
+-- ====================================================================
+-- 3. Dùng Fine-grained Audit hoặc Unified Audit để thực hiện kiểm toán
 -- ============================================================
--- 2. Dùng Fine-grained Audit hoặc Unified Audit để thực hiện kiểm toán
--- ============================================================
-
---  3.3a, 3.3b (FGA - THÀNH CÔNG)
-
+-- 3a, 3b (FGA - THÀNH CÔNG)
+-- Xóa các Fine-Grained Audit Policies cũ (nếu có) trước khi tạo mới
 BEGIN
-    -- 3.3a: Hành vi cập nhật trên thuộc tính MÃHSBA, NGÀYĐT, TÊNTHUỐC, LIỀUDÙNG của quan hệ ĐƠNTHUỐC
+    -- 1. Xóa Policy cũ trên bảng PRESCRIPTION
+    BEGIN
+        DBMS_FGA.DROP_POLICY(
+            object_schema => 'HOSPITAL', 
+            object_name   => 'PRESCRIPTION', 
+            policy_name   => 'FGA_PRESCRIPTION_COLS'
+        );
+    EXCEPTION WHEN OTHERS THEN NULL; END;
+    
+    -- 2. Xóa Policy cũ trên bảng MEDICAL_RECORD
+    BEGIN
+        DBMS_FGA.DROP_POLICY(
+            object_schema => 'HOSPITAL', 
+            object_name   => 'MEDICAL_RECORD', 
+            policy_name   => 'FGA_MEDICAL_RECORD_COLS'
+        );
+    EXCEPTION WHEN OTHERS THEN NULL; END;
+END;
+/
+-- 3a: Hành vi cập nhật trên thuộc tính MÃHSBA, NGÀYĐT, TÊNTHUỐC, LIỀUDÙNG của quan hệ ĐƠNTHUỐC
+-- Tạo policy mới
+BEGIN
     DBMS_FGA.ADD_POLICY(
         object_schema   => 'HOSPITAL',
         object_name     => 'PRESCRIPTION', 
@@ -56,8 +81,11 @@ BEGIN
         statement_types => 'UPDATE',
         audit_trail     => DBMS_FGA.DB + DBMS_FGA.EXTENDED
     );
-
-    -- 3.3b: Hành vi của người dùng  trên các trường CHẨNĐOÁN, ĐIỀUTRỊ, KẾTLUẬN của quan hệ HSBA
+END;
+/  
+-- 3b: Hành vi của người dùng  trên các trường CHẨNĐOÁN, ĐIỀUTRỊ, KẾTLUẬN của quan hệ HSBA
+-- Tạo policy mới
+BEGIN
     DBMS_FGA.ADD_POLICY(
         object_schema   => 'HOSPITAL',
         object_name     => 'MEDICAL_RECORD',
@@ -69,8 +97,28 @@ BEGIN
 END;
 /
 
--- 3.3c (UNIFIED - BẤT HỢP PHÁP TRÊN HSBA)
+-- 3c (UNIFIED - BẤT HỢP PHÁP TRÊN HSBA)
+-- Xóa Policy cũ (nếu có)
+BEGIN
+    -- 1. Xóa Policy cũ trên bảng MEDICAL_RECORD
+    BEGIN
+        EXECUTE IMMEDIATE 'NOAUDIT POLICY AUD_ILLEGAL_MEDICAL_RECORD_POLICY';
+        EXECUTE IMMEDIATE 'DROP AUDIT POLICY AUD_ILLEGAL_MEDICAL_RECORD_POLICY';
+    EXCEPTION WHEN OTHERS THEN NULL; 
+    END;
+    
+    -- 2. Xóa Policy cũ trên bảng SERVICE_RECORD
+    BEGIN
+        EXECUTE IMMEDIATE 'NOAUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY'; 
+        EXECUTE IMMEDIATE 'DROP AUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY';
+    EXCEPTION WHEN OTHERS THEN NULL; 
+    END;
+
+END;
+/
+
 -- Hành vi của người dùng cập nhật bất hợp pháp trên các trường CHẨNĐOÁN,ĐIỀUTRỊ, KẾTLUẬN
+-- Tạo audit policy mới
 CREATE AUDIT POLICY AUD_ILLEGAL_MEDICAL_RECORD_POLICY
   ACTIONS 
     UPDATE ON hospital.medical_record;
@@ -78,8 +126,9 @@ CREATE AUDIT POLICY AUD_ILLEGAL_MEDICAL_RECORD_POLICY
 -- Bắt hành vi Failed (Sai quyền/Bất hợp pháp)
 AUDIT POLICY AUD_ILLEGAL_MEDICAL_RECORD_POLICY WHENEVER NOT SUCCESSFUL;
 
--- 3.3d (UNIFIED - BẤT HỢP PHÁP TRÊN SERVICE_RECORD)
+-- 3d (UNIFIED - BẤT HỢP PHÁP TRÊN SERVICE_RECORD)
 -- Hành vi thêm, xóa, sửa bất hợp pháp trên quan hệ HSBA_DV.
+-- Tạo audit policy mới
 CREATE AUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY
   ACTIONS 
     INSERT ON hospital.service_record, 
@@ -97,9 +146,12 @@ AUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY WHENEVER NOT SUCCESSFUL;
 CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_STANDARD_AUDIT_LOGS (p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT CAST(USERNAME AS VARCHAR2(128)) as USERNAME, TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
-           CAST(OBJ_NAME AS VARCHAR2(128)) as OBJECT, CAST(ACTION_NAME AS VARCHAR2(128)) as ACTION, 
-           CASE WHEN RETURNCODE = 0 THEN 'Success' ELSE 'Failed' END AS STATUS, DBMS_LOB.SUBSTR(SQL_TEXT, 4000, 1) as SQL_TEXT
+    SELECT CAST(USERNAME AS VARCHAR2(128)) as USERNAME, 
+           TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
+           CAST(OBJ_NAME AS VARCHAR2(128)) as OBJECT, 
+           CAST(ACTION_NAME AS VARCHAR2(128)) as ACTION, 
+           TO_CHAR(RETURNCODE) AS RETURNCODE, 
+           DBMS_LOB.SUBSTR(SQL_TEXT, 4000, 1) as SQL_TEXT
     FROM DBA_AUDIT_TRAIL 
     WHERE OWNER IN ('HOSPITAL', 'HOSPITAL_DBA')
     ORDER BY TIMESTAMP DESC;
@@ -110,8 +162,12 @@ END;
 CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_PRESCRIPTION_AUDIT_LOGS (p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT CAST(DB_USER AS VARCHAR2(128)) as USERNAME, TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
-           CAST(OBJECT_NAME AS VARCHAR2(128)) as OBJECT, 'UPDATE' as ACTION, 'Success' AS STATUS, CAST(SQL_TEXT AS VARCHAR2(4000)) as SQL_TEXT
+    SELECT CAST(DB_USER AS VARCHAR2(128)) as USERNAME, 
+           TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
+           CAST(OBJECT_NAME AS VARCHAR2(128)) as OBJECT, 
+           CAST(STATEMENT_TYPE AS VARCHAR2(128)) as ACTION, 
+           '0' AS RETURNCODE, 
+           CAST(SQL_TEXT AS VARCHAR2(4000)) as SQL_TEXT
     FROM DBA_FGA_AUDIT_TRAIL WHERE POLICY_NAME = 'FGA_PRESCRIPTION_COLS'
     ORDER BY TIMESTAMP DESC;
 END;
@@ -121,25 +177,36 @@ END;
 CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_MEDICAL_RECORD_AUDIT_LOGS (p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT CAST(DB_USER AS VARCHAR2(128)) as USERNAME, TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
-           CAST(OBJECT_NAME AS VARCHAR2(128)) as OBJECT, 'UPDATE' as ACTION, 'Success' AS STATUS, CAST(SQL_TEXT AS VARCHAR2(4000)) as SQL_TEXT
+    SELECT CAST(DB_USER AS VARCHAR2(128)) as USERNAME, 
+           TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
+           CAST(OBJECT_NAME AS VARCHAR2(128)) as OBJECT, 
+           CAST(STATEMENT_TYPE AS VARCHAR2(128)) as ACTION, 
+           '0' AS RETURNCODE, 
+           CAST(SQL_TEXT AS VARCHAR2(4000)) as SQL_TEXT
     FROM DBA_FGA_AUDIT_TRAIL WHERE POLICY_NAME = 'FGA_MEDICAL_RECORD_COLS'
     UNION ALL
-    SELECT CAST(DBUSERNAME AS VARCHAR2(128)), TO_CHAR(EVENT_TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS'), 
-           CAST(OBJECT_NAME AS VARCHAR2(128)), 'UPDATE', 'Failed', DBMS_LOB.SUBSTR(SQL_TEXT, 4000, 1)
-    FROM UNIFIED_AUDIT_TRAIL WHERE OBJECT_NAME = 'MEDICAL_RECORD' AND RETURN_CODE != 0
+    SELECT CAST(DBUSERNAME AS VARCHAR2(128)), 
+           TO_CHAR(EVENT_TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS'), 
+           CAST(OBJECT_NAME AS VARCHAR2(128)), 
+           CAST(ACTION_NAME AS VARCHAR2(128)), 
+           TO_CHAR(RETURN_CODE) AS RETURNCODE, 
+           DBMS_LOB.SUBSTR(SQL_TEXT, 4000, 1) 
+    FROM UNIFIED_AUDIT_TRAIL WHERE UNIFIED_AUDIT_POLICIES LIKE '%AUD_ILLEGAL_MEDICAL_RECORD_POLICY%'
     ORDER BY TIMESTAMP DESC;
-END;
+END; 
 /
 
 -- 3.4. Tab Dịch vụ (Lấy từ Unified Thất bại)
 CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_SERVICE_RECORD_AUDIT_LOGS (p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT CAST(DBUSERNAME AS VARCHAR2(128)) as USERNAME, TO_CHAR(EVENT_TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
-           CAST(OBJECT_NAME AS VARCHAR2(128)) as OBJECT, CAST(ACTION_NAME AS VARCHAR2(128)) as ACTION, 
-           'Failed' AS STATUS, DBMS_LOB.SUBSTR(SQL_TEXT, 4000, 1) as SQL_TEXT
-    FROM UNIFIED_AUDIT_TRAIL WHERE OBJECT_NAME = 'SERVICE_RECORD' AND RETURN_CODE != 0
+    SELECT CAST(DBUSERNAME AS VARCHAR2(128)) as USERNAME,
+           TO_CHAR(EVENT_TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
+           CAST(OBJECT_NAME AS VARCHAR2(128)) as OBJECT, 
+           CAST(ACTION_NAME AS VARCHAR2(128)) as ACTION, 
+           TO_CHAR(RETURN_CODE) AS RETURNCODE, 
+           DBMS_LOB.SUBSTR(SQL_TEXT, 4000, 1) as SQL_TEXT
+    FROM UNIFIED_AUDIT_TRAIL WHERE UNIFIED_AUDIT_POLICIES LIKE '%AUD_ILLEGAL_SERVICE_RECORD_POLICY%'
     ORDER BY EVENT_TIMESTAMP DESC;
 END;
 /
