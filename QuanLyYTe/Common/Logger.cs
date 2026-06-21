@@ -8,6 +8,9 @@ namespace QuanLyYTe.Common
         private static readonly string LogDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
         private static readonly string LogFile = Path.Combine(LogDir, "app_error.log");
 
+        public static string LogDirectoryPath => LogDir;
+        public static string LogFilePath => LogFile;
+
         public static void LogError(Exception ex, string context = "")
         {
             try
@@ -22,8 +25,7 @@ namespace QuanLyYTe.Common
                 {
                     logEntry += $"Context: {context}\n";
                 }
-                logEntry += $"Message: {ex.Message}\n";
-                logEntry += $"StackTrace: {ex.StackTrace}\n";
+                logEntry += $"Exception: {ex}\n";
                 
                 if (ex.InnerException != null)
                 {

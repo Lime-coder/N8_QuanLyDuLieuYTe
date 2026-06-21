@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.IO;
 using QuanLyYTe.Repositories;
 
 namespace QuanLyYTe.Services
@@ -36,6 +37,21 @@ namespace QuanLyYTe.Services
         public void ManualBackup()
         {
             _repo.ManualBackup();
+        }
+
+        public string ImportDataPumpToRestore(string dumpFile)
+        {
+            string normalized = dumpFile?.Trim();
+            if (string.IsNullOrWhiteSpace(normalized))
+                throw new ArgumentException("Vui long nhap ten file dump.");
+
+            if (!string.Equals(Path.GetFileName(normalized), normalized, StringComparison.Ordinal) ||
+                !string.Equals(Path.GetExtension(normalized), ".dmp", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Chi nhap ten file .dmp, khong nhap duong dan.");
+            }
+
+            return _repo.ImportDataPumpToRestore(normalized);
         }
 
         public void EnableAutoBackup(string intervalText)

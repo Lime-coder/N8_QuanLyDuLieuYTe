@@ -25,6 +25,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.grpBackupManagement = new System.Windows.Forms.GroupBox();
             this.dgvBackupHistory = new System.Windows.Forms.DataGridView();
             this.pnlBackupControls = new System.Windows.Forms.Panel();
+            this.btnOpenErrorLog = new System.Windows.Forms.Button();
             this.lblSchedulerStatus = new System.Windows.Forms.Label();
             this.btnDisableAutoBackup = new System.Windows.Forms.Button();
             this.btnEnableAutoBackup = new System.Windows.Forms.Button();
@@ -41,6 +42,9 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.btnLoadAudit = new System.Windows.Forms.Button();
             this.grpRestore = new System.Windows.Forms.GroupBox();
             this.pnlRestoreControls = new System.Windows.Forms.Panel();
+            this.btnImportDataPump = new System.Windows.Forms.Button();
+            this.txtImportDumpFile = new System.Windows.Forms.TextBox();
+            this.lblImportDumpFile = new System.Windows.Forms.Label();
             this.btnBackupRestore = new System.Windows.Forms.Button();
             this.cboBackupVersion = new System.Windows.Forms.ComboBox();
             this.lblBackupVersion = new System.Windows.Forms.Label();
@@ -179,9 +183,11 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.dgvBackupHistory.RowHeadersWidth = 51;
             this.dgvBackupHistory.Size = new System.Drawing.Size(514, 138);
             this.dgvBackupHistory.TabIndex = 1;
+            this.dgvBackupHistory.SelectionChanged += new System.EventHandler(this.dgvBackupHistory_SelectionChanged);
             // 
             // pnlBackupControls
             // 
+            this.pnlBackupControls.Controls.Add(this.btnOpenErrorLog);
             this.pnlBackupControls.Controls.Add(this.btnRefreshBackup);
             this.pnlBackupControls.Controls.Add(this.lblSchedulerStatus);
             this.pnlBackupControls.Controls.Add(this.btnDisableAutoBackup);
@@ -195,6 +201,17 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.pnlBackupControls.Size = new System.Drawing.Size(514, 115);
             this.pnlBackupControls.TabIndex = 0;
             // 
+            // btnOpenErrorLog
+            //
+            this.btnOpenErrorLog.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnOpenErrorLog.Location = new System.Drawing.Point(270, 80);
+            this.btnOpenErrorLog.Name = "btnOpenErrorLog";
+            this.btnOpenErrorLog.Size = new System.Drawing.Size(110, 30);
+            this.btnOpenErrorLog.TabIndex = 7;
+            this.btnOpenErrorLog.Text = "Mo log loi";
+            this.btnOpenErrorLog.UseVisualStyleBackColor = true;
+            this.btnOpenErrorLog.Click += new System.EventHandler(this.btnOpenErrorLog_Click);
+            //
             // btnRefreshBackup
             // 
             this.btnRefreshBackup.Font = new System.Drawing.Font("Segoe UI", 9F);
@@ -389,6 +406,9 @@ namespace QuanLyYTe.Forms.BackupRecovery
             // 
             // pnlRestoreControls
             // 
+            this.pnlRestoreControls.Controls.Add(this.btnImportDataPump);
+            this.pnlRestoreControls.Controls.Add(this.txtImportDumpFile);
+            this.pnlRestoreControls.Controls.Add(this.lblImportDumpFile);
             this.pnlRestoreControls.Controls.Add(this.btnBackupRestore);
             this.pnlRestoreControls.Controls.Add(this.cboBackupVersion);
             this.pnlRestoreControls.Controls.Add(this.lblBackupVersion);
@@ -397,6 +417,35 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.pnlRestoreControls.Name = "pnlRestoreControls";
             this.pnlRestoreControls.Size = new System.Drawing.Size(507, 83);
             this.pnlRestoreControls.TabIndex = 0;
+            //
+            // btnImportDataPump
+            //
+            this.btnImportDataPump.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.btnImportDataPump.Location = new System.Drawing.Point(395, 47);
+            this.btnImportDataPump.Name = "btnImportDataPump";
+            this.btnImportDataPump.Size = new System.Drawing.Size(110, 32);
+            this.btnImportDataPump.TabIndex = 5;
+            this.btnImportDataPump.Text = "Import dump";
+            this.btnImportDataPump.UseVisualStyleBackColor = true;
+            this.btnImportDataPump.Click += new System.EventHandler(this.btnImportDataPump_Click);
+            //
+            // txtImportDumpFile
+            //
+            this.txtImportDumpFile.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.txtImportDumpFile.Location = new System.Drawing.Point(85, 49);
+            this.txtImportDumpFile.Name = "txtImportDumpFile";
+            this.txtImportDumpFile.Size = new System.Drawing.Size(300, 27);
+            this.txtImportDumpFile.TabIndex = 4;
+            //
+            // lblImportDumpFile
+            //
+            this.lblImportDumpFile.AutoSize = true;
+            this.lblImportDumpFile.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.lblImportDumpFile.Location = new System.Drawing.Point(3, 53);
+            this.lblImportDumpFile.Name = "lblImportDumpFile";
+            this.lblImportDumpFile.Size = new System.Drawing.Size(72, 20);
+            this.lblImportDumpFile.TabIndex = 3;
+            this.lblImportDumpFile.Text = "File dump:";
             // 
             // btnBackupRestore
             // 
@@ -488,7 +537,11 @@ namespace QuanLyYTe.Forms.BackupRecovery
         private System.Windows.Forms.Label lblBackupVersion;
         private System.Windows.Forms.ComboBox cboBackupVersion;
         private System.Windows.Forms.Button btnBackupRestore;
+        private System.Windows.Forms.Label lblImportDumpFile;
+        private System.Windows.Forms.TextBox txtImportDumpFile;
+        private System.Windows.Forms.Button btnImportDataPump;
         private System.Windows.Forms.Label lblTotalRows;
         private System.Windows.Forms.Button btnRefreshBackup;
+        private System.Windows.Forms.Button btnOpenErrorLog;
     }
 }

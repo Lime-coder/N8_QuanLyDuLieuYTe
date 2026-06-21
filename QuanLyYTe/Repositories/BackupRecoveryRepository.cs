@@ -79,6 +79,37 @@ namespace QuanLyYTe.Repositories
             }
         }
 
+        public string ImportDataPumpToRestore(string dumpFile)
+        {
+            using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
+            using (OracleCommand cmd = new OracleCommand("hospital_dba.USP_IMPORT_DATAPUMP_TO_RESTORE", conn))
+            {
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.BindByName = true;
+                cmd.CommandTimeout = 0;
+
+                cmd.Parameters.Add("p_dump_file", OracleDbType.Varchar2, 255).Value = dumpFile;
+
+                OracleParameter stateParam = cmd.Parameters.Add("p_job_state", OracleDbType.Varchar2, 30);
+                stateParam.Direction = ParameterDirection.Output;
+
+                OracleParameter logParam = cmd.Parameters.Add("p_log_file", OracleDbType.Varchar2, 255);
+                logParam.Direction = ParameterDirection.Output;
+
+                OracleParameter tableCountParam = cmd.Parameters.Add("p_table_count", OracleDbType.Int32);
+                tableCountParam.Direction = ParameterDirection.Output;
+
+                OracleParameter prescriptionCountParam = cmd.Parameters.Add("p_prescription_count", OracleDbType.Int32);
+                prescriptionCountParam.Direction = ParameterDirection.Output;
+
+                conn.Open();
+                cmd.ExecuteNonQuery();
+
+                return $"State: {stateParam.Value}; Log: {logParam.Value}; " +
+                       $"Tables: {tableCountParam.Value}; PRESCRIPTION rows: {prescriptionCountParam.Value}";
+            }
+        }
+
         public void EnableAutoBackup(string repeatInterval)
         {
             string sql = $@"
