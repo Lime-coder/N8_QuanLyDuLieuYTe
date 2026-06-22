@@ -9,7 +9,7 @@ namespace QuanLyYTe.Repositories
     {
         public PatientRepository()
         {
-            _spOwner = "hospital";
+            _spOwner = "hospital_dba";
         }
 
         // Lấy thông tin cá nhân bệnh nhân đang đăng nhập

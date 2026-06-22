@@ -16,7 +16,7 @@ namespace QuanLyYTe
             // Application.Run(new Forms.Dashboard("Hospital_dba"));
             // Application.Run(new Forms.frmGrantPermission());
             // Application.Run(new Forms.frmUserManagement());
-            // Application.Run(new Forms.frmRevokePermission());
+            // Application.Run(new Forms.frmRevokePermission());Abc123456
             Application.Run(new Forms.frmLogin());
         }
     }

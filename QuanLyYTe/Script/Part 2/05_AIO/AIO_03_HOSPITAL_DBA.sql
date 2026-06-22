@@ -1,4 +1,4 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- AIO_03_HOSPITAL_DBA.sql
 -- Run as: HOSPITAL_DBA
 -- Container: PDB_QLYT (unless specified otherwise)
@@ -49,14 +49,14 @@ ALTER SESSION SET CURRENT_SCHEMA = hospital;
 -- File: VPD_Coordinator.sql
 -- Mục đích:
 -- 1. Giữ TC#5: nhân viên query trực tiếp STAFF chỉ thấy chính mình.
--- 2. Tạo bảng phụ tối thiểu cho Điều phối viên ch?n Bác sĩ/Y sĩ v� Kỹ thuật viên.
+-- 2. Tạo bảng phụ tối thiểu cho Điều phối viên chọn Bác sĩ/Y sĩ và Kỹ thuật viên.
 -- Run as: HOSPITAL_DBA có quyền DBMS_RLS
 -- ==============================================================================
 
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 -- ==============================================================================
--- PHẦN 1: DROP POLICY CU
+-- PHẦN 1: DROP POLICY CŨ
 -- ==============================================================================
 
 BEGIN
@@ -72,7 +72,7 @@ END;
 /
 
 -- ==============================================================================
--- PHẦN 2: DROP FUNCTION CU
+-- PHẦN 2: DROP FUNCTION CŨ
 -- ==============================================================================
 
 BEGIN
@@ -164,7 +164,7 @@ CREATE TABLE hospital.COORD_ASSIGNMENT_STAFF (
 );
 
 -- ==============================================================================
--- PHẦN 6: �? D? LI?U T?I THI?U T? STAFF SANG B?NG PH?
+-- PHẦN 6: ĐỔ DỮ LIỆU TỐI THIỂU TỪ STAFF SANG BẢNG PHỤ
 -- ==============================================================================
 
 INSERT INTO hospital.COORD_ASSIGNMENT_STAFF (
@@ -187,7 +187,6 @@ LEFT JOIN hospital.department d
     ON d.dept_id = s.dept_id
 WHERE s.staff_role IN (
     N'Bác sĩ',
-    N'Bác sĩ/Y sĩ',
     N'Kỹ thuật viên'
 );
 
@@ -243,7 +242,7 @@ BEGIN
     IF :NEW.technician_id IS NOT NULL THEN
         SELECT is_active INTO v_tech_active FROM hospital.staff WHERE staff_id = :NEW.technician_id;
         IF v_tech_active = 0 THEN
-            RAISE_APPLICATION_ERROR(-20012, 'Kh�ng th? t?o/c?p nh?t d?ch v?: Kỹ thuật viên n�y d� b? kh�a (Kh�ng ho?t d?ng).');
+            RAISE_APPLICATION_ERROR(-20012, N'Không thể tạo/cập nhật dịch vụ: Kỹ thuật viên này đã bị khóa (Không hoạt động).');
         END IF;
     END IF;
 END;
@@ -253,10 +252,10 @@ END;
 BEGIN
     FOR r IN (SELECT record_id FROM hospital.medical_record WHERE ROWNUM = 1) LOOP
         INSERT INTO hospital.service_record (record_id, service_type, service_date, technician_id, service_result)
-        SELECT r.record_id, N'Xét nghiệm máu', SYSDATE - 1, NULL, NULL
+        SELECT r.record_id, N'Xét nghiệm tổng quát', SYSDATE - 1, NULL, NULL
         FROM DUAL
         WHERE NOT EXISTS (
-            SELECT 1 FROM hospital.service_record WHERE record_id = r.record_id AND service_type = N'Xét nghiệm máu'
+            SELECT 1 FROM hospital.service_record WHERE record_id = r.record_id AND service_type = N'Xét nghiệm tổng quát'
         );
     END LOOP;
     COMMIT;
@@ -291,7 +290,7 @@ GRANT UPDATE (doctor_id, dept_id) ON hospital.medical_record TO rl_coordinator;
 -- Được xem danh sách dịch vụ
 GRANT SELECT ON hospital.service_record TO rl_coordinator;
 
--- Chỉ được phân công k? thu?t vi�n
+-- Chỉ được phân công kỹ thuật viên
 GRANT UPDATE (technician_id) ON hospital.service_record TO rl_coordinator;
 
 -- Xem danh mục khoa
@@ -304,7 +303,7 @@ GRANT SELECT ON hospital.staff TO rl_coordinator;
 -- Chỉ được cập nhật thông tin cá nhân hợp lệ
 GRANT UPDATE (phone, hometown) ON hospital.staff TO rl_coordinator;
 
--- View phục vụ điều phối bác sĩ/k? thu?t vi�n
+-- View phục vụ điều phối bác sĩ/kỹ thuật viên
 GRANT SELECT ON hospital.VW_COORD_DOCTORS TO rl_coordinator;
 GRANT SELECT ON hospital.VW_COORD_TECHNICIANS TO rl_coordinator;
 
@@ -592,7 +591,7 @@ BEGIN
 END USP_GET_PATIENT_PROFILE;
 /
 
--- USP_GET_PATIENT_RECORDS: L?y danh sách hồ sơ bệnh án c?a bệnh nhân
+-- USP_GET_PATIENT_RECORDS: Lấy danh sách hồ sơ bệnh án của bệnh nhân
 CREATE OR REPLACE PROCEDURE USP_GET_PATIENT_RECORDS (
     p_cursor OUT SYS_REFCURSOR
 ) AUTHID CURRENT_USER AS
@@ -2205,8 +2204,8 @@ SHOW ERRORS PACKAGE BODY hospital.PKG_BACKUP_RECOVERY;
 
 -- ==============================================================================
 -- 5. COMPATIBILITY WRAPPERS FOR WINFORMS
--- �?t sau PACKAGE BODY
--- Gọi rỗng để tránh lỗi PLS-00905 khi package t?m INVALID lúc compile
+-- Đặt sau PACKAGE BODY
+-- Gọi rỗng để tránh lỗi PLS-00905 khi package tạm INVALID lúc compile
 -- ==============================================================================
 CREATE OR REPLACE PROCEDURE hospital.USP_MANUAL_BACKUP AS
 BEGIN
