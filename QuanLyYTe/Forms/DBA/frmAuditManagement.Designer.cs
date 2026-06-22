@@ -98,10 +98,10 @@
             this.cboAuditType.Font = new System.Drawing.Font("Segoe UI", 11F);
             this.cboAuditType.FormattingEnabled = true;
             this.cboAuditType.Items.AddRange(new object[] {
-            "Kiểm toán hệ thống",
+            "Standard audit",
             "Cập nhật Đơn thuốc",
             "Cập nhật thông tin HSBA",
-            "Thay đổi thông tin Dịch vụ"});
+            "Thêm/Xóa/Sửa HSBA_DV"});
             this.cboAuditType.Location = new System.Drawing.Point(480, 73);
             this.cboAuditType.Name = "cboAuditType";
             this.cboAuditType.Size = new System.Drawing.Size(250, 28);

@@ -235,7 +235,7 @@ namespace QuanLyYTe.Repositories
             new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
         };
 
-            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_REQ32_LOGS"), p);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_STANDARD_AUDIT_LOGS"), p);
         }
         // Fetch FGA Audit logs for Prescription (Req 3.3a)
         public DataTable GetFGAPrescriptionLogs()
@@ -243,7 +243,7 @@ namespace QuanLyYTe.Repositories
             OracleParameter[] p = {
             new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
         };
-            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_REQ33A_LOGS"), p);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_PRESCRIPTION_AUDIT_LOGS"), p);
         }
         // Fetch FGA + Unified Audit logs for Medical Record (Req 3.3b, 3.3c)
         public DataTable GetFGAMedicalRecordLogs()
@@ -251,7 +251,7 @@ namespace QuanLyYTe.Repositories
             OracleParameter[] p = {
             new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
         };
-            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_REQ33BC_LOGS"), p);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_MEDICAL_RECORD_AUDIT_LOGS"), p);
         }
         // Fetch Unified Audit logs for Service Record (Req 3.3d)
         public DataTable GetUnifiedServiceRecordLogs()
@@ -259,7 +259,7 @@ namespace QuanLyYTe.Repositories
             OracleParameter[] p = {
             new OracleParameter("p_cursor", OracleDbType.RefCursor, ParameterDirection.Output)
         };
-            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_REQ33D_LOGS"), p);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_SERVICE_RECORD_AUDIT_LOGS"), p);
         }
     } 
 }
