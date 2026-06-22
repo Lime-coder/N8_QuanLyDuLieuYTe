@@ -74,13 +74,13 @@ Chay bang SYS AS SYSDBA:
 
 ```sql
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-@BackupRecoveryGrants.sql
+@04_backup_recovery_grants.sql
 ```
 
 Sau do ket noi `HOSPITAL_DBA` vao `PDB_QLYT` va chay:
 
 ```sql
-@BackupRecoverySetup.sql
+@03_backup_recovery_setup.sql
 ```
 
 Script setup tao:
@@ -177,7 +177,7 @@ C:\OracleBackups
 Giao dien la cach import chinh. Khi can test ngoai ung dung:
 
 ```powershell
-cd "D:\ATBM-Oracle\Project\N8_QuanLyDuLieuYTe\QuanLyYTe\Script\Part 2\04_BackupRecovery"
+cd "D:\Science\Study\Technology\Security and protection in information system\QuanLyYTe\QuanLyYTe\Script\database\08_backup_restore"
 .\Run-DataPumpImportToRestore.ps1 -DumpFile "hospital_schema_1_20260617_001212.dmp"
 ```
 

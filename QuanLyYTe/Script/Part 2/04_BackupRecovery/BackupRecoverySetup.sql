@@ -472,12 +472,140 @@ END;
 /
 SHOW ERRORS PROCEDURE hospital.USP_SIMULATE_DELETE;
 
+-- ==============================================================================
+-- 6. DATA PUMP IMPORT FOR WINFORMS
+-- ==============================================================================
+-- This procedure is owned by HOSPITAL_DBA because REMAP_SCHEMA import requires
+-- the active DATAPUMP_IMP_FULL_DATABASE role. The target schema is fixed to
+-- HOSPITAL_RESTORE so the UI cannot drop or overwrite an arbitrary schema.
+-- ==============================================================================
+CREATE OR REPLACE PROCEDURE hospital_dba.USP_IMPORT_DATAPUMP_TO_RESTORE(
+    p_dump_file           IN  VARCHAR2,
+    p_job_state           OUT VARCHAR2,
+    p_log_file            OUT VARCHAR2,
+    p_table_count         OUT NUMBER,
+    p_prescription_count  OUT NUMBER
+) AUTHID CURRENT_USER AS
+    v_handle      NUMBER;
+    v_job_name    VARCHAR2(30);
+    v_user_count  NUMBER;
+BEGIN
+    p_job_state := 'NOT_STARTED';
+    p_table_count := 0;
+    p_prescription_count := 0;
+
+    IF p_dump_file IS NULL
+       OR LENGTH(p_dump_file) > 255
+       OR NOT REGEXP_LIKE(p_dump_file, '^[A-Za-z0-9][A-Za-z0-9_.-]*[.]dmp$', 'i')
+       OR INSTR(p_dump_file, '..') > 0 THEN
+        RAISE_APPLICATION_ERROR(-20020, 'Invalid dump file name. Enter only a .dmp file name.');
+    END IF;
+
+    SELECT COUNT(*)
+    INTO v_user_count
+    FROM DBA_USERS
+    WHERE USERNAME = 'HOSPITAL_RESTORE';
+
+    IF v_user_count > 0 THEN
+        EXECUTE IMMEDIATE 'DROP USER HOSPITAL_RESTORE CASCADE';
+    END IF;
+
+    EXECUTE IMMEDIATE '
+        CREATE USER HOSPITAL_RESTORE IDENTIFIED BY "Restore#2026"
+        DEFAULT TABLESPACE HOSPITAL_DATA
+        TEMPORARY TABLESPACE TEMP
+        QUOTA UNLIMITED ON HOSPITAL_DATA';
+
+    EXECUTE IMMEDIATE '
+        GRANT CREATE SESSION, CREATE TABLE, CREATE VIEW, CREATE SEQUENCE,
+              CREATE PROCEDURE, CREATE TRIGGER
+        TO HOSPITAL_RESTORE';
+
+    v_job_name := 'HOSP_IMP_' || TO_CHAR(SYSTIMESTAMP, 'YYYYMMDDHH24MISSFF3');
+    p_log_file := 'import_gui_' || TO_CHAR(SYSTIMESTAMP, 'YYYYMMDD_HH24MISS') || '.log';
+
+    v_handle := DBMS_DATAPUMP.OPEN(
+        operation => 'IMPORT',
+        job_mode  => 'SCHEMA',
+        job_name  => v_job_name
+    );
+
+    DBMS_DATAPUMP.ADD_FILE(
+        handle    => v_handle,
+        filename  => p_dump_file,
+        directory => 'HOSPITAL_BACKUP_DIR',
+        filetype  => DBMS_DATAPUMP.KU$_FILE_TYPE_DUMP_FILE
+    );
+
+    DBMS_DATAPUMP.ADD_FILE(
+        handle    => v_handle,
+        filename  => p_log_file,
+        directory => 'HOSPITAL_BACKUP_DIR',
+        filetype  => DBMS_DATAPUMP.KU$_FILE_TYPE_LOG_FILE
+    );
+
+    DBMS_DATAPUMP.METADATA_REMAP(
+        handle    => v_handle,
+        name      => 'REMAP_SCHEMA',
+        old_value => 'HOSPITAL',
+        value     => 'HOSPITAL_RESTORE'
+    );
+
+    DBMS_DATAPUMP.METADATA_REMAP(
+        handle    => v_handle,
+        name      => 'REMAP_TABLESPACE',
+        old_value => 'SYSTEM',
+        value     => 'HOSPITAL_DATA'
+    );
+
+    DBMS_DATAPUMP.METADATA_FILTER(
+        handle => v_handle,
+        name   => 'EXCLUDE_PATH_EXPR',
+        value  => 'IN (''USER'', ''SYSTEM_GRANT'', ''ROLE_GRANT'', ''DEFAULT_ROLE'', ''OBJECT_GRANT'', ''PROCACT_SCHEMA'')'
+    );
+
+    DBMS_DATAPUMP.SET_PARAMETER(
+        handle => v_handle,
+        name   => 'TABLE_EXISTS_ACTION',
+        value  => 'REPLACE'
+    );
+
+    DBMS_DATAPUMP.START_JOB(v_handle);
+    DBMS_DATAPUMP.WAIT_FOR_JOB(v_handle, p_job_state);
+    v_handle := NULL;
+
+    IF p_job_state <> 'COMPLETED' THEN
+        RAISE_APPLICATION_ERROR(-20021, 'Data Pump import ended with state ' || p_job_state);
+    END IF;
+
+    SELECT COUNT(*)
+    INTO p_table_count
+    FROM ALL_TABLES
+    WHERE OWNER = 'HOSPITAL_RESTORE';
+
+    EXECUTE IMMEDIATE
+        'SELECT COUNT(*) FROM HOSPITAL_RESTORE.PRESCRIPTION'
+        INTO p_prescription_count;
+EXCEPTION
+    WHEN OTHERS THEN
+        BEGIN
+            IF v_handle IS NOT NULL THEN
+                DBMS_DATAPUMP.DETACH(v_handle);
+            END IF;
+        EXCEPTION
+            WHEN OTHERS THEN NULL;
+        END;
+        RAISE;
+END;
+/
+SHOW ERRORS PROCEDURE hospital_dba.USP_IMPORT_DATAPUMP_TO_RESTORE;
+
 
 -- Optional: audit HSBA and HSBA_DV illegal changes if your Requirement 3 scripts have not created them yet.
 -- Keep this separated from the core recovery demo.
 
 -- ==============================================================================
--- 6. DBMS_SCHEDULER AUTO BACKUP JOB
+-- 7. DBMS_SCHEDULER AUTO BACKUP JOB
 -- ==============================================================================
 BEGIN
     DBMS_SCHEDULER.DROP_JOB(

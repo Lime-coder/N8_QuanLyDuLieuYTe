@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 using Oracle.ManagedDataAccess.Client;
+using QuanLyYTe.Common;
 using QuanLyYTe.Helpers;
 
 namespace QuanLyYTe.Forms.BackupRecovery
@@ -16,6 +19,36 @@ namespace QuanLyYTe.Forms.BackupRecovery
         {
             InitializeComponent();
             ApplyButtonStyles();
+        }
+
+        private void ShowOperationError(string operation, Exception ex, MessageBoxIcon icon = MessageBoxIcon.Error)
+        {
+            Logger.LogError(ex, $"BackupRecovery.{operation}");
+
+            MessageBox.Show(
+                $"{operation} that bai: {ex.Message}\n\n" +
+                $"App log: {Logger.LogFilePath}\n" +
+                "Data Pump logs: C:\\OracleBackups",
+                "Loi",
+                MessageBoxButtons.OK,
+                icon);
+        }
+
+        private void OpenErrorLogFolder()
+        {
+            try
+            {
+                Directory.CreateDirectory(Logger.LogDirectoryPath);
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = Logger.LogDirectoryPath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                ShowOperationError("Mo thu muc log", ex);
+            }
         }
 
         private void frmBackupRecovery_Load(object sender, EventArgs e)
@@ -76,6 +109,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
 
             StyleNeutral(btnRefresh);
             StyleNeutral(btnRefreshBackup);
+            StyleNeutral(btnOpenErrorLog);
             StyleBlue(btnBackupNow);
             StyleGreen(btnEnableAutoBackup);
             StyleDanger(btnDisableAutoBackup);
@@ -83,6 +117,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             StyleDanger(btnSimulateWrongUpdate);
             StyleNeutral(btnLoadAudit);
             StylePrimary(btnBackupRestore);
+            StyleBlue(btnImportDataPump);
         }
 
         private void btnRefreshBackup_Click(object sender, EventArgs e)
@@ -108,7 +143,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải dữ liệu bảng PRESCRIPTION: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowOperationError("Tai du lieu PRESCRIPTION", ex);
             }
         }
         // Tải lịch sử các phiên bản sao lưu từ BACKUP_HISTORY
@@ -127,7 +162,22 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi tải lịch sử sao lưu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowOperationError("Tai lich su sao luu", ex);
+            }
+        }
+
+        private void dgvBackupHistory_SelectionChanged(object sender, EventArgs e)
+        {
+            if (dgvBackupHistory.CurrentRow == null ||
+                !dgvBackupHistory.Columns.Contains("DUMP_FILE"))
+            {
+                return;
+            }
+
+            object value = dgvBackupHistory.CurrentRow.Cells["DUMP_FILE"].Value;
+            if (value != null && value != DBNull.Value)
+            {
+                txtImportDumpFile.Text = value.ToString();
             }
         }
         // Tải danh sách các thời điểm kiểm toán khả dụng cho ComboBox phục hồi
@@ -156,7 +206,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("Lỗi tải danh sách điểm khôi phục: " + ex.Message);
+                Logger.LogError(ex, "BackupRecovery.LoadAuditRecoveryPoints");
             }
         }
         // Cập nhật nhãn trạng thái của Oracle Job (DBMS_SCHEDULER)
@@ -188,6 +238,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
             catch (Exception ex)
             {
+                Logger.LogError(ex, "BackupRecovery.UpdateSchedulerStatusUI");
                 lblSchedulerStatus.Text = "Lỗi trạng thái: " + ex.Message;
                 lblSchedulerStatus.ForeColor = Color.OrangeRed;
             }
@@ -210,7 +261,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Không thể nạp nhật ký kiểm toán. Vui lòng kiểm tra lại quyền truy cập hoặc cấu hình Audit của hệ thống.\nChi tiết: " + ex.Message, "Lỗi tải Nhật ký", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ShowOperationError("Tai nhat ky kiem toan", ex, MessageBoxIcon.Warning);
             }
         }
         // Thực hiện sao lưu thủ công thông qua Service
@@ -238,7 +289,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                     {
                         this.Invoke((MethodInvoker)delegate
                         {
-                            MessageBox.Show("Sao lưu thủ công thất bại: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            ShowOperationError("Sao luu thu cong", ex);
                             btnBackupNow.Enabled = true;
                             btnBackupNow.Text = "Sao lưu chủ động";
                         });
@@ -247,7 +298,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowOperationError("Khoi dong sao luu thu cong", ex);
                 btnBackupNow.Enabled = true;
                 btnBackupNow.Text = "Sao lưu chủ động";
             }
@@ -273,7 +324,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Kích hoạt sao lưu tự động thất bại: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowOperationError("Bat sao luu tu dong", ex);
             }
         }
         // Tắt sao lưu tự động thông qua Service
@@ -288,7 +339,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Tắt sao lưu tự động thất bại: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowOperationError("Tat sao luu tu dong", ex);
             }
         }
         // Giả lập sự cố: Xóa bản ghi BA000001
@@ -304,7 +355,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi giả lập sự cố xóa: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowOperationError("Gia lap su co xoa", ex);
             }
         }
         // Giả lập sự cố: Cập nhật sai thông tin bản ghi BA000001
@@ -320,7 +371,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Lỗi giả lập sự cố cập nhật: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowOperationError("Gia lap su co cap nhat", ex);
             }
         }
         // Thực hiện khôi phục dữ liệu cho bản ghi BA000001
@@ -347,7 +398,50 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Khôi phục dữ liệu thất bại: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowOperationError("Khoi phuc Flashback", ex);
+            }
+        }
+
+        private async System.Threading.Tasks.Task ImportDataPumpAsync()
+        {
+            string dumpFile = txtImportDumpFile.Text.Trim();
+            if (string.IsNullOrWhiteSpace(dumpFile))
+            {
+                MessageBox.Show("Vui long nhap ten file dump.", "Yeu cau", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            DialogResult confirm = MessageBox.Show(
+                $"Import {dumpFile} vao HOSPITAL_RESTORE? Du lieu restore cu se bi thay the.",
+                "Xac nhan Data Pump import",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning);
+
+            if (confirm != DialogResult.Yes)
+                return;
+
+            btnImportDataPump.Enabled = false;
+            btnImportDataPump.Text = "Dang import...";
+
+            try
+            {
+                string result = await System.Threading.Tasks.Task.Run(
+                    () => _service.ImportDataPumpToRestore(dumpFile));
+
+                MessageBox.Show(
+                    "Import vao HOSPITAL_RESTORE thanh cong.\n\n" + result,
+                    "Data Pump import",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                ShowOperationError("Data Pump import", ex);
+            }
+            finally
+            {
+                btnImportDataPump.Enabled = true;
+                btnImportDataPump.Text = "Import dump";
             }
         }
 
@@ -360,5 +454,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
         private void btnSimulateWrongUpdate_Click(object sender, EventArgs e) => SimulateWrongUpdate();
         private void btnLoadAudit_Click(object sender, EventArgs e) => LoadAuditLogs();
         private void btnBackupRestore_Click(object sender, EventArgs e) => BackupRestore();
+        private async void btnImportDataPump_Click(object sender, EventArgs e) => await ImportDataPumpAsync();
+        private void btnOpenErrorLog_Click(object sender, EventArgs e) => OpenErrorLogFolder();
     }
 }
