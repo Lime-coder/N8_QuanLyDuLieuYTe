@@ -1,4 +1,4 @@
-﻿define sys_pass = "my12345" -- Mật khẩu User SYS
+define sys_pass = "my12345" -- Mật khẩu User SYS
 define pdb_url = "localhost:1521/PDB_QLYT"
 define pdb_name = "PDB_QLYT"
 

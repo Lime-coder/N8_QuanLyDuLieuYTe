@@ -1,6 +1,6 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- 05_doctor_tests.sql
--- Chạy dưới quyền: hospital_dba (for grants), then test as doctor
+-- Cháº¡y dÆ°á»›i quyá»n: hospital_dba (for grants), then test as doctor
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
@@ -22,6 +22,4 @@ GRANT EXECUTE ON hospital.USP_UPDATE_PATIENT TO rl_doctor;
 GRANT EXECUTE ON hospital.USP_GET_SELF_INFO TO rl_doctor;
 GRANT EXECUTE ON hospital.USP_UPDATE_SELF_INFO TO rl_doctor;
 
--- 2. Tests
--- Connect as NV000021
--- EXEC hospital.USP_GET_SELF_INFO(:cur);
+GRANT UPDATE (hometown, phone) ON hospital.staff TO rl_doctor;

@@ -1,11 +1,11 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- 03_audit_views.sql
--- Chạy dưới quyền: sysdba
+-- Cháº¡y dÆ°á»›i quyá»n: sysdba
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
--- 4.1. Tab Kiểm toán hệ thống
+-- 4.1. Tab Kiá»ƒm toÃ¡n há»‡ thá»‘ng
 CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_REQ32_LOGS (p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
@@ -18,7 +18,7 @@ BEGIN
 END;
 /
 
--- 4.2. Tab Đơn thuốc
+-- 4.2. Tab ÄÆ¡n thuá»‘c
 CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_REQ33A_LOGS (p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
@@ -29,7 +29,7 @@ BEGIN
 END;
 /
 
--- 4.3. Tab HSBA (Gộp FGA-Thành công và Unified-Thất bại)
+-- 4.3. Tab HSBA (Gá»™p FGA-ThÃ nh cÃ´ng vÃ  Unified-Tháº¥t báº¡i)
 CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_REQ33BC_LOGS (p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
@@ -44,7 +44,7 @@ BEGIN
 END;
 /
 
--- 4.4. Tab Dịch vụ (Lấy từ Unified Thất bại)
+-- 4.4. Tab Dá»‹ch vá»¥ (Láº¥y tá»« Unified Tháº¥t báº¡i)
 CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_REQ33D_LOGS (p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR

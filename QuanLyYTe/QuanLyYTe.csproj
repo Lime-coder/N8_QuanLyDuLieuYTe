@@ -10,10 +10,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Data\**" />
+    <Compile Remove="Models\**" />
     <Compile Remove="Script\Auth\**" />
     <EmbeddedResource Remove="Data\**" />
+    <EmbeddedResource Remove="Models\**" />
     <EmbeddedResource Remove="Script\Auth\**" />
     <None Remove="Data\**" />
+    <None Remove="Models\**" />
     <None Remove="Script\Auth\**" />
   </ItemGroup>
 
@@ -23,7 +26,6 @@
 
   <ItemGroup>
     <Folder Include="DTOs\" />
-    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>

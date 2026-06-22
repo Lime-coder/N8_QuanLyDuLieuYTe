@@ -1,4 +1,4 @@
-﻿-- Run as: SYSDBA
+-- Run as: SYSDBA
 -- Chuyển về vùng root
 ALTER SESSION SET CONTAINER = CDB$ROOT;
 

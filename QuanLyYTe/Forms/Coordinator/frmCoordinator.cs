@@ -331,7 +331,7 @@ namespace QuanLyYTe.Forms.Coordinator
         pnlPat.Controls.AddRange(new Control[] { btnPatPrev, btnPatNext, lblPatPage });
 
         Button btnAddNewPat = new Button { Text = "Thêm bệnh nhân", Left = 300, Top = 5, Width = 120, Height = 30, BackColor = Color.FromArgb(255, 140, 40), ForeColor = Color.White };
-        btnAddNewPat.Click += (s, e) => { var frm = new frmAddPatient(_username); if (frm.ShowDialog() == DialogResult.OK) LoadPatients(); };
+        btnAddNewPat.Click += (s, e) => { var frm = new frmAddPatient(); if (frm.ShowDialog() == DialogResult.OK) LoadPatients(); };
         pnlPat.Controls.Add(btnAddNewPat);
 
         splitContainer1.Panel1.Controls.Add(pnlPat);
@@ -460,6 +460,7 @@ namespace QuanLyYTe.Forms.Coordinator
     		if (dgvPatients.Columns.Contains("district")) dgvPatients.Columns["district"].Visible = false;
     		if (dgvPatients.Columns.Contains("city_province")) dgvPatients.Columns["city_province"].Visible = false;
     		if (dgvPatients.Columns.Contains("username_db")) dgvPatients.Columns["username_db"].Visible = false;
+            HideColumnIfExists(dgvPatients, "rnum");
     		cmbMRPatientId.DataSource = dtPatients.Copy();
     		cmbMRPatientId.DisplayMember = "display_name";
     		cmbMRPatientId.ValueMember = "patient_id";
@@ -497,6 +498,18 @@ namespace QuanLyYTe.Forms.Coordinator
     	{
     		MessageBox.Show("Lỗi: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Hand);
     	}
+
+        private void HideColumnIfExists(DataGridView dgv, string columnName)
+        {
+            foreach (DataGridViewColumn column in dgv.Columns)
+            {
+                if (string.Equals(column.Name, columnName, StringComparison.OrdinalIgnoreCase))
+                {
+                    column.Visible = false;
+                    return;
+                }
+            }
+        }
     
     	private void btnRefreshPatient_Click(object sender, EventArgs e)
     	{
@@ -832,6 +845,7 @@ namespace QuanLyYTe.Forms.Coordinator
     		if (dgvMedicalRecords.Columns.Contains("DOCTOR_ID")) dgvMedicalRecords.Columns["DOCTOR_ID"].HeaderText = "Mã Bác sĩ";
     		if (dgvMedicalRecords.Columns.Contains("DEPT_ID")) dgvMedicalRecords.Columns["DEPT_ID"].HeaderText = "Mã Khoa";
     		if (dgvMedicalRecords.Columns.Contains("CONCLUSION")) dgvMedicalRecords.Columns["CONCLUSION"].HeaderText = "Kết luận";
+            HideColumnIfExists(dgvMedicalRecords, "rnum");
     	}
 
     	private void FormatServiceRecordsGrid()
@@ -859,6 +873,7 @@ namespace QuanLyYTe.Forms.Coordinator
     			{
     				dgvServiceRecords.Columns["MAKTV"].HeaderText = "Kỹ thuật viên";
     			}
+                HideColumnIfExists(dgvServiceRecords, "rnum");
     		}
     	}
     

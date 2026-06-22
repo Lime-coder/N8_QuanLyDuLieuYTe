@@ -1,6 +1,6 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- 04_doctor_procedures.sql
--- Chạy dưới quyền: hospital
+-- ChÃ¡ÂºÂ¡y dÃ†Â°Ã¡Â»â€ºi quyÃ¡Â»Ân: hospital
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
@@ -30,7 +30,7 @@ CREATE OR REPLACE PROCEDURE USP_UPDATE_MEDICAL_RECORD(p_id VARCHAR2, p_dg NVARCH
 BEGIN
     SELECT COUNT(*) INTO v_count FROM hospital.medical_record WHERE record_id = p_id;
     IF v_count = 0 THEN
-        RAISE_APPLICATION_ERROR(-20002, 'Lá»—i: KhÃ´ng tÃ¬m tháº¥y há»“ sÆ¡ bá»‡nh Ã¡n mÃ£ ' || p_id || ' Ä‘á»ƒ cáº­p nháº­t!');
+        RAISE_APPLICATION_ERROR(-20002, 'Loi: Khong tim thay ho so benh an ma ' || p_id || ' de cap nhat!');
     END IF;
 
     UPDATE hospital.medical_record SET diagnosis = p_dg, treatment_plan = p_tr, conclusion = p_cl WHERE record_id = p_id;
@@ -52,7 +52,7 @@ CREATE OR REPLACE PROCEDURE USP_ADD_SERVICE(p_id VARCHAR2, p_type NVARCHAR2) AS
     v_count NUMBER;
 BEGIN
     SELECT COUNT(*) INTO v_count FROM hospital.medical_record WHERE record_id = UPPER(TRIM(p_id));
-    IF v_count = 0 THEN RAISE_APPLICATION_ERROR(-20001, 'MÃ£ HSBA ' || p_id || ' khÃ´ng tá»“n táº¡i!'); END IF;
+    IF v_count = 0 THEN RAISE_APPLICATION_ERROR(-20001, 'Ma HSBA ' || p_id || ' khong ton tai!'); END IF;
 
     INSERT INTO hospital.service_record VALUES (UPPER(TRIM(p_id)), p_type, TRUNC(SYSDATE), NULL, NULL);
 END;
@@ -93,7 +93,7 @@ CREATE OR REPLACE PROCEDURE USP_MANAGE_PRESCRIPTION(
 BEGIN
     IF p_action IN ('INSERT', 'UPDATE') THEN
         SELECT COUNT(*) INTO v_count FROM hospital.medical_record WHERE record_id = v_id;
-        IF v_count = 0 THEN RAISE_APPLICATION_ERROR(-20003, 'Lá»—i: MÃ£ HSBA ' || v_id || ' khÃ´ng tá»“n táº¡i!'); END IF;
+        IF v_count = 0 THEN RAISE_APPLICATION_ERROR(-20003, 'Loi: Ma HSBA ' || v_id || ' khong ton tai!'); END IF;
     END IF;
 
     IF p_action = 'INSERT' THEN
@@ -101,7 +101,7 @@ BEGIN
         WHERE record_id = v_id AND TRUNC(prescription_date) = TRUNC(SYSDATE) AND medicine_name = p_med_name;
         
         IF v_count > 0 THEN
-            RAISE_APPLICATION_ERROR(-20005, 'Lá»—i: Thuá»‘c ' || p_med_name || ' Ä‘Ã£ Ä‘Æ°á»£c kÃª trong Ä‘Æ¡n cá»§a ngÃ y hÃ´m nay rá»“i!');
+            RAISE_APPLICATION_ERROR(-20005, 'Loi: Thuoc ' || p_med_name || ' da duoc ke trong don cua ngay hom nay roi!');
         END IF;
 
         INSERT INTO hospital.prescription (record_id, prescription_date, medicine_name, dosage)
@@ -158,7 +158,7 @@ CREATE OR REPLACE PROCEDURE USP_UPDATE_PATIENT(
 BEGIN
     SELECT COUNT(*) INTO v_count FROM hospital.patient WHERE patient_id = UPPER(TRIM(p_id));
     IF v_count = 0 THEN
-        RAISE_APPLICATION_ERROR(-20004, 'Lá»—i: KhÃ´ng tÃ¬m tháº¥y mÃ£ bá»‡nh nhÃ¢n ' || p_id || ' Ä‘á»ƒ cáº­p nháº­t!');
+        RAISE_APPLICATION_ERROR(-20004, 'Loi: Khong tim thay ma benh nhan ' || p_id || ' de cap nhat!');
     END IF;
 
     UPDATE hospital.patient 
@@ -173,7 +173,7 @@ END;
 CREATE OR REPLACE PROCEDURE USP_GET_SELF_INFO(p_c OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_c FOR 
-    SELECT s.full_name, s.gender, s.birthdate, s.id_card, s.hometown, s.phone, s.staff_role, d.dept_name
+    SELECT s.full_name, s.gender, s.birthdate, s.id_card, s.hometown, s.phone, s.staff_role, d.dept_name, s.facility
     FROM hospital.staff s
     JOIN hospital.department d ON d.dept_id = s.dept_id
     WHERE UPPER(username_db) = SYS_CONTEXT('USERENV', 'SESSION_USER');
@@ -187,3 +187,5 @@ BEGIN
     COMMIT;
 END;
 /
+
+

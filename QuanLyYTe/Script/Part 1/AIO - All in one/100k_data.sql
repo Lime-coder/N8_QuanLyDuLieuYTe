@@ -1,4 +1,4 @@
-﻿-- Run as: hospital_dba | Container: PDB_QLYT
+-- Run as: hospital_dba | Container: PDB_QLYT
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 -- 1. XÓA DỮ LIỆU CŨ ĐỂ CHẠY LẠI TỪ ĐẦU

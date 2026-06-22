@@ -1,6 +1,6 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- 04_label_notification_data.sql
--- Chạy dưới quyền: hospital_dba
+-- Cháº¡y dÆ°á»›i quyá»n: hospital_dba
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
@@ -15,25 +15,25 @@ END;
 /
 
 INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
-VALUES ('T1', N'Thông báo chung toàn viện', SYSDATE, N'Toàn quốc', CHAR_TO_LABEL('HOSP_OLS_POL', 'NV'));
+VALUES ('T1', UNISTR('Th\00F4ng b\00E1o chung to\00E0n vi\1EC7n'), SYSDATE, UNISTR('To\00E0n qu\1ED1c'), CHAR_TO_LABEL('HOSP_OLS_POL', 'NV'));
 
 INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
-VALUES ('T2', N'Họp chiến lược Quý 3', SYSDATE, N'Phòng họp VIP', CHAR_TO_LABEL('HOSP_OLS_POL', 'BGD'));
+VALUES ('T2', UNISTR('H\1ECDp chi\1EBFn l\01B0\1EE3c Qu\00FD 3'), SYSDATE, UNISTR('Ph\00F2ng h\1ECDp VIP'), CHAR_TO_LABEL('HOSP_OLS_POL', 'BGD'));
 
 INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
-VALUES ('T3', N'Đánh giá ngân sách các khoa', SYSDATE, N'Hội trường A', CHAR_TO_LABEL('HOSP_OLS_POL', 'LDK'));
+VALUES ('T3', UNISTR('\0110\00E1nh gi\00E1 ng\00E2n s\00E1ch c\00E1c khoa'), SYSDATE, UNISTR('H\1ED9i tr\01B0\1EDDng A'), CHAR_TO_LABEL('HOSP_OLS_POL', 'LDK'));
 
 INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
-VALUES ('T4', N'Báo cáo thiết bị nội soi', SYSDATE, N'Phòng Giám đốc', CHAR_TO_LABEL('HOSP_OLS_POL', 'LDK:TH'));
+VALUES ('T4', UNISTR('B\00E1o c\00E1o thi\1EBFt b\1ECB n\1ED9i soi'), SYSDATE, UNISTR('Ph\00F2ng Gi\00E1m \0111\1ED1c'), CHAR_TO_LABEL('HOSP_OLS_POL', 'LDK:TH'));
 
 INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
-VALUES ('T5', N'Thay đổi ca trực tuần tới', SYSDATE, N'Khoa TH - HCM', CHAR_TO_LABEL('HOSP_OLS_POL', 'NV:TH:HCM'));
+VALUES ('T5', UNISTR('Thay \0111\1ED5i ca tr\1EF1c tu\1EA7n t\1EDBi'), SYSDATE, UNISTR('Khoa TH - HCM'), CHAR_TO_LABEL('HOSP_OLS_POL', 'NV:TH:HCM'));
 
 INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
-VALUES ('T6', N'Tập huấn an toàn vệ sinh', SYSDATE, N'Khoa TH - HN', CHAR_TO_LABEL('HOSP_OLS_POL', 'NV:TH:HN'));
+VALUES ('T6', UNISTR('T\1EADp hu\1EA5n an to\00E0n v\1EC7 sinh'), SYSDATE, UNISTR('Khoa TH - HN'), CHAR_TO_LABEL('HOSP_OLS_POL', 'NV:TH:HN'));
 
 INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
-VALUES ('T7', N'Họp liên khoa TH & TK', SYSDATE, N'Chi nhánh Hải Phòng', CHAR_TO_LABEL('HOSP_OLS_POL', 'LDK:TH,TK:HP'));
+VALUES ('T7', UNISTR('H\1ECDp li\00EAn khoa TH & TK'), SYSDATE, UNISTR('Chi nh\00E1nh H\1EA3i Ph\00F2ng'), CHAR_TO_LABEL('HOSP_OLS_POL', 'LDK:TH,TK:HP'));
 
 COMMIT;
 
@@ -104,3 +104,11 @@ BEGIN
     COMMIT;
 END;
 /
+
+GRANT EXECUTE ON hospital_dba.USP_GET_USER_OLS_LABEL TO hospital_dba;
+GRANT EXECUTE ON hospital_dba.USP_SET_USER_OLS_LABEL TO hospital_dba;
+GRANT SELECT ON hospital.notification TO rl_dba, rl_coordinator, rl_doctor, rl_technician, rl_patient;
+GRANT EXECUTE ON hospital.USP_GET_NOTIFICATIONS TO rl_dba, rl_coordinator, rl_doctor, rl_technician, rl_patient;
+GRANT EXECUTE ON hospital.USP_ADD_NOTIFICATION TO rl_dba, rl_coordinator;
+GRANT INSERT ON hospital.notification TO rl_dba, rl_coordinator;
+GRANT SELECT ON hospital.seq_notification_id TO rl_dba, rl_coordinator;

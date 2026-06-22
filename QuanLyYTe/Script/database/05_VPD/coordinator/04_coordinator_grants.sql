@@ -1,6 +1,6 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- 05_coordinator_tests.sql
--- Chạy dưới quyền: hospital_dba
+-- Cháº¡y dÆ°á»›i quyá»n: hospital_dba
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
@@ -36,7 +36,6 @@ GRANT EXECUTE ON hospital.SP_COORD_GET_ALL_MED TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_INS_MED TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_SRV_ASS TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_UPD_TECH TO rl_coordinator;
-
--- TESTS
--- Connect as NV000001
--- EXEC hospital.SP_COORD_GET_SELF(:cur);
+GRANT EXECUTE ON hospital.SP_COORD_GET_PATS_PAGED TO rl_coordinator;
+GRANT EXECUTE ON hospital.SP_COORD_GET_ALL_MED_PAGED TO rl_coordinator;
+GRANT EXECUTE ON hospital.SP_COORD_GET_SRV_ASS_PAGED TO rl_coordinator;

@@ -8,13 +8,11 @@ namespace QuanLyYTe.Forms.Coordinator
     public partial class frmAddPatient : Form
     {
         private CoordinatorService _coordinatorService;
-        private string _usernameDb;
 
-        public frmAddPatient(string usernameDb)
+        public frmAddPatient()
         {
             InitializeComponent();
             _coordinatorService = new CoordinatorService();
-            _usernameDb = usernameDb;
 
             this.BackColor = Color.FromArgb(245, 244, 242);
             btnSave.BackColor = Color.FromArgb(255, 140, 40);
@@ -57,7 +55,7 @@ namespace QuanLyYTe.Forms.Coordinator
                     txtMedicalHistory.Text.Trim(),
                     txtFamilyHistory.Text.Trim(),
                     txtDrugAllergies.Text.Trim(),
-                    _usernameDb
+                    txtPatientId.Text.Trim()
                 );
                 
                 this.DialogResult = DialogResult.OK;

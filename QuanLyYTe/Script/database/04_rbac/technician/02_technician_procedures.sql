@@ -1,10 +1,10 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- 02_technician_procedures.sql
--- Chạy dưới quyền: hospital
+-- ChÃ¡ÂºÂ¡y dÃ†Â°Ã¡Â»â€ºi quyÃ¡Â»Ân: hospital
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 CREATE OR REPLACE PROCEDURE GET_TECHNICIAN_SERVICE_RECORDS (
     P_CURSOR OUT SYS_REFCURSOR
@@ -19,7 +19,7 @@ BEGIN
             SR.SERVICE_DATE,
             SR.TECHNICIAN_ID,
             SR.SERVICE_RESULT
-        FROM hospital.V_TECHNICIAN_SERVICE_RECORD SR
+        FROM hospital_dba.V_TECHNICIAN_SERVICE_RECORD SR
         ORDER BY SR.SERVICE_DATE DESC;
 END;
 /
@@ -32,20 +32,12 @@ CREATE OR REPLACE PROCEDURE UPDATE_TECHNICIAN_SERVICE_RESULT (
 )
 AUTHID CURRENT_USER
 AS
-    V_ROWS_UPDATED NUMBER;
 BEGIN
-    UPDATE hospital.SERVICE_RECORD SR
+    UPDATE hospital_dba.V_TECHNICIAN_SERVICE_RECORD SR
     SET SR.SERVICE_RESULT = P_SERVICE_RESULT
     WHERE SR.RECORD_ID = P_RECORD_ID
       AND SR.SERVICE_TYPE = P_SERVICE_TYPE
-      AND TRUNC(SR.SERVICE_DATE) = TRUNC(P_SERVICE_DATE)
-      AND EXISTS (
-          SELECT 1 
-          FROM hospital.V_TECHNICIAN_SERVICE_RECORD VSR 
-          WHERE VSR.RECORD_ID = SR.RECORD_ID 
-            AND VSR.SERVICE_TYPE = SR.SERVICE_TYPE 
-            AND TRUNC(VSR.SERVICE_DATE) = TRUNC(SR.SERVICE_DATE)
-      );
+      AND TRUNC(SR.SERVICE_DATE) = TRUNC(P_SERVICE_DATE);
     COMMIT;
 END;
 /
@@ -79,3 +71,5 @@ BEGIN
     COMMIT;
 END;
 /
+
+

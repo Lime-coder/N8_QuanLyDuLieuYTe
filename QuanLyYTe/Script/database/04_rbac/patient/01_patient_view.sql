@@ -1,10 +1,10 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- 01_patient_view.sql
--- Chạy dưới quyền: hospital
+-- Cháº¡y dÆ°á»›i quyá»n: hospital
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 CREATE OR REPLACE VIEW V_PATIENT_SELF AS
     SELECT patient_id, full_name, gender, birthdate, id_card,
@@ -35,3 +35,4 @@ CREATE OR REPLACE VIEW V_SERVICE_RECORD_PATIENT AS
     JOIN hospital.medical_record mr ON sr.record_id = mr.record_id
     JOIN hospital.patient p ON mr.patient_id = p.patient_id
     WHERE p.username_db = SYS_CONTEXT('USERENV', 'SESSION_USER');
+

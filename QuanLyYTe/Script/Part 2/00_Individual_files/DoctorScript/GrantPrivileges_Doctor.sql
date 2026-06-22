@@ -1,4 +1,4 @@
-﻿-- Chạy bằng hospital_dba
+-- Chạy bằng hospital_dba
 ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 -- Cấp quyền thực thi cho các Role (Để Bác sĩ thấy được procedure)

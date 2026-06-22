@@ -1,10 +1,10 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- 02_coordinator_vpd_functions.sql
--- Chạy dưới quyền: hospital_dba
+-- Cháº¡y dÆ°á»›i quyá»n: hospital_dba
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 CREATE OR REPLACE FUNCTION FN_VPD_STAFF_SELF (
     p_schema VARCHAR2,

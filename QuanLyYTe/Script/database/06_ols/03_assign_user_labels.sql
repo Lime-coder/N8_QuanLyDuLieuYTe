@@ -1,6 +1,6 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- 03_assign_user_labels.sql
--- Chạy dưới quyền: sysdba
+-- Cháº¡y dÆ°á»›i quyá»n: sysdba
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
@@ -15,16 +15,16 @@ DECLARE
 BEGIN
     FOR r IN (SELECT username_db, staff_role, dept_id, facility FROM hospital.staff WHERE username_db IS NOT NULL) LOOP
         -- 1. Determine Level
-        IF r.staff_role = N'Giám đốc' THEN 
+        IF r.staff_role = UNISTR('Gi\00E1m \0111\1ED1c') THEN 
             v_level := 'BGD';
-        ELSIF r.staff_role = N'Trưởng khoa' THEN 
+        ELSIF r.staff_role = UNISTR('Tr\01B0\1EDFng khoa') THEN 
             v_level := 'LDK';
         ELSE 
             v_level := 'NV';
         END IF;
 
         -- 2. Determine Compartment
-        -- PB01 -> Tiêu Hóa (TH), PB02 -> Thần Kinh (TK), PB03 -> Tim Mạch (TM)
+        -- PB01 -> TiÃªu HÃ³a (TH), PB02 -> Tháº§n Kinh (TK), PB03 -> Tim Máº¡ch (TM)
         IF r.dept_id = 'PB01' THEN 
             v_comp := 'TH';
         ELSIF r.dept_id = 'PB02' THEN 
@@ -36,11 +36,11 @@ BEGIN
         END IF;
 
         -- 3. Determine Group
-        IF r.facility = N'Hồ Chí Minh' THEN 
+        IF r.facility = UNISTR('H\1ED3 Ch\00ED Minh') THEN 
             v_group := 'HCM';
-        ELSIF r.facility = N'Hà Nội' THEN 
+        ELSIF r.facility = UNISTR('H\00E0 N\1ED9i') THEN 
             v_group := 'HN';
-        ELSIF r.facility = N'Hải Phòng' THEN 
+        ELSIF r.facility = UNISTR('H\1EA3i Ph\00F2ng') THEN 
             v_group := 'HP';
         ELSE 
             v_group := NULL;

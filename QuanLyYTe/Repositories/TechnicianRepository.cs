@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
@@ -38,8 +38,8 @@ namespace QuanLyYTe.Repositories
         {
             OracleParameter[] parameters =
             {
-                new OracleParameter("P_PHONE",    OracleDbType.Varchar2)  { Value = (object?)phone    ?? DBNull.Value },
-                new OracleParameter("P_HOMETOWN", OracleDbType.NVarchar2) { Value = (object?)hometown ?? DBNull.Value }
+                new OracleParameter("P_HOMETOWN", OracleDbType.NVarchar2) { Value = (object?)hometown ?? DBNull.Value },
+                new OracleParameter("P_PHONE",    OracleDbType.Varchar2)  { Value = (object?)phone    ?? DBNull.Value }
             };
 
             _dbProvider.ExecuteNonQuerySP(Sp("UPDATE_TECHNICIAN_PERSONAL_INFO"), parameters);

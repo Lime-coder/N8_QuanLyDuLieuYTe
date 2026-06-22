@@ -1,4 +1,4 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- File: SP_Coordinator.sql
 -- Mục đích: Stored Procedures thay thế cho raw SQL trong CoordinatorRepository
 -- Run as: HOSPITAL_DBA

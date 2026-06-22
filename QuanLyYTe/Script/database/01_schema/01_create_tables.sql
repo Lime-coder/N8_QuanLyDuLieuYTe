@@ -1,6 +1,6 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- 01_create_tables.sql
--- Chạy dưới quyền: hospital_dba (or sysdba, then grant to hospital)
+-- Cháº¡y dÆ°á»›i quyá»n: hospital_dba (or sysdba, then grant to hospital)
 -- It's best to run this as hospital user, or hospital_dba creates tables in hospital schema.
 -- ==============================================================================
 
@@ -66,7 +66,7 @@ CREATE TABLE service_record (
     record_id      VARCHAR2(10)   NOT NULL,
     service_type   NVARCHAR2(100) NOT NULL,
     service_date   DATE           NOT NULL,
-    technician_id  VARCHAR2(10)   NOT NULL,
+    technician_id  VARCHAR2(10),
     service_result NVARCHAR2(500),
     PRIMARY KEY (record_id, service_type, service_date)
 );

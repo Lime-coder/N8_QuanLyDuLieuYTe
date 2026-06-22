@@ -1,10 +1,10 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- 02_patient_procedures.sql
--- Chạy dưới quyền: hospital
+-- Cháº¡y dÆ°á»›i quyá»n: hospital
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 CREATE OR REPLACE PROCEDURE USP_GET_PATIENT_PROFILE (
     p_cursor OUT SYS_REFCURSOR
@@ -14,7 +14,7 @@ BEGIN
         SELECT patient_id, full_name, gender, birthdate, id_card,
                house_no, street, district, city_province,
                medical_history, family_medical_history, drug_allergies
-        FROM hospital.V_PATIENT_SELF;
+        FROM hospital_dba.V_PATIENT_SELF;
 END USP_GET_PATIENT_PROFILE;
 /
 
@@ -27,7 +27,7 @@ BEGIN
                mr.treatment_plan, mr.conclusion,
                s.full_name AS doctor_name,
                d.dept_name
-        FROM hospital.V_MEDICAL_RECORD_PATIENT mr
+        FROM hospital_dba.V_MEDICAL_RECORD_PATIENT mr
         LEFT JOIN hospital.staff s ON mr.doctor_id = s.staff_id
         LEFT JOIN hospital.department d ON mr.dept_id = d.dept_id
         ORDER BY mr.record_date DESC;
@@ -41,7 +41,7 @@ CREATE OR REPLACE PROCEDURE USP_GET_PATIENT_PRESCRIPTIONS (
 BEGIN
     OPEN p_cursor FOR
         SELECT record_id, prescription_date, medicine_name, dosage
-        FROM hospital.V_PRESCRIPTION_PATIENT
+        FROM hospital_dba.V_PRESCRIPTION_PATIENT
         WHERE record_id = p_record_id
         ORDER BY prescription_date;
 END USP_GET_PATIENT_PRESCRIPTIONS;
@@ -56,7 +56,7 @@ BEGIN
         SELECT sr.record_id, sr.service_type, sr.service_date,
                sr.service_result,
                s.full_name AS technician_name
-        FROM hospital.V_SERVICE_RECORD_PATIENT sr
+        FROM hospital_dba.V_SERVICE_RECORD_PATIENT sr
         LEFT JOIN hospital.staff s ON sr.technician_id = s.staff_id
         WHERE sr.record_id = p_record_id
         ORDER BY sr.service_date;
@@ -73,7 +73,7 @@ CREATE OR REPLACE PROCEDURE USP_UPDATE_PATIENT_CONTACT (
     p_drug_allergies         IN NVARCHAR2
 ) AUTHID CURRENT_USER AS
 BEGIN
-    UPDATE hospital.V_PATIENT_SELF
+    UPDATE hospital_dba.V_PATIENT_SELF
     SET house_no               = p_house_no,
         street                 = p_street,
         district               = p_district,
@@ -88,3 +88,5 @@ EXCEPTION
         RAISE;
 END USP_UPDATE_PATIENT_CONTACT;
 /
+
+

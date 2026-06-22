@@ -1,4 +1,4 @@
-﻿-- Run as: SYSDBA | Container: PDB_QLYT
+-- Run as: SYSDBA | Container: PDB_QLYT
 -- ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 -- Schema owner: holds all business tables and views

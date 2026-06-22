@@ -1,6 +1,6 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- 02_create_constraints.sql
--- Chạy dưới quyền: hospital (or sysdba with CURRENT_SCHEMA=hospital)
+-- Cháº¡y dÆ°á»›i quyá»n: hospital (or sysdba with CURRENT_SCHEMA=hospital)
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
@@ -17,7 +17,7 @@ ALTER TABLE staff ADD CONSTRAINT chk_staff_role CHECK (staff_role IN (
     UNISTR('T\00E0i v\1EE5'),
     UNISTR('B\00E1c s\0129/Y s\0129')
 ));
-ALTER TABLE staff ADD CONSTRAINT chk_staff_gender CHECK (gender IN ('Nam', UNISTR('N\01B0')));
+ALTER TABLE staff ADD CONSTRAINT chk_staff_gender CHECK (gender IN ('Nam', UNISTR('N\1EEF')));
 ALTER TABLE staff ADD CONSTRAINT chk_staff_facility CHECK (facility IN (
     UNISTR('H\1ED3 Ch\00ED Minh'),
     UNISTR('H\1EA3i Ph\00F2ng'),
@@ -25,7 +25,7 @@ ALTER TABLE staff ADD CONSTRAINT chk_staff_facility CHECK (facility IN (
 ));
 
 -- Check constraints for patient
-ALTER TABLE patient ADD CONSTRAINT chk_patient_gender CHECK (gender IN ('Nam', UNISTR('N\01B0')));
+ALTER TABLE patient ADD CONSTRAINT chk_patient_gender CHECK (gender IN ('Nam', UNISTR('N\1EEF')));
 
 -- Foreign Keys for medical_record
 ALTER TABLE medical_record ADD CONSTRAINT fk_mr_patient FOREIGN KEY (patient_id) REFERENCES patient(patient_id);
