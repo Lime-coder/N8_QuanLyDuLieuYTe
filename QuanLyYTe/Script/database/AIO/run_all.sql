@@ -147,14 +147,17 @@ SET DEFINE OFF
 
 PROMPT 
 PROMPT ====================================================================
-PROMPT = 07. AUDIT (SYS AS SYSDBA)                                        =
+PROMPT = 07. AUDIT (SYS AS SYSDBA & HOSPITAL_DBA)                         =
 PROMPT ====================================================================
 SET DEFINE ON
 CONNECT sys/"&sys_password"@localhost:1521/PDB_QLYT AS SYSDBA
 SET DEFINE OFF
-@@../07_AUDIT/01_fga_policies.sql
-@@../07_AUDIT/02_standard_audit.sql
-@@../07_AUDIT/03_audit_views.sql
+@@../07_AUDIT/01_GrantAudit.sql
+
+SET DEFINE ON
+CONNECT hospital_dba/"&dba_password"@localhost:1521/PDB_QLYT
+SET DEFINE OFF
+@@../07_AUDIT/02_AuditingPolicies.sql
 
 PROMPT 
 PROMPT ====================================================================
