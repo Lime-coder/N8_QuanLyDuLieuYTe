@@ -1,4 +1,4 @@
-using System.Configuration;
+﻿using System.Configuration;
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DataProvider;
@@ -9,7 +9,7 @@ namespace QuanLyYTe.Repositories
     {
         public PatientRepository()
         {
-            _spOwner = "hospital";
+            _spOwner = "hospital_dba";
         }
 
         // Lấy thông tin cá nhân bệnh nhân đang đăng nhập
@@ -76,3 +76,4 @@ namespace QuanLyYTe.Repositories
         }
     }
 }
+

@@ -8,14 +8,14 @@ INSERT INTO department VALUES ('PB02', N'Ngoại thần kinh');
 INSERT INTO department VALUES ('PB03', N'Chẩn đoán hình ảnh');
 
 -- Test Accounts (Explicitly defined for Login/App Testing)
-INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db)
-VALUES ('NV000021', N'Nguyễn Văn Minh', N'Nam', TO_DATE('1990-01-01','YYYY-MM-DD'), '999012345678', N'Hà Nội', '0901112223', 'PB01', N'Bác sĩ', 'NV000021');
+INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, facility, staff_role, username_db)
+VALUES ('NV000021', N'Nguyễn Văn Minh', N'Nam', TO_DATE('1990-01-01','YYYY-MM-DD'), '999012345678', N'Hà Nội', '0901112223', 'PB01', N'Hồ Chí Minh', N'Bác sĩ', 'NV000021');
 
-INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db)
-VALUES ('NV000001', N'Trần Thị Mai', N'Nữ', TO_DATE('1992-05-15','YYYY-MM-DD'), '999012345679', N'Hà Nội', '0904445556', NULL, N'Điều phối viên', 'NV000001');
+INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, facility, staff_role, username_db)
+VALUES ('NV000001', N'Trần Thị Mai', N'Nữ', TO_DATE('1992-05-15','YYYY-MM-DD'), '999012345679', N'Hà Nội', '0904445556', NULL, N'Hồ Chí Minh', N'Điều phối viên', 'NV000001');
 
-INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db)
-VALUES ('NV000121', N'Lê Văn Tám', N'Nam', TO_DATE('1988-12-10','YYYY-MM-DD'), '999012345680', N'Đà Nẵng', '0907778889', NULL, N'Kỹ thuật viên', 'NV000121');
+INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, facility, staff_role, username_db)
+VALUES ('NV000121', N'Lê Văn Tám', N'Nam', TO_DATE('1988-12-10','YYYY-MM-DD'), '999012345680', N'Đà Nẵng', '0907778889', NULL, N'Hồ Chí Minh', N'Kỹ thuật viên', 'NV000121');
 
 INSERT INTO patient (patient_id, full_name, gender, birthdate, id_card, house_no, street, district, city_province, username_db)
 VALUES ('BN000001', N'Bệnh nhân Test 1', N'Nam', TO_DATE('1980-01-01','YYYY-MM-DD'), '999080000001', '10', N'Đường số 1', N'Quận 1', N'TP. Hồ Chí Minh', 'BN000001');

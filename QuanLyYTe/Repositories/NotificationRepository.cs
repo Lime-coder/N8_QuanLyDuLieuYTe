@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DataProvider;
@@ -53,3 +53,4 @@ namespace QuanLyYTe.Repositories
         }
     }
 }
+

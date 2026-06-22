@@ -1,4 +1,4 @@
-using System.Configuration;
+﻿using System.Configuration;
 using QuanLyYTe.DataProvider;
 
 namespace QuanLyYTe.Repositories
@@ -19,3 +19,4 @@ namespace QuanLyYTe.Repositories
         }
     }
 }
+

@@ -941,8 +941,7 @@ BEGIN
 
         IF (v_old_role = 'RL_PATIENT' AND v_new_role != 'RL_PATIENT')
            OR (v_old_role != 'RL_PATIENT' AND v_new_role = 'RL_PATIENT') THEN
-            RAISE_APPLICATION_ERROR(-20050,
-                N'Không thể chuyển đổi giữa Nhân viên và Bệnh nhân. Vui lòng tạo tài khoản mới.');
+            RAISE_APPLICATION_ERROR(-20050, UNISTR('Kh\00F4ng th\1EC3 chuy\1EC3n \0111\1ED5i gi\1EEFa Nh\00E2n vi\00EAn v\00E0 B\1EC7nh nh\00E2n. Vui l\00F2ng t\1EA1o t\00E0i kho\1EA3n m\1EDBi.'));
         END IF;
     EXCEPTION WHEN NO_DATA_FOUND THEN NULL;
     END;

@@ -24,7 +24,7 @@ namespace QuanLyYTe.Helpers
             {
                 "RL_DBA" => new Dashboard(username),
                 "RL_DOCTOR" => new frmDoctor(),
-                "RL_COORDINATOR" => new frmCoordinator(),
+                "RL_COORDINATOR" => new frmCoordinator(username),
                 "RL_TECHNICIAN" => new frmTechnician(),
                 "RL_PATIENT" => new frmPatient(),
 

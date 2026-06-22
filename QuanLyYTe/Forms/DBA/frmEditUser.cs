@@ -27,6 +27,7 @@ namespace QuanLyYTe.Forms.DBA
         public string? Hometown => _isPatient ? null : txtHometown.Text;
         public string Role => _isPatient ? "RL_PATIENT" : ((cmbRole.SelectedItem as dynamic)?.Value ?? "");
         public string? DeptId => _isPatient ? null : (cmbDept.SelectedItem as dynamic)?.Value;
+        public string? Facility => _isPatient ? null : cmbFacility.SelectedItem?.ToString();
 
         // Patient properties
         public string? HouseNo => _isPatient ? txtHouseNo.Text : null;
@@ -99,6 +100,8 @@ namespace QuanLyYTe.Forms.DBA
             cmbRole.Visible = !_isPatient;
             lblDept.Visible = !_isPatient;
             cmbDept.Visible = !_isPatient;
+            lblFacility.Visible = !_isPatient;
+            cmbFacility.Visible = !_isPatient;
 
             // Calculate the bottom Y based on which set of controls is visible
             int bottomY;
@@ -109,8 +112,8 @@ namespace QuanLyYTe.Forms.DBA
             }
             else
             {
-                // Staff mode: last visible control is cmbDept
-                bottomY = cmbDept.Location.Y + cmbDept.Height;
+                // Staff mode: last visible control is cmbFacility
+                bottomY = cmbFacility.Location.Y + cmbFacility.Height;
             }
 
             // Position buttons relative to visible content
@@ -159,6 +162,12 @@ namespace QuanLyYTe.Forms.DBA
                 {
                     MessageBox.Show("Không thể tải danh sách phòng ban: " + ex.Message);
                 }
+
+                // Facility
+                cmbFacility.Items.Add("Hà Nội");
+                cmbFacility.Items.Add("Hải Phòng");
+                cmbFacility.Items.Add("Hồ Chí Minh");
+                cmbFacility.SelectedIndex = 0;
             }
         }
 
@@ -209,6 +218,19 @@ namespace QuanLyYTe.Forms.DBA
                                 if ((item as dynamic).Value == deptId)
                                 {
                                     cmbDept.SelectedItem = item;
+                                    break;
+                                }
+                            }
+                        }
+
+                        string? facility = row["FACILITY"]?.ToString();
+                        if (!string.IsNullOrEmpty(facility))
+                        {
+                            foreach (var item in cmbFacility.Items)
+                            {
+                                if (item.ToString() == facility)
+                                {
+                                    cmbFacility.SelectedItem = item;
                                     break;
                                 }
                             }

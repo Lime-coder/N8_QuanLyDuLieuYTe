@@ -1,4 +1,4 @@
-namespace QuanLyYTe.Forms.DBA
+﻿namespace QuanLyYTe.Forms.DBA
 {
     public enum EditRoleDialogMode
     {

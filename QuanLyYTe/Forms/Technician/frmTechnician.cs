@@ -336,17 +336,25 @@ namespace QuanLyYTe.Forms.Technician
         {
             try
             {
+                // Fallback / Initial load from AppSession
+                if (!string.IsNullOrEmpty(QuanLyYTe.Common.AppSession.CurrentUserId))
+                    txtUserId.Text = QuanLyYTe.Common.AppSession.CurrentUserId;
+                if (!string.IsNullOrEmpty(QuanLyYTe.Common.AppSession.CurrentFullName))
+                    txtFullName.Text = QuanLyYTe.Common.AppSession.CurrentFullName;
+
                 DataTable dt = _service.LoadPersonalInfo();
                 if (dt.Rows.Count == 0) return;
                 var r = dt.Rows[0];
 
-                txtUserId.Text   = r.Table.Columns.Contains("STAFF_ID")   ? r["STAFF_ID"]?.ToString()   : string.Empty;
-                txtFullName.Text = r.Table.Columns.Contains("FULL_NAME")  ? r["FULL_NAME"]?.ToString()  : string.Empty;
+                txtUserId.Text   = r.Table.Columns.Contains("STAFF_ID")   ? r["STAFF_ID"]?.ToString()   : txtUserId.Text;
+                txtFullName.Text = r.Table.Columns.Contains("FULL_NAME")  ? r["FULL_NAME"]?.ToString()  : txtFullName.Text;
                 txtGender.Text   = r.Table.Columns.Contains("GENDER")     ? r["GENDER"]?.ToString()     : string.Empty;
                 if (r.Table.Columns.Contains("BIRTHDATE") && DateTime.TryParse(r["BIRTHDATE"]?.ToString(), out DateTime bd))
                     dtpBirthdate.Value = bd;
                 txtPhone.Text    = r.Table.Columns.Contains("PHONE")      ? r["PHONE"]?.ToString()      : string.Empty;
                 txtHometown.Text = r.Table.Columns.Contains("HOMETOWN")   ? r["HOMETOWN"]?.ToString()   : string.Empty;
+                txtDept.Text     = r.Table.Columns.Contains("DEPT_NAME")  ? r["DEPT_NAME"]?.ToString()  : string.Empty;
+                txtFacility.Text = r.Table.Columns.Contains("FACILITY")   ? r["FACILITY"]?.ToString()   : string.Empty;
             }
             catch (Exception ex)
             {

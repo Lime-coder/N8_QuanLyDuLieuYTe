@@ -1,0 +1,64 @@
+﻿-- ==============================================================================
+-- 01_fga_policies.sql
+-- Run as: sysdba
+-- ==============================================================================
+ALTER SESSION SET CONTAINER = PDB_QLYT;
+ALTER SESSION SET CURRENT_SCHEMA = hospital;
+
+BEGIN
+    -- C. Xóa các Fine-Grained Audit Policies cũ
+    BEGIN DBMS_FGA.DROP_POLICY('HOSPITAL', 'PRESCRIPTION', 'FGA_PRESC_UPDATE');    EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN DBMS_FGA.DROP_POLICY('HOSPITAL', 'MEDICAL_RECORD', 'FGA_MR_UPDATE');     EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN DBMS_FGA.DROP_POLICY('HOSPITAL', 'SERVICE_RECORD', 'FGA_SR_ILLEGAL');    EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN DBMS_FGA.DROP_POLICY('HOSPITAL', 'PRESCRIPTION', 'FGA_PRESCRIPTION_COLS');  EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN DBMS_FGA.DROP_POLICY('HOSPITAL', 'MEDICAL_RECORD', 'FGA_MEDICAL_RECORD_COLS'); EXCEPTION WHEN OTHERS THEN NULL; END;
+
+    -- D. Xóa Unified Audit Policy cũ
+    BEGIN EXECUTE IMMEDIATE 'NOAUDIT POLICY AUD_ILLEGAL_MR_POLICY'; EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN EXECUTE IMMEDIATE 'DROP AUDIT POLICY AUD_ILLEGAL_MR_POLICY';         EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN EXECUTE IMMEDIATE 'NOAUDIT POLICY AUD_ILLEGAL_SR_POLICY'; EXCEPTION WHEN OTHERS THEN NULL; END;
+    BEGIN EXECUTE IMMEDIATE 'DROP AUDIT POLICY AUD_ILLEGAL_SR_POLICY';         EXCEPTION WHEN OTHERS THEN NULL; END;
+END;
+/
+
+-- 3.3a: FGA Policy cho bảng ĐƠNTHUỐC
+BEGIN
+    DBMS_FGA.ADD_POLICY(
+        object_schema   => 'HOSPITAL',
+        object_name     => 'PRESCRIPTION',
+        policy_name     => 'FGA_PRESCRIPTION_COLS',
+        audit_column    => 'RECORD_ID, PRESCRIPTION_DATE, MEDICINE_NAME, DOSAGE',
+        statement_types => 'UPDATE'
+    );
+END;
+/
+
+-- 3.3b: FGA Policy cho bảng HỒ SƠ BỆNH ÁN
+BEGIN
+    DBMS_FGA.ADD_POLICY(
+        object_schema   => 'HOSPITAL',
+        object_name     => 'MEDICAL_RECORD',
+        policy_name     => 'FGA_MEDICAL_RECORD_COLS',
+        audit_column    => 'DIAGNOSIS, TREATMENT_PLAN, CONCLUSION',
+        statement_types => 'UPDATE'
+    );
+END;
+/
+
+-- 3.3c (UNIFIED - BẤT HỢP PHÁP TRÊN HSBA)
+CREATE AUDIT POLICY AUD_ILLEGAL_MR_POLICY
+  ACTIONS 
+    UPDATE ON hospital.medical_record;
+
+-- Bắt hành vi Failed (Sai quyền/Bất hợp pháp) cho 3.3c
+AUDIT POLICY AUD_ILLEGAL_MR_POLICY WHENEVER NOT SUCCESSFUL;
+
+-- 3.3d (UNIFIED - BẤT HỢP PHÁP TRÊN SERVICE_RECORD)
+CREATE AUDIT POLICY AUD_ILLEGAL_SR_POLICY
+  ACTIONS 
+    INSERT ON hospital.service_record, 
+    UPDATE ON hospital.service_record, 
+    DELETE ON hospital.service_record; 
+
+-- Bắt hành vi Failed (Sai quyền/Bất hợp pháp) cho 3.3d
+AUDIT POLICY AUD_ILLEGAL_SR_POLICY WHENEVER NOT SUCCESSFUL;

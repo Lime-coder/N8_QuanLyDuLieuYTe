@@ -116,22 +116,39 @@ namespace QuanLyYTe.Repositories
         }
 
         // --- PatientRepository methods ---
-        public DataTable GetAllPatients()
+        
+        public string GetMaxPatientId()
         {
-            var parameters = new OracleParameter[] {
-                new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
-            };
-            return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_PATS", parameters);
+            string maxId = "BN000";
+            try
+            {
+                using (var conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
+                {
+                    conn.Open();
+                    string query = "SELECT MAX(patient_id) FROM hospital.patient";
+                    using (var cmd = new OracleCommand(query, conn))
+                    {
+                        object result = cmd.ExecuteScalar();
+                        if (result != null && result != DBNull.Value)
+                        {
+                            maxId = result.ToString();
+                        }
+                    }
+                }
+            }
+            catch { }
+            return maxId;
         }
 
-        // Tìm kiếm bệnh nhân theo từ khóa (SP: SP_COORD_SEARCH_PATS)
-        public DataTable SearchPatients(string keyword)
+        public DataTable GetAllPatients(string keyword, int pageNum, int pageSize)
         {
             var parameters = new OracleParameter[] {
-                new OracleParameter("p_keyword", OracleDbType.NVarchar2) { Value = "%" + keyword + "%" },
+                new OracleParameter("p_keyword", OracleDbType.NVarchar2) { Value = string.IsNullOrEmpty(keyword) ? DBNull.Value : (object)keyword },
+                new OracleParameter("p_page_num", OracleDbType.Decimal) { Value = pageNum },
+                new OracleParameter("p_page_size", OracleDbType.Decimal) { Value = pageSize },
                 new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_SEARCH_PATS", parameters);
+            return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_PATS_PAGED", parameters);
         }
 
         private bool PatientIdExists(string patientId)
@@ -218,12 +235,15 @@ namespace QuanLyYTe.Repositories
         }
 
         // --- MedicalRecordRepository methods ---
-        public DataTable GetAllMedicalRecords()
+        public DataTable GetAllMedicalRecords(string keyword, int pageNum, int pageSize)
         {
             var parameters = new OracleParameter[] {
+                new OracleParameter("p_keyword", OracleDbType.NVarchar2) { Value = string.IsNullOrEmpty(keyword) ? DBNull.Value : (object)keyword },
+                new OracleParameter("p_page_num", OracleDbType.Decimal) { Value = pageNum },
+                new OracleParameter("p_page_size", OracleDbType.Decimal) { Value = pageSize },
                 new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_ALL_MED", parameters);
+            return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_ALL_MED_PAGED", parameters);
         }
 
         // Thêm mới hồ sơ bệnh án (SP: SP_COORD_INS_MED)
@@ -251,12 +271,15 @@ namespace QuanLyYTe.Repositories
         }
 
         // --- ServiceAssignmentRepository methods ---
-        public DataTable GetAllServiceAssignments()
+        public DataTable GetAllServiceAssignments(string keyword, int pageNum, int pageSize)
         {
             var parameters = new OracleParameter[] {
+                new OracleParameter("p_keyword", OracleDbType.NVarchar2) { Value = string.IsNullOrEmpty(keyword) ? DBNull.Value : (object)keyword },
+                new OracleParameter("p_page_num", OracleDbType.Decimal) { Value = pageNum },
+                new OracleParameter("p_page_size", OracleDbType.Decimal) { Value = pageSize },
                 new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_SRV_ASS", parameters);
+            return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_SRV_ASS_PAGED", parameters);
         }
 
         // Phân công kỹ thuật viên cho dịch vụ (SP: SP_COORD_UPD_TECH)
@@ -272,3 +295,5 @@ namespace QuanLyYTe.Repositories
         }
     }
 }
+
+

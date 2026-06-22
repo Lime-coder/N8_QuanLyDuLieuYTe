@@ -1,4 +1,4 @@
--- Run as: hospital_dba | Container: PDB_QLYT
+﻿-- Run as: hospital_dba | Container: PDB_QLYT
 -- ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 -- USP_GET_USERS: project-scoped user list for the revoke form

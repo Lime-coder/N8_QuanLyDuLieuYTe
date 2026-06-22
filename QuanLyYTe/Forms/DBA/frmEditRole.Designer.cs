@@ -1,4 +1,4 @@
-namespace QuanLyYTe.Forms.DBA
+﻿namespace QuanLyYTe.Forms.DBA
 {
     partial class frmEditRole
     {

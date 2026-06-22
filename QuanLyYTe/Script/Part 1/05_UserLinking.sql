@@ -15,6 +15,7 @@ CREATE OR REPLACE PROCEDURE USP_CREATE_USER_LINKED (
     p_phone IN VARCHAR2 DEFAULT NULL,
     p_hometown IN NVARCHAR2 DEFAULT NULL,
     p_dept_id IN VARCHAR2 DEFAULT NULL,
+    p_facility IN NVARCHAR2 DEFAULT NULL,
     p_house_no IN NVARCHAR2 DEFAULT NULL,
     p_street IN NVARCHAR2 DEFAULT NULL,
     p_district IN NVARCHAR2 DEFAULT NULL,
@@ -47,9 +48,10 @@ BEGIN
         VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_house_no, p_street, p_district, p_city_province, p_medical_history, p_family_medical_history, p_drug_allergies, v_user, 1);
     ELSE
         v_id := 'NV' || LPAD(hospital.SEQ_STAFF_ID.NEXTVAL, 6, '0');
-        INSERT INTO hospital.staff (staff_id, full_name, gender, birthdate, id_card, phone, hometown, dept_id, staff_role, username_db, is_active)
+        INSERT INTO hospital.staff (staff_id, full_name, gender, birthdate, id_card, phone, hometown, dept_id, facility, staff_role, username_db, is_active)
         VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_phone, p_hometown, 
                 CASE WHEN v_role = 'RL_DOCTOR' THEN p_dept_id ELSE NULL END, 
+                p_facility,
                 CASE v_role 
                     WHEN 'RL_DOCTOR' THEN N'Bác sĩ'
                     WHEN 'RL_COORDINATOR' THEN N'Điều phối viên'
@@ -77,6 +79,7 @@ CREATE OR REPLACE PROCEDURE USP_UPDATE_USER_LINKED (
     p_phone IN VARCHAR2 DEFAULT NULL,
     p_hometown IN NVARCHAR2 DEFAULT NULL,
     p_dept_id IN VARCHAR2 DEFAULT NULL,
+    p_facility IN NVARCHAR2 DEFAULT NULL,
     p_house_no IN NVARCHAR2 DEFAULT NULL,
     p_street IN NVARCHAR2 DEFAULT NULL,
     p_district IN NVARCHAR2 DEFAULT NULL,
@@ -133,6 +136,7 @@ BEGIN
             phone = p_phone,
             hometown = p_hometown,
             dept_id = p_dept_id,
+            facility = p_facility,
             staff_role = CASE v_new_role 
                             WHEN 'RL_DOCTOR' THEN N'Bác sĩ'
                             WHEN 'RL_COORDINATOR' THEN N'Điều phối viên'
@@ -203,7 +207,7 @@ BEGIN
     IF v_role = 'RL_PATIENT' THEN
         OPEN p_cursor FOR
             SELECT 'RL_PATIENT' as ROLE, patient_id as ID, full_name, gender, birthdate, id_card, 
-                   NULL as phone, NULL as hometown, NULL as DEPT_ID, 
+                   NULL as phone, NULL as hometown, NULL as DEPT_ID, NULL as FACILITY,
                    house_no, street, district, city_province, medical_history, family_medical_history, drug_allergies,
                    is_active
             FROM hospital.patient
@@ -211,7 +215,7 @@ BEGIN
     ELSE
         OPEN p_cursor FOR
             SELECT v_role as ROLE, staff_id as ID, full_name, gender, birthdate, id_card, 
-                   phone, hometown, dept_id, 
+                   phone, hometown, dept_id, facility as FACILITY,
                    NULL as house_no, NULL as street, NULL as district, NULL as city_province, NULL as medical_history, NULL as family_medical_history, NULL as drug_allergies,
                    is_active
             FROM hospital.staff

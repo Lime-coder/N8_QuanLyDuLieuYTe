@@ -40,6 +40,10 @@ namespace QuanLyYTe.Forms.Doctor
             lblRole = new Label();
             lblLabelSpec = new Label();
             lblSpec = new Label();
+            lblLabelFacility = new Label();
+            lblFacility = new Label();
+            lblLabelMaNV = new Label();
+            lblMaNV = new Label();
             title = new Label();
             pnlSearch.SuspendLayout();
             pnlCard.SuspendLayout();
@@ -51,11 +55,11 @@ namespace QuanLyYTe.Forms.Doctor
             // 
             // btnE
             // 
-            btnE.BackColor = Color.Orange;
+            btnE.BackColor = Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(140)))), ((int)(((byte)(40)))));
             btnE.Cursor = Cursors.Hand;
             btnE.FlatAppearance.BorderSize = 0;
             btnE.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            btnE.Location = new Point(40, 525);
+            btnE.Location = new Point(40, 560);
             btnE.Size = new Size(220, 45);
             btnE.Text = "CHỈNH SỬA THÔNG TIN";
             // 
@@ -78,10 +82,14 @@ namespace QuanLyYTe.Forms.Doctor
             pnlCard.Controls.Add(lblRole);
             pnlCard.Controls.Add(lblLabelSpec);
             pnlCard.Controls.Add(lblSpec);
+            pnlCard.Controls.Add(lblLabelFacility);
+            pnlCard.Controls.Add(lblFacility);
+            pnlCard.Controls.Add(lblLabelMaNV);
+            pnlCard.Controls.Add(lblMaNV);
             pnlCard.Location = new Point(40, 85);
             pnlCard.Name = "pnlCard";
             pnlCard.Padding = new Padding(30);
-            pnlCard.Size = new Size(700, 420);
+            pnlCard.Size = new Size(700, 460);
             pnlCard.TabIndex = 3;
             pnlCard.Paint += pnlCard_Paint;
             // 
@@ -90,7 +98,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblLabelName.AutoSize = true;
             lblLabelName.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblLabelName.ForeColor = Color.DimGray;
-            lblLabelName.Location = new Point(35, 35);
+            lblLabelName.Location = new Point(35, 77);
             lblLabelName.Name = "lblLabelName";
             lblLabelName.Size = new Size(92, 23);
             lblLabelName.TabIndex = 0;
@@ -101,7 +109,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblName.AutoSize = true;
             lblName.Font = new Font("Segoe UI", 11F);
             lblName.ForeColor = Color.Black;
-            lblName.Location = new Point(190, 33);
+            lblName.Location = new Point(190, 75);
             lblName.Name = "lblName";
             lblName.Size = new Size(24, 25);
             lblName.TabIndex = 1;
@@ -112,7 +120,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblLabelGender.AutoSize = true;
             lblLabelGender.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblLabelGender.ForeColor = Color.DimGray;
-            lblLabelGender.Location = new Point(35, 77);
+            lblLabelGender.Location = new Point(35, 119);
             lblLabelGender.Name = "lblLabelGender";
             lblLabelGender.Size = new Size(85, 23);
             lblLabelGender.TabIndex = 2;
@@ -123,7 +131,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblGender.AutoSize = true;
             lblGender.Font = new Font("Segoe UI", 11F);
             lblGender.ForeColor = Color.Black;
-            lblGender.Location = new Point(190, 75);
+            lblGender.Location = new Point(190, 117);
             lblGender.Name = "lblGender";
             lblGender.Size = new Size(24, 25);
             lblGender.TabIndex = 3;
@@ -134,7 +142,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblLabelBirth.AutoSize = true;
             lblLabelBirth.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblLabelBirth.ForeColor = Color.DimGray;
-            lblLabelBirth.Location = new Point(35, 119);
+            lblLabelBirth.Location = new Point(35, 161);
             lblLabelBirth.Name = "lblLabelBirth";
             lblLabelBirth.Size = new Size(94, 23);
             lblLabelBirth.TabIndex = 4;
@@ -145,7 +153,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblBirth.AutoSize = true;
             lblBirth.Font = new Font("Segoe UI", 11F);
             lblBirth.ForeColor = Color.Black;
-            lblBirth.Location = new Point(190, 117);
+            lblBirth.Location = new Point(190, 159);
             lblBirth.Name = "lblBirth";
             lblBirth.Size = new Size(24, 25);
             lblBirth.TabIndex = 5;
@@ -156,7 +164,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblLabelCmnd.AutoSize = true;
             lblLabelCmnd.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblLabelCmnd.ForeColor = Color.DimGray;
-            lblLabelCmnd.Location = new Point(35, 161);
+            lblLabelCmnd.Location = new Point(35, 203);
             lblLabelCmnd.Name = "lblLabelCmnd";
             lblLabelCmnd.Size = new Size(120, 23);
             lblLabelCmnd.TabIndex = 6;
@@ -167,7 +175,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblCmnd.AutoSize = true;
             lblCmnd.Font = new Font("Segoe UI", 11F);
             lblCmnd.ForeColor = Color.Black;
-            lblCmnd.Location = new Point(190, 159);
+            lblCmnd.Location = new Point(190, 201);
             lblCmnd.Name = "lblCmnd";
             lblCmnd.Size = new Size(24, 25);
             lblCmnd.TabIndex = 7;
@@ -178,7 +186,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblLabelHome.AutoSize = true;
             lblLabelHome.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblLabelHome.ForeColor = Color.DimGray;
-            lblLabelHome.Location = new Point(35, 203);
+            lblLabelHome.Location = new Point(35, 245);
             lblLabelHome.Name = "lblLabelHome";
             lblLabelHome.Size = new Size(92, 23);
             lblLabelHome.TabIndex = 8;
@@ -189,7 +197,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblHome.AutoSize = true;
             lblHome.Font = new Font("Segoe UI", 11F);
             lblHome.ForeColor = Color.Black;
-            lblHome.Location = new Point(190, 201);
+            lblHome.Location = new Point(190, 243);
             lblHome.Name = "lblHome";
             lblHome.Size = new Size(24, 25);
             lblHome.TabIndex = 9;
@@ -200,7 +208,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblLabelPhone.AutoSize = true;
             lblLabelPhone.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblLabelPhone.ForeColor = Color.DimGray;
-            lblLabelPhone.Location = new Point(35, 245);
+            lblLabelPhone.Location = new Point(35, 287);
             lblLabelPhone.Name = "lblLabelPhone";
             lblLabelPhone.Size = new Size(121, 23);
             lblLabelPhone.TabIndex = 10;
@@ -211,7 +219,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblPhone.AutoSize = true;
             lblPhone.Font = new Font("Segoe UI", 11F);
             lblPhone.ForeColor = Color.Black;
-            lblPhone.Location = new Point(190, 243);
+            lblPhone.Location = new Point(190, 285);
             lblPhone.Name = "lblPhone";
             lblPhone.Size = new Size(24, 25);
             lblPhone.TabIndex = 11;
@@ -222,7 +230,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblLabelRole.AutoSize = true;
             lblLabelRole.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblLabelRole.ForeColor = Color.DimGray;
-            lblLabelRole.Location = new Point(35, 287);
+            lblLabelRole.Location = new Point(35, 329);
             lblLabelRole.Name = "lblLabelRole";
             lblLabelRole.Size = new Size(68, 23);
             lblLabelRole.TabIndex = 12;
@@ -233,7 +241,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblRole.AutoSize = true;
             lblRole.Font = new Font("Segoe UI", 11F);
             lblRole.ForeColor = Color.Black;
-            lblRole.Location = new Point(190, 285);
+            lblRole.Location = new Point(190, 327);
             lblRole.Name = "lblRole";
             lblRole.Size = new Size(24, 25);
             lblRole.TabIndex = 13;
@@ -244,7 +252,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblLabelSpec.AutoSize = true;
             lblLabelSpec.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblLabelSpec.ForeColor = Color.DimGray;
-            lblLabelSpec.Location = new Point(35, 329);
+            lblLabelSpec.Location = new Point(35, 371);
             lblLabelSpec.Name = "lblLabelSpec";
             lblLabelSpec.Size = new Size(118, 23);
             lblLabelSpec.TabIndex = 14;
@@ -255,11 +263,55 @@ namespace QuanLyYTe.Forms.Doctor
             lblSpec.AutoSize = true;
             lblSpec.Font = new Font("Segoe UI", 11F);
             lblSpec.ForeColor = Color.Black;
-            lblSpec.Location = new Point(190, 327);
+            lblSpec.Location = new Point(190, 369);
             lblSpec.Name = "lblSpec";
             lblSpec.Size = new Size(24, 25);
             lblSpec.TabIndex = 15;
             lblSpec.Text = "...";
+            // 
+            // lblLabelFacility
+            // 
+            lblLabelFacility.AutoSize = true;
+            lblLabelFacility.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblLabelFacility.ForeColor = Color.DimGray;
+            lblLabelFacility.Location = new Point(35, 413);
+            lblLabelFacility.Name = "lblLabelFacility";
+            lblLabelFacility.Size = new Size(100, 23);
+            lblLabelFacility.TabIndex = 16;
+            lblLabelFacility.Text = "Cơ sở y tế:";
+            // 
+            // lblFacility
+            // 
+            lblFacility.AutoSize = true;
+            lblFacility.Font = new Font("Segoe UI", 11F);
+            lblFacility.ForeColor = Color.Black;
+            lblFacility.Location = new Point(190, 411);
+            lblFacility.Name = "lblFacility";
+            lblFacility.Size = new Size(24, 25);
+            lblFacility.TabIndex = 17;
+            lblFacility.Text = "...";
+            // 
+            // lblLabelMaNV
+            // 
+            lblLabelMaNV.AutoSize = true;
+            lblLabelMaNV.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblLabelMaNV.ForeColor = Color.DimGray;
+            lblLabelMaNV.Location = new Point(35, 35);
+            lblLabelMaNV.Name = "lblLabelMaNV";
+            lblLabelMaNV.Size = new Size(125, 23);
+            lblLabelMaNV.TabIndex = 18;
+            lblLabelMaNV.Text = "Mã nhân viên:";
+            // 
+            // lblMaNV
+            // 
+            lblMaNV.AutoSize = true;
+            lblMaNV.Font = new Font("Segoe UI", 11F);
+            lblMaNV.ForeColor = Color.Black;
+            lblMaNV.Location = new Point(190, 33);
+            lblMaNV.Name = "lblMaNV";
+            lblMaNV.Size = new Size(24, 25);
+            lblMaNV.TabIndex = 19;
+            lblMaNV.Text = "...";
             // 
             // title
             // 
@@ -275,7 +327,7 @@ namespace QuanLyYTe.Forms.Doctor
             // frmDoctorProfile
             // 
             BackColor = Color.FromArgb(245, 245, 250);
-            ClientSize = new Size(839, 598);
+            ClientSize = new Size(839, 640);
             Controls.Add(title);
             Controls.Add(pnlCard);
             Controls.Add(btnE);
@@ -311,6 +363,10 @@ namespace QuanLyYTe.Forms.Doctor
         private Label lblLabelPhone;
         private Label lblLabelRole;
         private Label lblLabelSpec;
+        private Label lblLabelFacility;
+        private Label lblFacility;
+        private Label lblLabelMaNV;
+        private Label lblMaNV;
         private Label title;
     }
 }

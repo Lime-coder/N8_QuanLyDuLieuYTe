@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Oracle.ManagedDataAccess.Client;
 
 namespace QuanLyYTe.Common

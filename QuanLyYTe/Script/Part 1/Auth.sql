@@ -1,4 +1,4 @@
--- Run as: hospital_dba | Container: PDB_QLYT
+﻿-- Run as: hospital_dba | Container: PDB_QLYT
 -- ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 -- Returns the granted role for a user (assumes one active role per user)

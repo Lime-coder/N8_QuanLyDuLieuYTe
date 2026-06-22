@@ -1,4 +1,4 @@
-namespace QuanLyYTe.Forms
+﻿namespace QuanLyYTe.Forms
 {
     partial class frmRoleManagement
     {

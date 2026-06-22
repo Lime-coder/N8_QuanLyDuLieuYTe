@@ -52,7 +52,7 @@ namespace QuanLyYTe.Repositories
         }
         // Tạo mới một User liên kết với dữ liệu NV/BN
         public void CreateUser(string username, string password, string fullName, string gender, DateTime birthdate, string idCard, string role,
-            string? phone = null, string? hometown = null, string? deptId = null,
+            string? phone = null, string? hometown = null, string? deptId = null, string? facility = null,
             string? houseNo = null, string? street = null, string? district = null, string? cityProvince = null,
             string? medicalHistory = null, string? familyMedicalHistory = null, string? drugAllergies = null)
         {
@@ -68,6 +68,7 @@ namespace QuanLyYTe.Repositories
             new OracleParameter("p_phone", OracleDbType.Varchar2) { Value = (object?)phone ?? DBNull.Value },
             new OracleParameter("p_hometown", OracleDbType.NVarchar2) { Value = (object?)hometown ?? DBNull.Value },
             new OracleParameter("p_dept_id", OracleDbType.Varchar2) { Value = (object?)deptId ?? DBNull.Value },
+            new OracleParameter("p_facility", OracleDbType.NVarchar2) { Value = (object?)facility ?? DBNull.Value },
             new OracleParameter("p_house_no", OracleDbType.NVarchar2) { Value = (object?)houseNo ?? DBNull.Value },
             new OracleParameter("p_street", OracleDbType.NVarchar2) { Value = (object?)street ?? DBNull.Value },
             new OracleParameter("p_district", OracleDbType.NVarchar2) { Value = (object?)district ?? DBNull.Value },
@@ -81,7 +82,7 @@ namespace QuanLyYTe.Repositories
         }
         // Cập nhật thông tin User liên kết
         public void UpdateUser(string username, string fullName, string gender, DateTime birthdate, string idCard, string role,
-            string? phone = null, string? hometown = null, string? deptId = null,
+            string? phone = null, string? hometown = null, string? deptId = null, string? facility = null,
             string? houseNo = null, string? street = null, string? district = null, string? cityProvince = null,
             string? medicalHistory = null, string? familyMedicalHistory = null, string? drugAllergies = null)
         {
@@ -96,6 +97,7 @@ namespace QuanLyYTe.Repositories
             new OracleParameter("p_phone", OracleDbType.Varchar2) { Value = (object?)phone ?? DBNull.Value },
             new OracleParameter("p_hometown", OracleDbType.NVarchar2) { Value = (object?)hometown ?? DBNull.Value },
             new OracleParameter("p_dept_id", OracleDbType.Varchar2) { Value = (object?)deptId ?? DBNull.Value },
+            new OracleParameter("p_facility", OracleDbType.NVarchar2) { Value = (object?)facility ?? DBNull.Value },
             new OracleParameter("p_house_no", OracleDbType.NVarchar2) { Value = (object?)houseNo ?? DBNull.Value },
             new OracleParameter("p_street", OracleDbType.NVarchar2) { Value = (object?)street ?? DBNull.Value },
             new OracleParameter("p_district", OracleDbType.NVarchar2) { Value = (object?)district ?? DBNull.Value },
@@ -261,3 +263,4 @@ namespace QuanLyYTe.Repositories
         }
     } 
 }
+

@@ -1,4 +1,4 @@
--- Run as: hospital_dba
+﻿-- Run as: hospital_dba
 --ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 

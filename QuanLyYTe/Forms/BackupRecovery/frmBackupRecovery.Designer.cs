@@ -1,4 +1,4 @@
-namespace QuanLyYTe.Forms.BackupRecovery
+﻿namespace QuanLyYTe.Forms.BackupRecovery
 {
     partial class frmBackupRecovery
     {

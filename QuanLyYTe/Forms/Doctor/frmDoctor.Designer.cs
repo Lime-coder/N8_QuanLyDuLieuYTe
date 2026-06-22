@@ -1,4 +1,4 @@
-namespace QuanLyYTe.Forms.Doctor
+﻿namespace QuanLyYTe.Forms.Doctor
 {
     partial class frmDoctor
     {
@@ -54,7 +54,7 @@ namespace QuanLyYTe.Forms.Doctor
             // 
             this.lblLogo.Dock = System.Windows.Forms.DockStyle.Top;
             this.lblLogo.Font = new System.Drawing.Font("Segoe UI", 15F, System.Drawing.FontStyle.Bold);
-            this.lblLogo.ForeColor = System.Drawing.Color.Orange;
+            this.lblLogo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(140)))), ((int)(((byte)(40)))));
             this.lblLogo.Location = new System.Drawing.Point(0, 0);
             this.lblLogo.Name = "lblLogo";
             this.lblLogo.Size = new System.Drawing.Size(230, 80);
@@ -67,7 +67,7 @@ namespace QuanLyYTe.Forms.Doctor
             this.btnNavHSBA.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnNavHSBA.FlatAppearance.BorderSize = 0;
             this.btnNavHSBA.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNavHSBA.ForeColor = System.Drawing.Color.White;
+            this.btnNavHSBA.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(190)))), ((int)(((byte)(190)))), ((int)(((byte)(200)))));
             this.btnNavHSBA.Location = new System.Drawing.Point(0, 80);
             this.btnNavHSBA.Name = "btnNavHSBA";
             this.btnNavHSBA.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
@@ -83,7 +83,7 @@ namespace QuanLyYTe.Forms.Doctor
             this.btnNavPrescription.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnNavPrescription.FlatAppearance.BorderSize = 0;
             this.btnNavPrescription.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNavPrescription.ForeColor = System.Drawing.Color.White;
+            this.btnNavPrescription.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(190)))), ((int)(((byte)(190)))), ((int)(((byte)(200)))));
             this.btnNavPrescription.Location = new System.Drawing.Point(0, 135);
             this.btnNavPrescription.Name = "btnNavPrescription";
             this.btnNavPrescription.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
@@ -99,7 +99,7 @@ namespace QuanLyYTe.Forms.Doctor
             this.btnNavPatient.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnNavPatient.FlatAppearance.BorderSize = 0;
             this.btnNavPatient.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNavPatient.ForeColor = System.Drawing.Color.White;
+            this.btnNavPatient.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(190)))), ((int)(((byte)(190)))), ((int)(((byte)(200)))));
             this.btnNavPatient.Location = new System.Drawing.Point(0, 190);
             this.btnNavPatient.Name = "btnNavPatient";
             this.btnNavPatient.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
@@ -115,7 +115,7 @@ namespace QuanLyYTe.Forms.Doctor
             this.btnNavProfile.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnNavProfile.FlatAppearance.BorderSize = 0;
             this.btnNavProfile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNavProfile.ForeColor = System.Drawing.Color.White;
+            this.btnNavProfile.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(190)))), ((int)(((byte)(190)))), ((int)(((byte)(200)))));
             this.btnNavProfile.Location = new System.Drawing.Point(0, 245);
             this.btnNavProfile.Name = "btnNavProfile";
             this.btnNavProfile.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
@@ -131,7 +131,7 @@ namespace QuanLyYTe.Forms.Doctor
             this.btnNavNotifications.Dock = System.Windows.Forms.DockStyle.Top;
             this.btnNavNotifications.FlatAppearance.BorderSize = 0;
             this.btnNavNotifications.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNavNotifications.ForeColor = System.Drawing.Color.White;
+            this.btnNavNotifications.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(190)))), ((int)(((byte)(190)))), ((int)(((byte)(200)))));
             this.btnNavNotifications.Location = new System.Drawing.Point(0, 300);
             this.btnNavNotifications.Name = "btnNavNotifications";
             this.btnNavNotifications.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
@@ -148,7 +148,7 @@ namespace QuanLyYTe.Forms.Doctor
             this.btnLogout.FlatAppearance.BorderSize = 0;
             this.btnLogout.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnLogout.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnLogout.ForeColor = System.Drawing.Color.Tomato;
+            this.btnLogout.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
             this.btnLogout.Location = new System.Drawing.Point(0, 355);
             this.btnLogout.Name = "btnLogout";
             this.btnLogout.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
@@ -185,7 +185,7 @@ namespace QuanLyYTe.Forms.Doctor
             // lblBreadcrumb
             // 
             this.lblBreadcrumb.AutoSize = true;
-            this.lblBreadcrumb.ForeColor = System.Drawing.Color.Gray;
+            this.lblBreadcrumb.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(160)))), ((int)(((byte)(160)))), ((int)(((byte)(170)))));
             this.lblBreadcrumb.Location = new System.Drawing.Point(25, 55);
             this.lblBreadcrumb.Name = "lblBreadcrumb";
             this.lblBreadcrumb.Size = new System.Drawing.Size(126, 13);
@@ -197,7 +197,7 @@ namespace QuanLyYTe.Forms.Doctor
             this.lblUserInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lblUserInfo.AutoSize = true;
             this.lblUserInfo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.lblUserInfo.ForeColor = System.Drawing.Color.Orange;
+            this.lblUserInfo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(140)))), ((int)(((byte)(40)))));
             this.lblUserInfo.Location = new System.Drawing.Point(882, 35);
             this.lblUserInfo.Name = "lblUserInfo";
             this.lblUserInfo.Size = new System.Drawing.Size(163, 19);

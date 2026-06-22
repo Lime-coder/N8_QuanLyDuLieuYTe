@@ -18,7 +18,18 @@ namespace QuanLyYTe.Forms.Doctor
 
         private void frmDoctor_Load(object sender, EventArgs e)
         {
-            lblUserInfo.Text = "Bác sĩ: " + AppSession.CurrentUsername;
+            try
+            {
+                var svc = new QuanLyYTe.Services.DoctorService();
+                var dt = svc.GetSelfInfo();
+                if (dt.Rows.Count > 0)
+                {
+                    AppSession.CurrentFullName = dt.Rows[0]["FULL_NAME"]?.ToString();
+                }
+            }
+            catch { }
+
+            lblUserInfo.Text = $"Bác sĩ  ·  {(AppSession.CurrentFullName ?? AppSession.CurrentUsername).ToUpper()}  ·  {AppSession.CurrentUserId}";
             PositionUserInfo();
         }
 

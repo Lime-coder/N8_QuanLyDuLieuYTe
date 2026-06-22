@@ -59,6 +59,8 @@ namespace QuanLyYTe.Forms.DBA
             this.cmbRole = new System.Windows.Forms.ComboBox();
             this.lblDept = new System.Windows.Forms.Label();
             this.cmbDept = new System.Windows.Forms.ComboBox();
+            this.lblFacility = new System.Windows.Forms.Label();
+            this.cmbFacility = new System.Windows.Forms.ComboBox();
             this.btnOk = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -273,6 +275,18 @@ namespace QuanLyYTe.Forms.DBA
             this.cmbDept.Location = new System.Drawing.Point(150, 370);
             this.cmbDept.Width = 250;
             // 
+            // lblFacility
+            // 
+            this.lblFacility.AutoSize = true;
+            this.lblFacility.Location = new System.Drawing.Point(20, 405);
+            this.lblFacility.Text = "Cơ sở:";
+            // 
+            // cmbFacility
+            // 
+            this.cmbFacility.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbFacility.Location = new System.Drawing.Point(150, 405);
+            this.cmbFacility.Width = 250;
+            // 
             // btnOk
             // 
             this.btnOk.Location = new System.Drawing.Point(150, 600);
@@ -325,6 +339,8 @@ namespace QuanLyYTe.Forms.DBA
             this.Controls.Add(this.cmbRole);
             this.Controls.Add(this.lblDept);
             this.Controls.Add(this.cmbDept);
+            this.Controls.Add(this.lblFacility);
+            this.Controls.Add(this.cmbFacility);
             this.Controls.Add(this.btnOk);
             this.Controls.Add(this.btnCancel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
@@ -362,6 +378,8 @@ namespace QuanLyYTe.Forms.DBA
         private System.Windows.Forms.TextBox txtHometown;
         private System.Windows.Forms.ComboBox cmbRole;
         private System.Windows.Forms.ComboBox cmbDept;
+        private System.Windows.Forms.Label lblFacility;
+        private System.Windows.Forms.ComboBox cmbFacility;
 
         // Patient controls
         private System.Windows.Forms.Label lblHouseNo;

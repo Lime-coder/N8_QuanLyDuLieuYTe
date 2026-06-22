@@ -20,8 +20,9 @@ namespace QuanLyYTe.Services
         public void UpdateSelfStaffInfo(string phone, string hometown) => _coordinatorRepo.UpdateSelfStaffInfo(phone, hometown);
 
         // --- PatientService ---
-        public DataTable GetAllPatients() => _coordinatorRepo.GetAllPatients();
-        public DataTable SearchPatients(string keyword) => string.IsNullOrWhiteSpace(keyword) ? _coordinatorRepo.GetAllPatients() : _coordinatorRepo.SearchPatients(keyword.Trim());
+        public string GetMaxPatientId() => _coordinatorRepo.GetMaxPatientId();
+        
+        public DataTable GetAllPatients(string keyword, int pageNum, int pageSize) => _coordinatorRepo.GetAllPatients(keyword, pageNum, pageSize);
         public void InsertPatient(string patientId, string fullName, string gender, DateTime birthDate, string idCard, string houseNo, string street, string district, string cityProvince, string medicalHistory, string familyMedicalHistory, string drugAllergies, string usernameDb)
         {
             if (string.IsNullOrWhiteSpace(patientId)) throw new ArgumentException("Mã bệnh nhân không được để trống.");
@@ -36,7 +37,7 @@ namespace QuanLyYTe.Services
         }
 
         // --- MedicalRecordService ---
-        public DataTable GetAllMedicalRecords() => _coordinatorRepo.GetAllMedicalRecords();
+        public DataTable GetAllMedicalRecords(string keyword, int pageNum, int pageSize) => _coordinatorRepo.GetAllMedicalRecords(keyword, pageNum, pageSize);
         public void InsertMedicalRecord(string recordId, string patientId, DateTime recordDate, string doctorId, string deptId)
         {
             if (string.IsNullOrWhiteSpace(recordId)) throw new ArgumentException("Mã hồ sơ bệnh án không được để trống.");
@@ -50,7 +51,7 @@ namespace QuanLyYTe.Services
         }
 
         // --- ServiceAssignmentService ---
-        public DataTable GetAllServiceAssignments() => _coordinatorRepo.GetAllServiceAssignments();
+        public DataTable GetAllServiceAssignments(string keyword, int pageNum, int pageSize) => _coordinatorRepo.GetAllServiceAssignments(keyword, pageNum, pageSize);
         public void UpdateTechnician(string recordId, string serviceType, DateTime serviceDate, string technicianId)
         {
             if (string.IsNullOrWhiteSpace(recordId)) throw new ArgumentException("Mã hồ sơ bệnh án không được để trống.");
@@ -59,3 +60,4 @@ namespace QuanLyYTe.Services
         }
     }
 }
+

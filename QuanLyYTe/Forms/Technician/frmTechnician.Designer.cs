@@ -60,6 +60,10 @@ namespace QuanLyYTe.Forms.Technician
             txtPhone = new TextBox();
             lblHometown = new Label();
             txtHometown = new TextBox();
+            lblDept = new Label();
+            txtDept = new TextBox();
+            lblFacility = new Label();
+            txtFacility = new TextBox();
             btnSaveInfo = new Button();
             btnCancelEdit = new Button();
             pnlResultNote = new Panel();
@@ -482,9 +486,9 @@ namespace QuanLyYTe.Forms.Technician
             tlpPersonalCenter.Location = new Point(8, 8);
             tlpPersonalCenter.Name = "tlpPersonalCenter";
             tlpPersonalCenter.RowCount = 3;
-            tlpPersonalCenter.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            tlpPersonalCenter.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tlpPersonalCenter.RowStyles.Add(new RowStyle());
-            tlpPersonalCenter.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tlpPersonalCenter.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tlpPersonalCenter.Size = new Size(948, 478);
             tlpPersonalCenter.TabIndex = 0;
             // 
@@ -502,11 +506,16 @@ namespace QuanLyYTe.Forms.Technician
             pnlPersonalContent.Controls.Add(txtPhone);
             pnlPersonalContent.Controls.Add(lblHometown);
             pnlPersonalContent.Controls.Add(txtHometown);
+            pnlPersonalContent.Controls.Add(lblDept);
+            pnlPersonalContent.Controls.Add(txtDept);
+            pnlPersonalContent.Controls.Add(lblFacility);
+            pnlPersonalContent.Controls.Add(txtFacility);
             pnlPersonalContent.Controls.Add(btnSaveInfo);
             pnlPersonalContent.Controls.Add(btnCancelEdit);
             pnlPersonalContent.Location = new Point(194, 43);
             pnlPersonalContent.Name = "pnlPersonalContent";
-            pnlPersonalContent.Size = new Size(560, 360);
+            pnlPersonalContent.Anchor = AnchorStyles.None;
+            pnlPersonalContent.Size = new Size(560, 460);
             pnlPersonalContent.TabIndex = 0;
             // 
             // lblUserId
@@ -560,7 +569,7 @@ namespace QuanLyYTe.Forms.Technician
             lblGender.Name = "lblGender";
             lblGender.Size = new Size(43, 23);
             lblGender.TabIndex = 4;
-            lblGender.Text = "Phái";
+            lblGender.Text = "Giới tính";
             // 
             // txtGender
             // 
@@ -636,6 +645,48 @@ namespace QuanLyYTe.Forms.Technician
             txtHometown.Size = new Size(340, 30);
             txtHometown.TabIndex = 11;
             // 
+            // lblDept
+            // 
+            lblDept.AutoSize = true;
+            lblDept.Font = new Font("Segoe UI", 10F);
+            lblDept.ForeColor = Color.FromArgb(75, 85, 99);
+            lblDept.Location = new Point(14, 294);
+            lblDept.Name = "lblDept";
+            lblDept.Size = new Size(43, 19);
+            lblDept.TabIndex = 12;
+            lblDept.Text = "Chuyên khoa";
+            // 
+            // txtDept
+            // 
+            txtDept.BackColor = Color.FromArgb(229, 231, 235);
+            txtDept.Font = new Font("Segoe UI", 10F);
+            txtDept.Location = new Point(200, 288);
+            txtDept.Name = "txtDept";
+            txtDept.ReadOnly = true;
+            txtDept.Size = new Size(340, 30);
+            txtDept.TabIndex = 13;
+            // 
+            // lblFacility
+            // 
+            lblFacility.AutoSize = true;
+            lblFacility.Font = new Font("Segoe UI", 10F);
+            lblFacility.ForeColor = Color.FromArgb(75, 85, 99);
+            lblFacility.Location = new Point(14, 342);
+            lblFacility.Name = "lblFacility";
+            lblFacility.Size = new Size(74, 19);
+            lblFacility.TabIndex = 14;
+            lblFacility.Text = "Cơ sở y tế";
+            // 
+            // txtFacility
+            // 
+            txtFacility.BackColor = Color.FromArgb(229, 231, 235);
+            txtFacility.Font = new Font("Segoe UI", 10F);
+            txtFacility.Location = new Point(200, 336);
+            txtFacility.Name = "txtFacility";
+            txtFacility.ReadOnly = true;
+            txtFacility.Size = new Size(340, 30);
+            txtFacility.TabIndex = 15;
+            // 
             // btnSaveInfo
             // 
             btnSaveInfo.BackColor = Color.FromArgb(255, 140, 40);
@@ -643,10 +694,10 @@ namespace QuanLyYTe.Forms.Technician
             btnSaveInfo.FlatStyle = FlatStyle.Flat;
             btnSaveInfo.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             btnSaveInfo.ForeColor = Color.White;
-            btnSaveInfo.Location = new Point(14, 298);
+            btnSaveInfo.Location = new Point(14, 405);
             btnSaveInfo.Name = "btnSaveInfo";
-            btnSaveInfo.Size = new Size(140, 34);
-            btnSaveInfo.TabIndex = 12;
+            btnSaveInfo.Size = new Size(120, 35);
+            btnSaveInfo.TabIndex = 16;
             btnSaveInfo.Text = "Cập nhật";
             btnSaveInfo.UseVisualStyleBackColor = false;
             btnSaveInfo.Click += btnSaveInfo_Click;
@@ -659,10 +710,10 @@ namespace QuanLyYTe.Forms.Technician
             btnCancelEdit.FlatStyle = FlatStyle.Flat;
             btnCancelEdit.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
             btnCancelEdit.ForeColor = Color.White;
-            btnCancelEdit.Location = new Point(162, 298);
+            btnCancelEdit.Location = new Point(140, 405);
             btnCancelEdit.Name = "btnCancelEdit";
-            btnCancelEdit.Size = new Size(80, 34);
-            btnCancelEdit.TabIndex = 13;
+            btnCancelEdit.Size = new Size(100, 35);
+            btnCancelEdit.TabIndex = 17;
             btnCancelEdit.Text = "Hủy";
             btnCancelEdit.UseVisualStyleBackColor = false;
             btnCancelEdit.Click += btnCancelEdit_Click;
@@ -789,6 +840,10 @@ namespace QuanLyYTe.Forms.Technician
         private TextBox       txtPhone;
         private Label         lblHometown;
         private TextBox       txtHometown;
+        private Label         lblDept;
+        private TextBox       txtDept;
+        private Label         lblFacility;
+        private TextBox       txtFacility;
         private Button        btnEditInfo;
         private Button        btnSaveInfo;
         private Button        btnCancelEdit;

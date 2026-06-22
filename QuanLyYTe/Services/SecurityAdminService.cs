@@ -25,20 +25,20 @@ namespace QuanLyYTe.Services
         public DataTable GetUserInfo(string username) => _service.GetUserInfo(username);
 
         public void CreateUser(string username, string password, string fullName, string gender, DateTime birthdate, string idCard, string role, 
-            string? phone = null, string? hometown = null, string? deptId = null,
+            string? phone = null, string? hometown = null, string? deptId = null, string? facility = null,
             string? houseNo = null, string? street = null, string? district = null, string? cityProvince = null,
             string? medicalHistory = null, string? familyMedicalHistory = null, string? drugAllergies = null)
         {
-            try { _service.CreateUser(username, password, fullName, gender, birthdate, idCard, role, phone, hometown, deptId, houseNo, street, district, cityProvince, medicalHistory, familyMedicalHistory, drugAllergies); }
+            try { _service.CreateUser(username, password, fullName, gender, birthdate, idCard, role, phone, hometown, deptId, facility, houseNo, street, district, cityProvince, medicalHistory, familyMedicalHistory, drugAllergies); }
             catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
         }
 
         public void UpdateUser(string username, string fullName, string gender, DateTime birthdate, string idCard, string role, 
-            string? phone = null, string? hometown = null, string? deptId = null,
+            string? phone = null, string? hometown = null, string? deptId = null, string? facility = null,
             string? houseNo = null, string? street = null, string? district = null, string? cityProvince = null,
             string? medicalHistory = null, string? familyMedicalHistory = null, string? drugAllergies = null)
         {
-            try { _service.UpdateUser(username, fullName, gender, birthdate, idCard, role, phone, hometown, deptId, houseNo, street, district, cityProvince, medicalHistory, familyMedicalHistory, drugAllergies); }
+            try { _service.UpdateUser(username, fullName, gender, birthdate, idCard, role, phone, hometown, deptId, facility, houseNo, street, district, cityProvince, medicalHistory, familyMedicalHistory, drugAllergies); }
             catch (Exception ex) { throw new Exception(OracleErrorMapper.GetUserMessage(ex)); }
         }
 

@@ -11,6 +11,8 @@ namespace QuanLyYTe.Forms.Doctor
         public frmDoctorProfile()
         {
             InitializeComponent();
+            pnlSearch.Visible = false;
+            Dgv.Visible = false;
             LoadProfile();
         }
 
@@ -25,6 +27,7 @@ namespace QuanLyYTe.Forms.Doctor
             if (dt.Rows.Count > 0)
             {
                 DataRow r = dt.Rows[0];
+                lblMaNV.Text = r.Table.Columns.Contains("STAFF_ID") ? r["STAFF_ID"].ToString() : QuanLyYTe.Common.AppSession.CurrentUserId ?? "";
                 lblName.Text = r["FULL_NAME"].ToString();
 
                 string sex = r["GENDER"].ToString();
@@ -41,6 +44,7 @@ namespace QuanLyYTe.Forms.Doctor
                 lblPhone.Text = r["PHONE"].ToString();
                 lblRole.Text = r["STAFF_ROLE"].ToString();
                 lblSpec.Text = r["DEPT_NAME"].ToString();
+                lblFacility.Text = r["FACILITY"].ToString();
             }
         }
 

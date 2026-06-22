@@ -16,11 +16,34 @@ namespace QuanLyYTe.Forms.Patient
         public frmPatient()
         {
             InitializeComponent();
+            
+            dtpFrom.Value = DateTime.Now.AddMonths(-6);
+            dtpTo.Value = DateTime.Now;
+
             LoadProfile();
             LoadMedicalRecords();
             
             SetActiveNav(btnNavProfile);
             ShowPanel(pnlProfile, "Hồ sơ cá nhân", "Patient / Profile");
+
+            this.Load += FrmPatient_Load;
+            pnlTopbar.Resize += PnlTopbar_Resize;
+        }
+
+        private void FrmPatient_Load(object? sender, EventArgs e)
+        {
+            lblUserInfo.Text = $"Bệnh nhân  ·  {(AppSession.CurrentFullName ?? AppSession.CurrentUsername).ToUpper()}  ·  {AppSession.CurrentUserId}";
+            PositionUserInfo();
+        }
+
+        private void PnlTopbar_Resize(object? sender, EventArgs e)
+        {
+            PositionUserInfo();
+        }
+
+        private void PositionUserInfo()
+        {
+            lblUserInfo.Location = new Point(pnlTopbar.Width - lblUserInfo.Width - 25, (pnlTopbar.Height - lblUserInfo.Height) / 2);
         }
 
         private void SetActiveNav(Button btn)
@@ -73,8 +96,11 @@ namespace QuanLyYTe.Forms.Patient
                 if (dt.Rows.Count == 0) return;
                 DataRow row = dt.Rows[0];
 
+                string fullName = row["FULL_NAME"]?.ToString() ?? "";
+                AppSession.CurrentFullName = fullName;
+
                 lblPatientId.Text = row["PATIENT_ID"]?.ToString();
-                lblFullName.Text = row["FULL_NAME"]?.ToString();
+                lblFullName.Text = fullName;
                 lblGender.Text = row["GENDER"]?.ToString();
                 lblBirthdate.Text = row["BIRTHDATE"] != DBNull.Value ? Convert.ToDateTime(row["BIRTHDATE"]).ToString("dd/MM/yyyy") : "—";
                 lblIdCard.Text = row["ID_CARD"]?.ToString();
@@ -86,6 +112,10 @@ namespace QuanLyYTe.Forms.Patient
                 txtStreet.Text = row["STREET"]?.ToString();
                 txtDistrict.Text = row["DISTRICT"]?.ToString();
                 txtCityProvince.Text = row["CITY_PROVINCE"]?.ToString();
+
+                // Update UI right after we know the name
+                lblUserInfo.Text = $"Bệnh nhân  ·  {(AppSession.CurrentFullName ?? AppSession.CurrentUsername).ToUpper()}  ·  {AppSession.CurrentUserId}";
+                PositionUserInfo();
             }
             catch (Exception ex)
             {
@@ -187,9 +217,20 @@ namespace QuanLyYTe.Forms.Patient
 
         private void DgvRecords_SelectionChanged(object? sender, EventArgs e)
         {
-            if (dgvRecords.SelectedRows.Count == 0) return;
+            if (dgvRecords.SelectedRows.Count == 0)
+            {
+                ClearDetail();
+                return;
+            }
             string recordId = dgvRecords.SelectedRows[0].Cells["Mã hồ sơ"].Value?.ToString() ?? "";
             LoadDetail(recordId);
+        }
+
+        private void ClearDetail()
+        {
+            lblDetailTitle.Text = "CHI TIẾT HỒ SƠ: Chưa chọn";
+            dgvPrescriptions.DataSource = null;
+            dgvServices.DataSource = null;
         }
 
         private void LoadDetail(string recordId)

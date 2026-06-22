@@ -1,4 +1,4 @@
-using Oracle.ManagedDataAccess.Client;
+﻿using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DataProvider;
 using System.Configuration;
 using System.Data;
@@ -36,7 +36,7 @@ namespace QuanLyYTe.Repositories
         {
             OracleParameter[] parameters = new OracleParameter[]
             {
-                new OracleParameter("p_grantee", grantee),
+                new OracleParameter("p_grantee", OracleDbType.NVarchar2) { Value = grantee },
                 new OracleParameter("p_cursor",  OracleDbType.RefCursor)
                 {
                     Direction = ParameterDirection.Output
@@ -52,7 +52,7 @@ namespace QuanLyYTe.Repositories
             OracleParameter[] parameters = new OracleParameter[]
             {
                 new OracleParameter("p_owner",       owner),
-                new OracleParameter("p_object_name", objectName),
+                new OracleParameter("p_object_name", OracleDbType.NVarchar2) { Value = objectName },
                 new OracleParameter("p_cursor",      OracleDbType.RefCursor)
                 {
                     Direction = ParameterDirection.Output
@@ -68,7 +68,7 @@ namespace QuanLyYTe.Repositories
             OracleParameter[] parameters = new OracleParameter[]
             {
                 new OracleParameter("p_type",      type),
-                new OracleParameter("p_privilege", privilege),
+                new OracleParameter("p_privilege", OracleDbType.NVarchar2) { Value = privilege },
                 new OracleParameter("p_owner",     (object)owner  ?? DBNull.Value),
                 new OracleParameter("p_object",    (object)obj    ?? DBNull.Value),
                 new OracleParameter("p_column",    (object)column ?? DBNull.Value),

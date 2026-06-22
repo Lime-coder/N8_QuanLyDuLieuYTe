@@ -181,6 +181,7 @@ LEFT JOIN hospital.department d
 WHERE s.staff_role IN (
     N'Bác sĩ',
     N'Bác sĩ/Y sĩ',
+    UNISTR('K\01EF thu\1EADt vi\00EAn'),
     N'Kỹ thuật viên'
 );
 
@@ -206,7 +207,7 @@ SELECT
     staff_id,
     full_name
 FROM hospital.COORD_ASSIGNMENT_STAFF
-WHERE staff_role = N'Kỹ thuật viên';
+WHERE staff_role = UNISTR('K\01EF thu\1EADt vi\00EAn');
 
 
 -- ==============================================================================
@@ -800,7 +801,7 @@ BEGIN
     SET SR.SERVICE_RESULT = P_SERVICE_RESULT
     WHERE SR.RECORD_ID = P_RECORD_ID
       AND SR.SERVICE_TYPE = P_SERVICE_TYPE
-      AND SR.SERVICE_DATE = P_SERVICE_DATE
+      AND TRUNC(SR.SERVICE_DATE) = TRUNC(P_SERVICE_DATE)
       AND SR.TECHNICIAN_ID = (
             SELECT ST.STAFF_ID
             FROM HOSPITAL.STAFF ST
@@ -838,8 +839,11 @@ BEGIN
             ST.ID_CARD,
             ST.STAFF_ROLE AS ROLE,
             ST.PHONE,
-            ST.HOMETOWN
+            ST.HOMETOWN,
+            D.DEPT_NAME,
+            ST.FACILITY
         FROM HOSPITAL.STAFF ST
+        LEFT JOIN HOSPITAL.DEPARTMENT D ON ST.DEPT_ID = D.DEPT_ID
         WHERE UPPER(ST.USERNAME_DB) = SYS_CONTEXT('USERENV', 'SESSION_USER')
           AND ST.STAFF_ROLE = N'Kỹ thuật viên'
           AND ST.IS_ACTIVE = 1;
@@ -875,7 +879,7 @@ BEGIN
     V_ROWS_UPDATED := SQL%ROWCOUNT;
 
     IF V_ROWS_UPDATED = 0 THEN
-        RAISE_APPLICATION_ERROR(-20032, N'Không tìm thấy kỹ thuật viên hiện tại hoặc không có quyền cập nhật.');
+        RAISE_APPLICATION_ERROR(-20032, UNISTR('Kh\00F4ng t\00ECm th\1EA5y k\1EF9 thu\1EADt vi\00EAn hi\1EC7n t\1EA1i ho\1EB7c kh\00F4ng c\00F3 quy\1EC1n c\1EADp nh\1EADt.'));
     END IF;
 END;
 /
@@ -1384,7 +1388,7 @@ BEGIN
     WHERE record_id = UPPER(TRIM(p_id));
 
     IF SQL%ROWCOUNT = 0 THEN
-        RAISE_APPLICATION_ERROR(-20002, N'Lỗi: Không tìm thấy hồ sơ bệnh án hoặc bác sĩ không có quyền cập nhật hồ sơ này.');
+        RAISE_APPLICATION_ERROR(-20002, UNISTR('L\1ED7i: Kh\00F4ng t\00ECm th\1EA5y h\1ED3 s\01A1 b\1EC7nh \00E1n ho\1EB7c b\00E1c s\0129 kh\00F4ng c\00F3 quy\1EC1n c\1EADp nh\1EADt h\1ED3 s\01A1 n\00E0y.'));
     END IF;
 END;
 /
@@ -1450,7 +1454,7 @@ BEGIN
     );
 EXCEPTION
     WHEN DUP_VAL_ON_INDEX THEN
-        RAISE_APPLICATION_ERROR(-20006, N'Lỗi: Dịch vụ này đã tồn tại cho HSBA/ngày hiện tại.');
+        RAISE_APPLICATION_ERROR(-20006, UNISTR('L\1ED7i: D\1ECBch v\1EE5 n\00E0y \0111\00E3 t\1ED3n t\1EA1i cho HSBA/ng\00E0y hi\1EC7n t\1EA1i.'));
 END;
 /
 
@@ -1468,7 +1472,7 @@ BEGIN
       AND TRUNC(service_date) = TRUNC(p_date);
 
     IF SQL%ROWCOUNT = 0 THEN
-        RAISE_APPLICATION_ERROR(-20007, N'Lỗi: Không tìm thấy dịch vụ hoặc bác sĩ không có quyền xóa dịch vụ này.');
+        RAISE_APPLICATION_ERROR(-20007, UNISTR('L\1ED7i: Kh\00F4ng t\00ECm th\1EA5y d\1ECBch v\1EE5 ho\1EB7c b\00E1c s\0129 kh\00F4ng c\00F3 quy\1EC1n x\00F3a d\1ECBch v\1EE5 n\00E0y.'));
     END IF;
 END;
 /
@@ -1511,7 +1515,7 @@ AS
     v_action VARCHAR2(20) := UPPER(TRIM(p_action));
 BEGIN
     IF v_action NOT IN ('INSERT', 'UPDATE', 'DELETE') THEN
-        RAISE_APPLICATION_ERROR(-20008, N'Lỗi: Hành động đơn thuốc không hợp lệ.');
+        RAISE_APPLICATION_ERROR(-20008, UNISTR('L\1ED7i: H\00E0nh \0111\1ED9ng \0111\01A1n thu\1ED1c kh\00F4ng h\1EE3p l\1EC7.'));
     END IF;
 
     IF v_action IN ('INSERT', 'UPDATE') THEN
@@ -1522,7 +1526,7 @@ BEGIN
         WHERE record_id = v_id;
 
         IF v_count = 0 THEN
-            RAISE_APPLICATION_ERROR(-20003, N'Lỗi: Mã HSBA không tồn tại hoặc bác sĩ không có quyền kê đơn cho HSBA này.');
+            RAISE_APPLICATION_ERROR(-20003, UNISTR('L\1ED7i: M\00E3 HSBA kh\00F4ng t\1ED3n t\1EA1i ho\1EB7c b\00E1c s\0129 kh\00F4ng c\00F3 quy\1EC1n k\00EA \0111\01A1n cho HSBA n\00E0y.'));
         END IF;
     END IF;
 
@@ -1535,7 +1539,7 @@ BEGIN
           AND medicine_name = p_med_name;
 
         IF v_count > 0 THEN
-            RAISE_APPLICATION_ERROR(-20005, N'Lỗi: Thuốc này đã được kê trong đơn của ngày hôm nay.');
+            RAISE_APPLICATION_ERROR(-20005, UNISTR('L\1ED7i: Thu\1ED1c n\00E0y \0111\00E3 \0111\01B0\1EE3c k\00EA trong \0111\01A1n c\1EE7a ng\00E0y h\00F4m nay.'));
         END IF;
 
         INSERT INTO hospital.prescription (
@@ -1552,7 +1556,7 @@ BEGIN
 
     ELSIF v_action = 'UPDATE' THEN
         IF p_date IS NULL OR p_old_med_name IS NULL THEN
-            RAISE_APPLICATION_ERROR(-20009, N'Lỗi: Cập nhật đơn thuốc cần ngày kê đơn và tên thuốc cũ.');
+            RAISE_APPLICATION_ERROR(-20009, UNISTR('L\1ED7i: C\1EADp nh\1EADt \0111\01A1n thu\1ED1c c\1EA7n ng\00E0y k\00EA \0111\01A1n v\00E0 t\00EAn thu\1ED1c c\0169.'));
         END IF;
 
         UPDATE hospital.prescription
@@ -1563,12 +1567,12 @@ BEGIN
           AND medicine_name = p_old_med_name;
 
         IF SQL%ROWCOUNT = 0 THEN
-            RAISE_APPLICATION_ERROR(-20010, N'Lỗi: Không tìm thấy đơn thuốc hoặc bác sĩ không có quyền cập nhật.');
+            RAISE_APPLICATION_ERROR(-20010, UNISTR('L\1ED7i: Kh\00F4ng t\00ECm th\1EA5y \0111\01A1n thu\1ED1c ho\1EB7c b\00E1c s\0129 kh\00F4ng c\00F3 quy\1EC1n c\1EADp nh\1EADt.'));
         END IF;
 
     ELSIF v_action = 'DELETE' THEN
         IF p_date IS NULL THEN
-            RAISE_APPLICATION_ERROR(-20011, N'Lỗi: Xóa đơn thuốc cần ngày kê đơn.');
+            RAISE_APPLICATION_ERROR(-20011, UNISTR('L\1ED7i: X\00F3a \0111\01A1n thu\1ED1c c\1EA7n ng\00E0y k\00EA \0111\01A1n.'));
         END IF;
 
         DELETE FROM hospital.prescription
@@ -1577,7 +1581,7 @@ BEGIN
           AND medicine_name = p_med_name;
 
         IF SQL%ROWCOUNT = 0 THEN
-            RAISE_APPLICATION_ERROR(-20012, N'Lỗi: Không tìm thấy đơn thuốc hoặc bác sĩ không có quyền xóa.');
+            RAISE_APPLICATION_ERROR(-20012, UNISTR('L\1ED7i: Kh\00F4ng t\00ECm th\1EA5y \0111\01A1n thu\1ED1c ho\1EB7c b\00E1c s\0129 kh\00F4ng c\00F3 quy\1EC1n x\00F3a.'));
         END IF;
     END IF;
 END;
@@ -1642,7 +1646,7 @@ BEGIN
     WHERE patient_id = UPPER(TRIM(p_id));
 
     IF SQL%ROWCOUNT = 0 THEN
-        RAISE_APPLICATION_ERROR(-20004, N'Lỗi: Không tìm thấy bệnh nhân hoặc bác sĩ không có quyền cập nhật bệnh nhân này.');
+        RAISE_APPLICATION_ERROR(-20004, UNISTR('L\1ED7i: Kh\00F4ng t\00ECm th\1EA5y b\1EC7nh nh\00E2n ho\1EB7c b\00E1c s\0129 kh\00F4ng c\00F3 quy\1EC1n c\1EADp nh\1EADt b\1EC7nh nh\00E2n n\00E0y.'));
     END IF;
 END;
 /
@@ -1662,7 +1666,8 @@ BEGIN
             s.hometown,
             s.phone,
             s.staff_role,
-            d.dept_name
+            d.dept_name,
+            s.facility
         FROM hospital.staff s
         LEFT JOIN hospital.department d
             ON d.dept_id = s.dept_id
@@ -1691,7 +1696,7 @@ BEGIN
       AND is_active = 1;
 
     IF SQL%ROWCOUNT = 0 THEN
-        RAISE_APPLICATION_ERROR(-20013, N'Lỗi: Không tìm thấy thông tin bác sĩ hiện tại hoặc tài khoản đã bị khóa.');
+        RAISE_APPLICATION_ERROR(-20013, UNISTR('L\1ED7i: Kh\00F4ng t\00ECm th\1EA5y th\00F4ng tin b\00E1c s\0129 hi\1EC7n t\1EA1i ho\1EB7c t\00E0i kho\1EA3n \0111\00E3 b\1ECB kh\00F3a.'));
     END IF;
 END;
 /

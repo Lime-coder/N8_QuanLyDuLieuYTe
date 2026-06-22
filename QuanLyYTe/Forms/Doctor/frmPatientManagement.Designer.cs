@@ -1,4 +1,4 @@
-namespace QuanLyYTe.Forms.Doctor
+﻿namespace QuanLyYTe.Forms.Doctor
 {
     partial class frmPatientManagement
     {

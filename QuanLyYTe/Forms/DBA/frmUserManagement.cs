@@ -398,7 +398,7 @@ namespace QuanLyYTe.Forms
             try
             {
                 _service.CreateUser(dlg.Username, dlg.Password, dlg.FullName, dlg.Gender, dlg.Birthdate, dlg.IdCard, dlg.Role, 
-                    dlg.Phone, dlg.Hometown, dlg.DeptId, 
+                    dlg.Phone, dlg.Hometown, dlg.DeptId, dlg.Facility,
                     dlg.HouseNo, dlg.Street, dlg.District, dlg.CityProvince, 
                     dlg.MedicalHistory, dlg.FamilyMedicalHistory, dlg.DrugAllergies);
                 MessageBox.Show("Tạo user thành công.", "Thông báo");
@@ -436,7 +436,7 @@ namespace QuanLyYTe.Forms
             try
             {
                 _service.UpdateUser(username, dlg.FullName, dlg.Gender, dlg.Birthdate, dlg.IdCard, dlg.Role, 
-                    dlg.Phone, dlg.Hometown, dlg.DeptId, 
+                    dlg.Phone, dlg.Hometown, dlg.DeptId, dlg.Facility,
                     dlg.HouseNo, dlg.Street, dlg.District, dlg.CityProvince, 
                     dlg.MedicalHistory, dlg.FamilyMedicalHistory, dlg.DrugAllergies);
                 

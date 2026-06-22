@@ -48,10 +48,17 @@ CREATE TABLE staff (
     dept_id     VARCHAR2(10),
     staff_role  NVARCHAR2(50)  NOT NULL,
     username_db VARCHAR2(30)   NOT NULL UNIQUE,
+    facility    NVARCHAR2(100) NOT NULL,
     is_active   NUMBER(1)      DEFAULT 1 NOT NULL,
     CONSTRAINT fk_staff_dept   FOREIGN KEY (dept_id) REFERENCES department(dept_id),
-    CONSTRAINT chk_staff_role  CHECK (staff_role IN (N'Điều phối viên', N'Bác sĩ', N'Kỹ thuật viên')),
-    CONSTRAINT chk_staff_gender CHECK (gender IN (N'Nam', N'Nữ'))
+    CONSTRAINT chk_staff_role  CHECK (staff_role IN (
+        UNISTR('\0110i\1EC1u ph\1ED1i vi\00EAn'),
+        UNISTR('B\00E1c s\0129'),
+        UNISTR('K\1EF9 thu\1EADt vi\00EAn'),
+        UNISTR('T\00E0i v\1EE5'),
+        UNISTR('B\00E1c s\0129/Y s\0129')
+    )),
+    CONSTRAINT chk_staff_gender CHECK (gender IN ('Nam', UNISTR('N\01B0')))
 );
 
 CREATE TABLE patient (
@@ -69,7 +76,7 @@ CREATE TABLE patient (
     drug_allergies         NCLOB,
     username_db            VARCHAR2(30)   NOT NULL UNIQUE,
     is_active              NUMBER(1)      DEFAULT 1 NOT NULL,
-    CONSTRAINT chk_patient_gender CHECK (gender IN (N'Nam', N'Nữ'))
+    CONSTRAINT chk_patient_gender CHECK (gender IN ('Nam', UNISTR('N\01B0')))
 );
 
 CREATE TABLE medical_record (
@@ -120,12 +127,12 @@ DECLARE
 BEGIN
     SELECT is_active INTO v_patient_active FROM hospital.patient WHERE patient_id = :NEW.patient_id;
     IF v_patient_active = 0 THEN
-        RAISE_APPLICATION_ERROR(-20010, 'Không thể tạo hồ sơ: Bệnh nhân này đã bị khóa (Không hoạt động).');
+        RAISE_APPLICATION_ERROR(-20010, UNISTR('Kh\00F4ng th\1EC3 t\1EA1o h\1ED3 s\01A1: B\1EC7nh nh\00E2n n\00E0y \0111\00E3 b\1ECB kh\00F3a (Kh\00F4ng ho\1EA1t \0111\1ED9ng).'));
     END IF;
 
     SELECT is_active INTO v_doctor_active FROM hospital.staff WHERE staff_id = :NEW.doctor_id;
     IF v_doctor_active = 0 THEN
-        RAISE_APPLICATION_ERROR(-20011, 'Không thể tạo hồ sơ: Bác sĩ này đã bị khóa (Không hoạt động).');
+        RAISE_APPLICATION_ERROR(-20011, UNISTR('Kh\00F4ng th\1EC3 t\1EA1o h\1ED3 s\01A1: B\00E1c s\0129 n\00E0y \0111\00E3 b\1ECB kh\00F3a (Kh\00F4ng ho\1EA1t \0111\1ED9ng).'));
     END IF;
 END;
 /

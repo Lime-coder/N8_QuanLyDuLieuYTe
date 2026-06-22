@@ -36,7 +36,7 @@ COMMIT;
 -- 20 Điều phối viên, 100 Bác sĩ, 50 Kỹ thuật viên
 -- ============================================================
 -- 3.1. Tạo 20 Điều phối viên
-INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db)
+INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db, facility)
 SELECT
     'NV' || LPAD(LEVEL, 6, '0') AS staff_id,
 
@@ -72,13 +72,18 @@ SELECT
 
     N'Điều phối viên' AS staff_role,
 
-    'NV' || LPAD(LEVEL, 6, '0') AS username_db
+    'DPV_' || LPAD(LEVEL, 6, '0') AS username_db,
+    CASE MOD(LEVEL, 3)
+        WHEN 0 THEN N'Hà Nội'
+        WHEN 1 THEN N'Hồ Chí Minh'
+        ELSE N'Hải Phòng'
+    END AS facility
 FROM DUAL
 CONNECT BY LEVEL <= 20;
 
 
 -- 3.2. Tạo 100 Bác sĩ
-INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db)
+INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db, facility)
 SELECT
     'NV' || LPAD(LEVEL + 20, 6, '0') AS staff_id,
 
@@ -121,13 +126,18 @@ SELECT
 
     N'Bác sĩ' AS staff_role,
 
-    'NV' || LPAD(LEVEL + 20, 6, '0') AS username_db
+    'BS_' || LPAD(LEVEL + 20, 6, '0') AS username_db,
+    CASE MOD(LEVEL, 3)
+        WHEN 0 THEN N'Hà Nội'
+        WHEN 1 THEN N'Hồ Chí Minh'
+        ELSE N'Hải Phòng'
+    END AS facility
 FROM DUAL
 CONNECT BY LEVEL <= 100;
 
 COMMIT;
 -- 3.3. Tạo 50 Kỹ thuật viên
-INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db)
+INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db, facility)
 SELECT
     'NV' || LPAD(LEVEL + 120, 6, '0') AS staff_id,
 
@@ -163,7 +173,12 @@ SELECT
 
     N'Kỹ thuật viên' AS staff_role,
 
-    'NV' || LPAD(LEVEL + 120, 6, '0') AS username_db
+    'KTV_' || LPAD(LEVEL + 120, 6, '0') AS username_db,
+    CASE MOD(LEVEL, 3)
+        WHEN 0 THEN N'Hà Nội'
+        WHEN 1 THEN N'Hồ Chí Minh'
+        ELSE N'Hải Phòng'
+    END AS facility
 FROM DUAL
 CONNECT BY LEVEL <= 50;
 

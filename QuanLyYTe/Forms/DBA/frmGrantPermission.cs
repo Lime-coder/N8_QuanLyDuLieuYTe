@@ -84,7 +84,7 @@ namespace QuanLyYTe.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("L?i t?i danh s�ch ng�?i nh?n: " + ex.Message);
+                MessageBox.Show("Lỗi tải danh sách người nhận: " + ex.Message);
             }
         }
 
@@ -107,7 +107,7 @@ namespace QuanLyYTe.Forms
                 chkExecute.Enabled = isCode;
                 chkExecute.Checked = isCode;
             }
-            catch (Exception ex) { MessageBox.Show("L?i t?i �?i t�?ng: " + ex.Message); }
+            catch (Exception ex) { MessageBox.Show("Lỗi tải đối tượng: " + ex.Message); }
         }
 
         private void LoadColumns()
@@ -120,7 +120,7 @@ namespace QuanLyYTe.Forms
                 DataTable dt = _service.GetColumns(lbObjects.GetItemText(lbObjects.SelectedItem));
                 foreach (DataRow row in dt.Rows) clbColumns.Items.Add(row[0].ToString());
             }
-            catch (Exception ex) { MessageBox.Show("L?i t?i c?t: " + ex.Message); }
+            catch (Exception ex) { MessageBox.Show("Lỗi tải cột: " + ex.Message); }
         }
 
         private void btnGrant_Click(object? sender, EventArgs e)
@@ -130,7 +130,7 @@ namespace QuanLyYTe.Forms
 
             if (string.IsNullOrEmpty(grantee) || string.IsNullOrEmpty(objName))
             {
-                MessageBox.Show("Vui l?ng ch?n ho?c nh?p �?y �? th�ng tin Ng�?i nh?n v� �?i t�?ng!");
+                MessageBox.Show("Vui lòng chọn hoặc nhập đầy đủ thông tin Người nhận và đối tượng!");
                 return;
             }
 
@@ -149,11 +149,11 @@ namespace QuanLyYTe.Forms
                 if (chkExecute.Checked) { _service.GrantObjectPrivilege(grantee, "EXECUTE", objName, null, gOpt); hasGranted = true; }
 
                 if (hasGranted)
-                    MessageBox.Show($"�? c?p quy?n tr�n {objName} cho {grantee} th�nh c�ng!");
+                    MessageBox.Show($"Đã cấp quyền trên {objName} cho {grantee} thành công!");
                 else
-                    MessageBox.Show("Vui l?ng tick ch?n �t nh?t m?t quy?n (SELECT, INSERT...)");
+                    MessageBox.Show("Vui lòng tick chọn ít nhất một quyền (SELECT, INSERT...)");
             }
-            catch (Exception ex) { MessageBox.Show(CleanOracleError(ex.Message), "L?i Oracle", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            catch (Exception ex) { MessageBox.Show(CleanOracleError(ex.Message), "Lỗi Oracle", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
         #endregion
 
@@ -174,7 +174,7 @@ namespace QuanLyYTe.Forms
                     cbRoleToGrant.DataSource = dtRole;
                     cbRoleToGrant.SelectedIndex = -1; cbRoleToGrant.Text = "";
                 }
-                catch (Exception ex) { MessageBox.Show("L?i t?i Tab Role: " + ex.Message); }
+                catch (Exception ex) { MessageBox.Show("Lỗi tải Tab Role: " + ex.Message); }
             }
             else if (tcMain.SelectedTab == tpSystem)
             {
@@ -197,16 +197,16 @@ namespace QuanLyYTe.Forms
 
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(role))
             {
-                MessageBox.Show("Vui l?ng ch?n �?y �? User v� Role!");
+                MessageBox.Show("Vui lòng chọn đầy đủ User và Role!");
                 return;
             }
 
             try
             {
                 _service.GrantRoleToUser(user, role, chkWithAdminOption.Checked ? 1 : 0);
-                MessageBox.Show($"�? g�n Role {role} cho User {user} th�nh c�ng!");
+                MessageBox.Show($"Đã gán Role {role} cho User {user} thành công!");
             }
-            catch (Exception ex) { MessageBox.Show(CleanOracleError(ex.Message), "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            catch (Exception ex) { MessageBox.Show(CleanOracleError(ex.Message), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
         #endregion
 
@@ -230,7 +230,7 @@ namespace QuanLyYTe.Forms
                 }
                 cbSysGranteeName.SelectedIndex = -1;
             }
-            catch (Exception ex) { MessageBox.Show("L?i: " + ex.Message); }
+            catch (Exception ex) { MessageBox.Show("Lỗi: " + ex.Message); }
         }
 
         private void LoadAllSystemPrivileges()
@@ -253,16 +253,16 @@ namespace QuanLyYTe.Forms
 
             if (string.IsNullOrEmpty(grantee) || string.IsNullOrEmpty(priv))
             {
-                MessageBox.Show("Vui l?ng ch?n Ng�?i nh?n v� Quy?n h? th?ng!");
+                MessageBox.Show("Vui lòng chọn Người nhận và Quyền hệ thống!");
                 return;
             }
 
             try
             {
                 _service.GrantSystemPrivilege(grantee, priv, chkWithAdminOptionSys.Checked ? 1 : 0);
-                MessageBox.Show($"�? c?p quy?n h? th?ng {priv} cho {grantee} th�nh c�ng!");
+                MessageBox.Show($"Đã cấp quyền hệ thống {priv} cho {grantee} thành công!");
             }
-            catch (Exception ex) { MessageBox.Show(CleanOracleError(ex.Message), "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error); }
+            catch (Exception ex) { MessageBox.Show(CleanOracleError(ex.Message), "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error); }
         }
         #endregion 
 

@@ -1,4 +1,4 @@
-namespace QuanLyYTe.Forms.Common
+﻿namespace QuanLyYTe.Forms.Common
 {
     partial class frmNotifications
     {

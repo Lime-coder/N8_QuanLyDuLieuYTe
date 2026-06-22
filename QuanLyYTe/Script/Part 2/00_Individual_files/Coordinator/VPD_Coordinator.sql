@@ -1,4 +1,4 @@
--- ==============================================================================
+﻿-- ==============================================================================
 -- File: VPD_Coordinator.sql
 -- Mục đích:
 -- 1. Giữ TC#5: nhân viên query trực tiếp STAFF chỉ thấy chính mình.
@@ -141,6 +141,7 @@ LEFT JOIN hospital.department d
 WHERE s.staff_role IN (
     N'Bác sĩ',
     N'Bác sĩ/Y sĩ',
+    UNISTR('K\01EF thu\1EADt vi\00EAn'),
     N'Kỹ thuật viên'
 );
 
@@ -166,7 +167,7 @@ SELECT
     staff_id,
     full_name
 FROM hospital.COORD_ASSIGNMENT_STAFF
-WHERE staff_role = N'Kỹ thuật viên';
+WHERE staff_role = UNISTR('K\01EF thu\1EADt vi\00EAn');
 
 
 -- ==============================================================================
