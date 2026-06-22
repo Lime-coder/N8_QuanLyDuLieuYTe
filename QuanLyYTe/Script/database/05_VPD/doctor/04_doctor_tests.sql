@@ -1,6 +1,6 @@
 ﻿-- ==============================================================================
 -- 05_doctor_tests.sql
--- Run as: hospital_dba (for grants), then test as doctor
+-- Chạy dưới quyền: hospital_dba (for grants), then test as doctor
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;

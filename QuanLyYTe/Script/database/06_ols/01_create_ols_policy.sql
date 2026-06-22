@@ -1,11 +1,11 @@
 ﻿-- ==============================================================================
 -- 01_create_ols_policy.sql
--- Run as: sysdba
+-- Chạy dưới quyền: sysdba
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
--- 1. Base Table & Sequence
+-- 1. Bảng cơ sở & Sequence
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE hospital.notification CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
 /
 BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE hospital.seq_notification_id'; EXCEPTION WHEN OTHERS THEN NULL; END;
@@ -20,7 +20,7 @@ CREATE TABLE hospital.notification (
 
 CREATE SEQUENCE hospital.seq_notification_id START WITH 8 INCREMENT BY 1;
 
--- 2. Initialize Policy
+-- 2. Khởi tạo Policy
 BEGIN SA_SYSDBA.DROP_POLICY('HOSP_OLS_POL', TRUE); EXCEPTION WHEN OTHERS THEN NULL; END;
 /
 BEGIN

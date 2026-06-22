@@ -1,6 +1,6 @@
 ﻿-- ==============================================================================
 -- 01_create_tables.sql
--- Run as: hospital_dba (or sysdba, then grant to hospital)
+-- Chạy dưới quyền: hospital_dba (or sysdba, then grant to hospital)
 -- It's best to run this as hospital user, or hospital_dba creates tables in hospital schema.
 -- ==============================================================================
 

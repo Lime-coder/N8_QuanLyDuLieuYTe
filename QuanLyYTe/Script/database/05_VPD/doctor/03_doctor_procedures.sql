@@ -1,6 +1,6 @@
--- ==============================================================================
+﻿-- ==============================================================================
 -- 04_doctor_procedures.sql
--- Run as: hospital
+-- Chạy dưới quyền: hospital
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
@@ -30,7 +30,7 @@ CREATE OR REPLACE PROCEDURE USP_UPDATE_MEDICAL_RECORD(p_id VARCHAR2, p_dg NVARCH
 BEGIN
     SELECT COUNT(*) INTO v_count FROM hospital.medical_record WHERE record_id = p_id;
     IF v_count = 0 THEN
-        RAISE_APPLICATION_ERROR(-20002, 'Lỗi: Không tìm thấy hồ sơ bệnh án mã ' || p_id || ' để cập nhật!');
+        RAISE_APPLICATION_ERROR(-20002, 'Lá»—i: KhÃ´ng tÃ¬m tháº¥y há»“ sÆ¡ bá»‡nh Ã¡n mÃ£ ' || p_id || ' Ä‘á»ƒ cáº­p nháº­t!');
     END IF;
 
     UPDATE hospital.medical_record SET diagnosis = p_dg, treatment_plan = p_tr, conclusion = p_cl WHERE record_id = p_id;
@@ -52,7 +52,7 @@ CREATE OR REPLACE PROCEDURE USP_ADD_SERVICE(p_id VARCHAR2, p_type NVARCHAR2) AS
     v_count NUMBER;
 BEGIN
     SELECT COUNT(*) INTO v_count FROM hospital.medical_record WHERE record_id = UPPER(TRIM(p_id));
-    IF v_count = 0 THEN RAISE_APPLICATION_ERROR(-20001, 'Mã HSBA ' || p_id || ' không tồn tại!'); END IF;
+    IF v_count = 0 THEN RAISE_APPLICATION_ERROR(-20001, 'MÃ£ HSBA ' || p_id || ' khÃ´ng tá»“n táº¡i!'); END IF;
 
     INSERT INTO hospital.service_record VALUES (UPPER(TRIM(p_id)), p_type, TRUNC(SYSDATE), NULL, NULL);
 END;
@@ -93,7 +93,7 @@ CREATE OR REPLACE PROCEDURE USP_MANAGE_PRESCRIPTION(
 BEGIN
     IF p_action IN ('INSERT', 'UPDATE') THEN
         SELECT COUNT(*) INTO v_count FROM hospital.medical_record WHERE record_id = v_id;
-        IF v_count = 0 THEN RAISE_APPLICATION_ERROR(-20003, 'Lỗi: Mã HSBA ' || v_id || ' không tồn tại!'); END IF;
+        IF v_count = 0 THEN RAISE_APPLICATION_ERROR(-20003, 'Lá»—i: MÃ£ HSBA ' || v_id || ' khÃ´ng tá»“n táº¡i!'); END IF;
     END IF;
 
     IF p_action = 'INSERT' THEN
@@ -101,7 +101,7 @@ BEGIN
         WHERE record_id = v_id AND TRUNC(prescription_date) = TRUNC(SYSDATE) AND medicine_name = p_med_name;
         
         IF v_count > 0 THEN
-            RAISE_APPLICATION_ERROR(-20005, 'Lỗi: Thuốc ' || p_med_name || ' đã được kê trong đơn của ngày hôm nay rồi!');
+            RAISE_APPLICATION_ERROR(-20005, 'Lá»—i: Thuá»‘c ' || p_med_name || ' Ä‘Ã£ Ä‘Æ°á»£c kÃª trong Ä‘Æ¡n cá»§a ngÃ y hÃ´m nay rá»“i!');
         END IF;
 
         INSERT INTO hospital.prescription (record_id, prescription_date, medicine_name, dosage)
@@ -158,7 +158,7 @@ CREATE OR REPLACE PROCEDURE USP_UPDATE_PATIENT(
 BEGIN
     SELECT COUNT(*) INTO v_count FROM hospital.patient WHERE patient_id = UPPER(TRIM(p_id));
     IF v_count = 0 THEN
-        RAISE_APPLICATION_ERROR(-20004, 'Lỗi: Không tìm thấy mã bệnh nhân ' || p_id || ' để cập nhật!');
+        RAISE_APPLICATION_ERROR(-20004, 'Lá»—i: KhÃ´ng tÃ¬m tháº¥y mÃ£ bá»‡nh nhÃ¢n ' || p_id || ' Ä‘á»ƒ cáº­p nháº­t!');
     END IF;
 
     UPDATE hospital.patient 

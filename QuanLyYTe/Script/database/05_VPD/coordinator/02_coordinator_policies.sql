@@ -1,6 +1,6 @@
 ﻿-- ==============================================================================
 -- 03_coordinator_policies.sql
--- Run as: hospital_dba
+-- Chạy dưới quyền: hospital_dba
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;

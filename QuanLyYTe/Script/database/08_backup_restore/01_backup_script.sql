@@ -1,9 +1,9 @@
 ﻿-- ==============================================================================
--- 01_backup_script.sql (or .bat)
+-- 01_backup_script.sql (hoặc .bat)
 -- ==============================================================================
 
--- Example Data Pump Export (expdp) command
--- Run this in command prompt/terminal, not directly in SQL*Plus
+-- Lệnh xuất dữ liệu (expdp) mẫu
+-- Chạy lệnh này trong command prompt/terminal, không chạy trực tiếp trong SQL*Plus
 
 /*
 expdp sys/123@localhost:1521/PDB_QLYT AS SYSDBA DIRECTORY=DATA_PUMP_DIR DUMPFILE=hospital_backup_%U.dmp LOGFILE=hospital_backup.log SCHEMAS=hospital,hospital_dba

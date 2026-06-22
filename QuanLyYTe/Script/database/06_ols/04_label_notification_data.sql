@@ -1,6 +1,6 @@
 ﻿-- ==============================================================================
 -- 04_label_notification_data.sql
--- Run as: hospital_dba
+-- Chạy dưới quyền: hospital_dba
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital;

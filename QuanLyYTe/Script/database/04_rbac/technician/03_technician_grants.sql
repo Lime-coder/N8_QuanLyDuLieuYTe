@@ -1,6 +1,6 @@
 ﻿-- ==============================================================================
 -- 03_technician_grants.sql
--- Run as: hospital (or sysdba with CURRENT_SCHEMA=hospital)
+-- Chạy dưới quyền: hospital (or sysdba with CURRENT_SCHEMA=hospital)
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;

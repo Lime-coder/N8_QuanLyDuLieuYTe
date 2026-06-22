@@ -1,6 +1,6 @@
 ﻿-- ==============================================================================
 -- 03_audit_views.sql
--- Run as: sysdba
+-- Chạy dưới quyền: sysdba
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;

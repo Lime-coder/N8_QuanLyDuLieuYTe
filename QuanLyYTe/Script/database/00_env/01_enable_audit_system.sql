@@ -1,6 +1,6 @@
 ﻿-- ==============================================================================
 -- 01_enable_audit_system.sql
--- Run as: SYS AS SYSDBA
+-- Chạy dưới quyền: SYS AS SYSDBA
 -- ==============================================================================
 
 ALTER SYSTEM SET audit_trail=DB, EXTENDED SCOPE=SPFILE;

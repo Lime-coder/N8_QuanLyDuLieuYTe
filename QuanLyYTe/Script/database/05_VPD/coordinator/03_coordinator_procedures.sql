@@ -1,6 +1,6 @@
 ﻿-- ==============================================================================
 -- 04_coordinator_procedures.sql
--- Run as: hospital
+-- Chạy dưới quyền: hospital
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
