@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using QuanLyYTe.Common;
 using QuanLyYTe.Repositories;
@@ -54,6 +54,11 @@ namespace QuanLyYTe.Forms.Common
                 {
                     dgvNotifications.Columns["LOCATION"].HeaderText = "Địa điểm";
                     dgvNotifications.Columns["LOCATION"].Width = 200;
+                }
+                if (dgvNotifications.Columns.Contains("OLS_LABEL"))
+                {
+                    dgvNotifications.Columns["OLS_LABEL"].HeaderText = "Nhãn OLS";
+                    dgvNotifications.Columns["OLS_LABEL"].Width = 120;
                 }
             }
             catch (Exception ex)

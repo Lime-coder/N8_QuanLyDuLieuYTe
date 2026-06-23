@@ -43,7 +43,7 @@ CREATE OR REPLACE PROCEDURE hospital.USP_GET_NOTIFICATIONS (
 ) AUTHID CURRENT_USER AS
 BEGIN
     OPEN p_cursor FOR
-        SELECT notification_id, description, TO_CHAR(posted_date, 'DD/MM/YYYY HH24:MI') as posted_date, location
+        SELECT notification_id, description, TO_CHAR(posted_date, 'DD/MM/YYYY HH24:MI') as posted_date, location, LABEL_TO_CHAR(ols_label) as OLS_LABEL
         FROM hospital.notification
         ORDER BY TO_NUMBER(SUBSTR(notification_id, 2));
 END;
