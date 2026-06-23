@@ -24,13 +24,13 @@ BEGIN
         END IF;
 
         -- 2. Determine Compartment
-        -- PB01 -> Tiêu Hóa (TH), PB02 -> Thần Kinh (TK), PB03 -> Tim Mạch (TM)
+        -- PB01 -> Tim Mạch (TM), PB02 -> Thần Kinh (TK), PB03 -> Tiêu Hóa (TH)
         IF r.dept_id = 'PB01' THEN 
-            v_comp := 'TH';
+            v_comp := 'TM';
         ELSIF r.dept_id = 'PB02' THEN 
             v_comp := 'TK';
         ELSIF r.dept_id = 'PB03' THEN 
-            v_comp := 'TM';
+            v_comp := 'TH';
         ELSE 
             v_comp := NULL;
         END IF;

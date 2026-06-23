@@ -3,9 +3,9 @@
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 -- Departments
-INSERT INTO department VALUES ('PB01', N'Nội tổng quát');
-INSERT INTO department VALUES ('PB02', N'Ngoại thần kinh');
-INSERT INTO department VALUES ('PB03', N'Chẩn đoán hình ảnh');
+INSERT INTO department VALUES ('PB01', N'Khoa tim mạch');
+INSERT INTO department VALUES ('PB02', N'Khoa thần kinh');
+INSERT INTO department VALUES ('PB03', N'Khoa tiêu hóa');
 
 -- Test Accounts (Explicitly defined for Login/App Testing)
 INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, facility, staff_role, username_db)
