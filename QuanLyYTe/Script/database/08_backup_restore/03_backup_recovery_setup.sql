@@ -413,10 +413,27 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
     END USP_SIMULATE_WRONG_UPDATE;
 
     PROCEDURE USP_SIMULATE_DELETE AS
+        v_med_name NVARCHAR2(100);
+        v_date DATE;
     BEGIN
-        DELETE FROM hospital.PRESCRIPTION
-        WHERE RECORD_ID = 'BA001';
+        -- Find one prescription to delete
+        SELECT medicine_name, prescription_date 
+        INTO v_med_name, v_date
+        FROM hospital.PRESCRIPTION
+        WHERE RECORD_ID = 'BA001' AND ROWNUM = 1;
+
+        -- Call USP_MANAGE_PRESCRIPTION to simulate the incident
+        hospital.USP_MANAGE_PRESCRIPTION(
+            p_action => 'DELETE',
+            p_record_id => 'BA001',
+            p_med_name => v_med_name,
+            p_dosage => NULL,
+            p_date => v_date
+        );
         COMMIT;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Không có đơn thuốc nào của BA001 để giả lập xóa!');
     END USP_SIMULATE_DELETE;
 
 END PKG_BACKUP_RECOVERY;

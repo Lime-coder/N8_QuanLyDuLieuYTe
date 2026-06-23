@@ -407,16 +407,33 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
     BEGIN
         UPDATE hospital.PRESCRIPTION
         SET MEDICINE_NAME = N'ERROR_DATA',
-            DOSAGE        = N'999 VIEN/NGAY'
+            DOSAGE        = N'999 VIÊN/NGÀY'
         WHERE RECORD_ID = 'BA001';
         COMMIT;
     END USP_SIMULATE_WRONG_UPDATE;
 
     PROCEDURE USP_SIMULATE_DELETE AS
+        v_med_name NVARCHAR2(100);
+        v_date DATE;
     BEGIN
-        DELETE FROM hospital.PRESCRIPTION
-        WHERE RECORD_ID = 'BA001';
+        -- Find one prescription to delete
+        SELECT medicine_name, prescription_date 
+        INTO v_med_name, v_date
+        FROM hospital.PRESCRIPTION
+        WHERE RECORD_ID = 'BA001' AND ROWNUM = 1;
+
+        -- Call USP_MANAGE_PRESCRIPTION to simulate the incident
+        hospital.USP_MANAGE_PRESCRIPTION(
+            p_action => 'DELETE',
+            p_record_id => 'BA001',
+            p_med_name => v_med_name,
+            p_dosage => NULL,
+            p_date => v_date
+        );
         COMMIT;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Khong co don thuoc nao cua BA001 de gia lap xoa!');
     END USP_SIMULATE_DELETE;
 
 END PKG_BACKUP_RECOVERY;

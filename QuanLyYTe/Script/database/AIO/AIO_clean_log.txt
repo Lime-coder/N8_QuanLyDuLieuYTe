@@ -20,6 +20,7 @@ Da xoa user: U3
 Da xoa user: U1                                                                 
 Da xoa user: NV000021                                                           
 Da xoa user: U8                                                                 
+Da xoa user: NV000001                                                           
 
 PL/SQL procedure successfully completed.
 

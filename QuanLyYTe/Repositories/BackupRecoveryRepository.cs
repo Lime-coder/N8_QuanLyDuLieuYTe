@@ -212,7 +212,7 @@ namespace QuanLyYTe.Repositories
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new OracleParameter("p_record_id", OracleDbType.Varchar2) { Value = recordId });
                     cmd.Parameters.Add(new OracleParameter("p_audit_event_time", OracleDbType.TimeStamp) { Value = auditTime });
-                    cmd.Parameters.Add(new OracleParameter("p_seconds_before", OracleDbType.Int32) { Value = 1 });
+                    cmd.Parameters.Add(new OracleParameter("p_seconds_before", OracleDbType.Int32) { Value = 0 });
                     conn.Open();
                     cmd.ExecuteNonQuery();
                 }
