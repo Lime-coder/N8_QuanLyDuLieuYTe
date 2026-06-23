@@ -407,15 +407,15 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
     BEGIN
         UPDATE hospital.PRESCRIPTION
         SET MEDICINE_NAME = N'ERROR_DATA',
-            DOSAGE        = N'999 VIEN/NGAY'
-        WHERE RECORD_ID = 'BA000001';
+            DOSAGE        = N'999 VIÊN/NGÀY'
+        WHERE RECORD_ID = 'BA001';
         COMMIT;
     END USP_SIMULATE_WRONG_UPDATE;
 
     PROCEDURE USP_SIMULATE_DELETE AS
     BEGIN
         DELETE FROM hospital.PRESCRIPTION
-        WHERE RECORD_ID = 'BA000001';
+        WHERE RECORD_ID = 'BA001';
         COMMIT;
     END USP_SIMULATE_DELETE;
 
@@ -424,53 +424,6 @@ END PKG_BACKUP_RECOVERY;
 
 SHOW ERRORS PACKAGE BODY hospital.PKG_BACKUP_RECOVERY;
 
--- ==============================================================================
--- 5. COMPATIBILITY WRAPPERS FOR WINFORMS
--- Đặt sau PACKAGE BODY
--- Gọi động để tránh lỗi PLS-00905 khi package tạm INVALID lúc compile
--- ==============================================================================
-CREATE OR REPLACE PROCEDURE hospital.USP_MANUAL_BACKUP AS
-BEGIN
-    EXECUTE IMMEDIATE 'BEGIN hospital.PKG_BACKUP_RECOVERY.USP_MANUAL_BACKUP; END;';
-END;
-/
-SHOW ERRORS PROCEDURE hospital.USP_MANUAL_BACKUP;
-
-CREATE OR REPLACE PROCEDURE hospital.USP_AUTO_BACKUP AS
-BEGIN
-    EXECUTE IMMEDIATE 'BEGIN hospital.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP; END;';
-END;
-/
-SHOW ERRORS PROCEDURE hospital.USP_AUTO_BACKUP;
-
-CREATE OR REPLACE PROCEDURE hospital.USP_RESTORE_PRESCRIPTION_BY_AUDIT(
-    p_record_id         IN VARCHAR2,
-    p_audit_event_time  IN TIMESTAMP DEFAULT NULL,
-    p_seconds_before    IN NUMBER DEFAULT 1
-) AS
-BEGIN
-    hospital.PKG_BACKUP_RECOVERY.USP_RESTORE_PRESCRIPTION_BY_AUDIT(
-        p_record_id        => p_record_id,
-        p_audit_event_time => p_audit_event_time,
-        p_seconds_before   => p_seconds_before
-    );
-END;
-/
-SHOW ERRORS PROCEDURE hospital.USP_RESTORE_PRESCRIPTION_BY_AUDIT;
-
-CREATE OR REPLACE PROCEDURE hospital.USP_SIMULATE_WRONG_UPDATE AS
-BEGIN
-    EXECUTE IMMEDIATE 'BEGIN hospital.PKG_BACKUP_RECOVERY.USP_SIMULATE_WRONG_UPDATE; END;';
-END;
-/
-SHOW ERRORS PROCEDURE hospital.USP_SIMULATE_WRONG_UPDATE;
-
-CREATE OR REPLACE PROCEDURE hospital.USP_SIMULATE_DELETE AS
-BEGIN
-    EXECUTE IMMEDIATE 'BEGIN hospital.PKG_BACKUP_RECOVERY.USP_SIMULATE_DELETE; END;';
-END;
-/
-SHOW ERRORS PROCEDURE hospital.USP_SIMULATE_DELETE;
 
 -- ==============================================================================
 -- 6. DATA PUMP IMPORT FOR WINFORMS
@@ -512,9 +465,9 @@ BEGIN
 
     EXECUTE IMMEDIATE '
         CREATE USER HOSPITAL_RESTORE IDENTIFIED BY "Restore#2026"
-        DEFAULT TABLESPACE HOSPITAL_DATA
+        DEFAULT TABLESPACE SYSTEM
         TEMPORARY TABLESPACE TEMP
-        QUOTA UNLIMITED ON HOSPITAL_DATA';
+        QUOTA UNLIMITED ON SYSTEM';
 
     EXECUTE IMMEDIATE '
         GRANT CREATE SESSION, CREATE TABLE, CREATE VIEW, CREATE SEQUENCE,
@@ -551,13 +504,7 @@ BEGIN
         value     => 'HOSPITAL_RESTORE'
     );
 
-    DBMS_DATAPUMP.METADATA_REMAP(
-        handle    => v_handle,
-        name      => 'REMAP_TABLESPACE',
-        old_value => 'SYSTEM',
-        value     => 'HOSPITAL_DATA'
-    );
-
+    -- No REMAP_TABLESPACE needed since both source and target use SYSTEM tablespace.
     DBMS_DATAPUMP.METADATA_FILTER(
         handle => v_handle,
         name   => 'EXCLUDE_PATH_EXPR',

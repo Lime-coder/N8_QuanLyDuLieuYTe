@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.IO;
 using QuanLyYTe.Repositories;
@@ -80,7 +80,7 @@ namespace QuanLyYTe.Services
 
         public void BackupRestoreByAudit(DateTime auditTime)
         {
-            _repo.BackupRestoreByAudit("BA000001", auditTime);
+            _repo.BackupRestoreByAudit("BA001", auditTime);
         }
     }
 }

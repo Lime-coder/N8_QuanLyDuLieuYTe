@@ -165,13 +165,6 @@ BEGIN
 END;
 /
 
-CREATE OR REPLACE PROCEDURE SP_COORD_UPD_SRV_REC(p_record_id IN VARCHAR2, p_technician_id IN VARCHAR2) AS
-BEGIN
-    UPDATE hospital.service_record SET technician_id = p_technician_id WHERE record_id = p_record_id;
-    COMMIT;
-END;
-/
-
 CREATE OR REPLACE PROCEDURE SP_COORD_UPD_TECH(p_record_id IN VARCHAR2, p_service_type IN NVARCHAR2, p_service_date IN DATE, p_technician_id IN VARCHAR2) AS
 BEGIN
     UPDATE hospital.service_record SET technician_id = p_technician_id WHERE record_id = p_record_id AND service_type = p_service_type AND service_date = p_service_date;
@@ -187,7 +180,6 @@ GRANT EXECUTE ON hospital.SP_COORD_GET_DOC_DEPT TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_TECHS TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_DEPTS TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_UPD_MED_REC TO rl_coordinator;
-GRANT EXECUTE ON hospital.SP_COORD_UPD_SRV_REC TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_SELF TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_UPD_SELF TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_PATS TO rl_coordinator;

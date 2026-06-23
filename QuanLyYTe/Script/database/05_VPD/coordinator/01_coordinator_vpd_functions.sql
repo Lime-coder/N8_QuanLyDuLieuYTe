@@ -4,7 +4,7 @@
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
+ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 CREATE OR REPLACE FUNCTION FN_VPD_STAFF_SELF (
     p_schema VARCHAR2,
@@ -12,10 +12,7 @@ CREATE OR REPLACE FUNCTION FN_VPD_STAFF_SELF (
 )
 RETURN VARCHAR2
 AS
-    v_current_user VARCHAR2(100);
 BEGIN
-    v_current_user := SYS_CONTEXT('USERENV', 'SESSION_USER');
-    
     IF SYS_CONTEXT('USERENV', 'CURRENT_USER') IN ('HOSPITAL', 'HOSPITAL_DBA') THEN
         RETURN '1=1';
     END IF;

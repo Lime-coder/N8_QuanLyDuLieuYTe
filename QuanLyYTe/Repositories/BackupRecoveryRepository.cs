@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DataProvider;
@@ -75,7 +75,7 @@ namespace QuanLyYTe.Repositories
         {
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
             {
-                using (OracleCommand cmd = new OracleCommand("hospital.USP_MANUAL_BACKUP", conn))
+                using (OracleCommand cmd = new OracleCommand("hospital.PKG_BACKUP_RECOVERY.USP_MANUAL_BACKUP", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     conn.Open();
@@ -136,7 +136,7 @@ namespace QuanLyYTe.Repositories
                 DBMS_SCHEDULER.CREATE_JOB (
                     job_name        => 'hospital.AUTO_BACKUP_JOB',
                     job_type        => 'STORED_PROCEDURE',
-                    job_action      => 'hospital.USP_AUTO_BACKUP',
+                    job_action      => 'hospital.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP',
                     start_date      => SYSTIMESTAMP,
                     repeat_interval => '{repeatInterval}',
                     enabled         => TRUE,
@@ -177,7 +177,7 @@ namespace QuanLyYTe.Repositories
         {
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
             {
-                using (OracleCommand cmd = new OracleCommand("hospital.USP_SIMULATE_DELETE", conn))
+                using (OracleCommand cmd = new OracleCommand("hospital.PKG_BACKUP_RECOVERY.USP_SIMULATE_DELETE", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     conn.Open();
@@ -192,7 +192,7 @@ namespace QuanLyYTe.Repositories
         {
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
             {
-                using (OracleCommand cmd = new OracleCommand("hospital.USP_SIMULATE_WRONG_UPDATE", conn))
+                using (OracleCommand cmd = new OracleCommand("hospital.PKG_BACKUP_RECOVERY.USP_SIMULATE_WRONG_UPDATE", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     conn.Open();
@@ -207,7 +207,7 @@ namespace QuanLyYTe.Repositories
         {
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
             {
-                using (OracleCommand cmd = new OracleCommand("hospital.USP_RESTORE_PRESCRIPTION_BY_AUDIT", conn))
+                using (OracleCommand cmd = new OracleCommand("hospital.PKG_BACKUP_RECOVERY.USP_RESTORE_PRESCRIPTION_BY_AUDIT", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new OracleParameter("p_record_id", OracleDbType.Varchar2) { Value = recordId });

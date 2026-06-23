@@ -136,6 +136,7 @@ GRANT AUDIT_VIEWER TO HOSPITAL;
 
 -- Direct SELECT grant is needed because stored PL/SQL does not use privileges
 -- obtained only through roles.
+GRANT SELECT ON UNIFIED_AUDIT_TRAIL TO HOSPITAL;
 GRANT SELECT ON UNIFIED_AUDIT_TRAIL TO HOSPITAL_DBA;
 
 

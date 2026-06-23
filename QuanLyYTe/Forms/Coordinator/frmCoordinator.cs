@@ -763,7 +763,7 @@ namespace QuanLyYTe.Forms.Coordinator
     	{
     		if (e.ColumnIndex >= 0 && dgvServiceRecords.Columns[e.ColumnIndex].Name == "MAKTV" && (e.Value == DBNull.Value || e.Value == null || string.IsNullOrWhiteSpace(e.Value.ToString())))
     		{
-    			e.Value = "Chua phân công";
+    			e.Value = "Chưa phân công";
     			e.FormattingApplied = true;
     		}
     	}

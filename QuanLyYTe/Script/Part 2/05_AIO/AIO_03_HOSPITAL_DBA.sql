@@ -49,7 +49,7 @@ ALTER SESSION SET CURRENT_SCHEMA = hospital;
 -- File: VPD_Coordinator.sql
 -- Mục đích:
 -- 1. Giữ TC#5: nhân viên query trực tiếp STAFF chỉ thấy chính mình.
--- 2. Tạo bảng phụ tối thiểu cho Điều phối viên ch?n Bác sĩ/Y sĩ v� Kỹ thuật viên.
+-- 2. Tạo bảng phụ tối thiểu cho Điều phối viên chọn Bác sĩ/Y sĩ và Kỹ thuật viên.
 -- Run as: HOSPITAL_DBA có quyền DBMS_RLS
 -- ==============================================================================
 
@@ -95,11 +95,7 @@ CREATE OR REPLACE FUNCTION hospital.FN_VPD_STAFF_SELF (
 )
 RETURN VARCHAR2
 AS
-    v_current_user VARCHAR2(100);
-BEGIN
-    v_current_user := SYS_CONTEXT('USERENV', 'SESSION_USER');
-    
-    -- Bypass cho schema owner, DBA app, và khi trigger chạy (CURRENT_USER = 'HOSPITAL')
+BEGIN    
     IF SYS_CONTEXT('USERENV', 'CURRENT_USER') IN ('HOSPITAL', 'HOSPITAL_DBA') THEN
         RETURN '1=1';
     END IF;
@@ -118,11 +114,20 @@ END;
 -- ==============================================================================
 
 BEGIN
+    BEGIN
+        DBMS_RLS.DROP_POLICY('HOSPITAL', 'STAFF', 'POL_VPD_STAFF_SELF_SELECT');
+    EXCEPTION WHEN OTHERS THEN NULL; END;
+
+    BEGIN
+        DBMS_RLS.DROP_POLICY('HOSPITAL', 'STAFF', 'POL_VPD_STAFF_SELF_UPDATE');
+    EXCEPTION WHEN OTHERS THEN NULL; END;
+
     -- Policy 1: SELECT trực tiếp STAFF chỉ thấy chính mình
     DBMS_RLS.ADD_POLICY(
         object_schema   => 'HOSPITAL',
         object_name     => 'STAFF',
         policy_name     => 'POL_VPD_STAFF_SELF_SELECT',
+        function_schema => 'HOSPITAL',
         policy_function => 'FN_VPD_STAFF_SELF',
         statement_types => 'SELECT'
     );
@@ -132,6 +137,7 @@ BEGIN
         object_schema     => 'HOSPITAL',
         object_name       => 'STAFF',
         policy_name       => 'POL_VPD_STAFF_SELF_UPDATE',
+        function_schema   => 'HOSPITAL',
         policy_function   => 'FN_VPD_STAFF_SELF',
         statement_types   => 'UPDATE',
         sec_relevant_cols => 'PHONE,HOMETOWN',
@@ -141,18 +147,9 @@ END;
 /
 
 -- ==============================================================================
--- PHẦN 5: TẠO BẢNG PHỤ TỐI THIỂU CHO ĐIỀU PHỐI VIÊN PHÂN CÔNG
 -- ==============================================================================
-
-BEGIN
-    EXECUTE IMMEDIATE 'DROP TABLE hospital.COORD_ASSIGNMENT_STAFF PURGE';
-EXCEPTION
-    WHEN OTHERS THEN
-        IF SQLCODE != -942 THEN
-            RAISE;
-        END IF;
-END;
-/
+-- PHẦN 7: TẠO VIEW CHO ĐIỀU PHỐI VIÊN
+-- ==============================================================================
 
 CREATE TABLE hospital.COORD_ASSIGNMENT_STAFF (
     username_db VARCHAR2(50) PRIMARY KEY,
@@ -163,39 +160,17 @@ CREATE TABLE hospital.COORD_ASSIGNMENT_STAFF (
     specialty   NVARCHAR2(100)
 );
 
--- ==============================================================================
--- PHẦN 6: �? D? LI?U T?I THI?U T? STAFF SANG B?NG PH?
--- ==============================================================================
-
+-- Đổ dữ liệu vào bảng phụ
 INSERT INTO hospital.COORD_ASSIGNMENT_STAFF (
-    username_db,
-    staff_id,
-    full_name,
-    staff_role,
-    dept_id,
-    specialty
+    username_db, staff_id, full_name, staff_role, dept_id, specialty
 )
 SELECT
-    s.username_db,
-    s.staff_id,
-    s.full_name,
-    s.staff_role,
-    s.dept_id,
-    d.dept_name AS specialty
-FROM hospital.staff s
-LEFT JOIN hospital.department d
-    ON d.dept_id = s.dept_id
-WHERE s.staff_role IN (
-    N'Bác sĩ',
-    N'Bác sĩ/Y sĩ',
-    N'Kỹ thuật viên'
-);
+    s.username_db, s.staff_id, s.full_name, s.staff_role, s.dept_id, d.dept_name AS specialty
+FROM hospital.STAFF s
+LEFT JOIN hospital.DEPARTMENT d ON s.dept_id = d.dept_id
+WHERE s.staff_role IN (UNISTR('B\00E1c s\0129'), UNISTR('B\00E1c s\0129/Y s\0129'), UNISTR('K\1EF9 thu\1EADt vi\00EAn'));
 
 COMMIT;
-
--- ==============================================================================
--- PHẦN 7: TẠO VIEW CHO ĐIỀU PHỐI VIÊN
--- ==============================================================================
 
 CREATE OR REPLACE VIEW hospital.VW_COORD_DOCTORS AS
 SELECT
@@ -205,7 +180,7 @@ SELECT
     dept_id,
     specialty
 FROM hospital.COORD_ASSIGNMENT_STAFF
-WHERE staff_role IN (N'Bác sĩ', N'Bác sĩ/Y sĩ');
+WHERE staff_role IN (UNISTR('B\00E1c s\0129'), UNISTR('B\00E1c s\0129/Y s\0129'));
 
 CREATE OR REPLACE VIEW hospital.VW_COORD_TECHNICIANS AS
 SELECT
@@ -213,7 +188,7 @@ SELECT
     staff_id,
     full_name
 FROM hospital.COORD_ASSIGNMENT_STAFF
-WHERE staff_role = N'Kỹ thuật viên';
+WHERE staff_role = UNISTR('K\1EF9 thu\1EADt vi\00EAn');
 
 
 -- ==============================================================================
@@ -243,7 +218,7 @@ BEGIN
     IF :NEW.technician_id IS NOT NULL THEN
         SELECT is_active INTO v_tech_active FROM hospital.staff WHERE staff_id = :NEW.technician_id;
         IF v_tech_active = 0 THEN
-            RAISE_APPLICATION_ERROR(-20012, UNISTR('Kh\00F4ng th\1EC3 t\1EA1o/c\1EADp nh\1EADt d\1ECBch v\1EE5: K\1EF9 thu\1EADt vi\00EAn n\00E0y \0111\00E3 b\1ECB kh\00F3a (Kh\00F4ng ho\1EA1t \0111\1ED9ng).'));
+            RAISE_APPLICATION_ERROR(-20012, UNISTR(N'Không thể tạo/cập nhật dịch vụ: Kỹ thuật viên này đã bị khóa (Không hoạt động).'));
         END IF;
     END IF;
 END;
@@ -291,7 +266,7 @@ GRANT UPDATE (doctor_id, dept_id) ON hospital.medical_record TO rl_coordinator;
 -- Được xem danh sách dịch vụ
 GRANT SELECT ON hospital.service_record TO rl_coordinator;
 
--- Chỉ được phân công k? thu?t vi�n
+-- Chỉ được phân công kỹ thuật viên
 GRANT UPDATE (technician_id) ON hospital.service_record TO rl_coordinator;
 
 -- Xem danh mục khoa
@@ -304,7 +279,7 @@ GRANT SELECT ON hospital.staff TO rl_coordinator;
 -- Chỉ được cập nhật thông tin cá nhân hợp lệ
 GRANT UPDATE (phone, hometown) ON hospital.staff TO rl_coordinator;
 
--- View phục vụ điều phối bác sĩ/k? thu?t vi�n
+-- View phục vụ điều phối bác sĩ/kỹ thuật viên
 GRANT SELECT ON hospital.VW_COORD_DOCTORS TO rl_coordinator;
 GRANT SELECT ON hospital.VW_COORD_TECHNICIANS TO rl_coordinator;
 
@@ -481,13 +456,6 @@ BEGIN
 END;
 /
 
-CREATE OR REPLACE PROCEDURE SP_COORD_UPD_SRV_REC(p_record_id IN VARCHAR2, p_technician_id IN VARCHAR2) AS
-BEGIN
-    UPDATE hospital.service_record SET technician_id = p_technician_id WHERE record_id = p_record_id;
-    COMMIT;
-END;
-/
-
 CREATE OR REPLACE PROCEDURE SP_COORD_UPD_TECH(p_record_id IN VARCHAR2, p_service_type IN NVARCHAR2, p_service_date IN DATE, p_technician_id IN VARCHAR2) AS
 BEGIN
     UPDATE hospital.service_record SET technician_id = p_technician_id WHERE record_id = p_record_id AND service_type = p_service_type AND service_date = p_service_date;
@@ -503,7 +471,6 @@ GRANT EXECUTE ON hospital.SP_COORD_GET_DOC_DEPT TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_TECHS TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_DEPTS TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_UPD_MED_REC TO rl_coordinator;
-GRANT EXECUTE ON hospital.SP_COORD_UPD_SRV_REC TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_SELF TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_UPD_SELF TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_PATS TO rl_coordinator;
@@ -1785,18 +1752,6 @@ PROMPT =========================================================================
 -- BackupRecoverySetup_Revised.sql
 -- Run as: HOSPITAL_DBA
 -- Container: PDB_QLYT
--- Purpose: Requirement 4 - Data Pump + DBMS_SCHEDULER + Flashback Query based on Audit Log
--- ==============================================================================
--- Notes:
--- 1. This script replaces the previous table-copy backup approach.
--- 2. Backup mechanism: Oracle Data Pump export of schema HOSPITAL.
--- 3. Auto backup: DBMS_SCHEDULER.
--- 4. Logical recovery: Unified Audit identifies incident timestamp, Flashback Query restores data before incident.
--- 5. Demo recovery is implemented for HOSPITAL.PRESCRIPTION because Requirement 3 audits prescription changes.
--- ==============================================================================
-
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
-SET SERVEROUTPUT ON;
 
 -- ==============================================================================
 -- 1. BACKUP HISTORY TABLE
@@ -2208,52 +2163,8 @@ END PKG_BACKUP_RECOVERY;
 SHOW ERRORS PACKAGE BODY hospital.PKG_BACKUP_RECOVERY;
 
 -- ==============================================================================
--- 5. COMPATIBILITY WRAPPERS FOR WINFORMS
--- �?t sau PACKAGE BODY
--- Gọi rỗng để tránh lỗi PLS-00905 khi package t?m INVALID lúc compile
--- ==============================================================================
-CREATE OR REPLACE PROCEDURE hospital.USP_MANUAL_BACKUP AS
-BEGIN
-    EXECUTE IMMEDIATE 'BEGIN hospital.PKG_BACKUP_RECOVERY.USP_MANUAL_BACKUP; END;';
-END;
-/
-SHOW ERRORS PROCEDURE hospital.USP_MANUAL_BACKUP;
 
-CREATE OR REPLACE PROCEDURE hospital.USP_AUTO_BACKUP AS
-BEGIN
-    EXECUTE IMMEDIATE 'BEGIN hospital.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP; END;';
-END;
-/
-SHOW ERRORS PROCEDURE hospital.USP_AUTO_BACKUP;
 
-CREATE OR REPLACE PROCEDURE hospital.USP_RESTORE_PRESCRIPTION_BY_AUDIT(
-    p_record_id         IN VARCHAR2,
-    p_audit_event_time  IN TIMESTAMP DEFAULT NULL,
-    p_seconds_before    IN NUMBER DEFAULT 1
-) AS
-BEGIN
-    hospital.PKG_BACKUP_RECOVERY.USP_RESTORE_PRESCRIPTION_BY_AUDIT(
-        p_record_id        => p_record_id,
-        p_audit_event_time => p_audit_event_time,
-        p_seconds_before   => p_seconds_before
-    );
-END;
-/
-SHOW ERRORS PROCEDURE hospital.USP_RESTORE_PRESCRIPTION_BY_AUDIT;
-
-CREATE OR REPLACE PROCEDURE hospital.USP_SIMULATE_WRONG_UPDATE AS
-BEGIN
-    EXECUTE IMMEDIATE 'BEGIN hospital.PKG_BACKUP_RECOVERY.USP_SIMULATE_WRONG_UPDATE; END;';
-END;
-/
-SHOW ERRORS PROCEDURE hospital.USP_SIMULATE_WRONG_UPDATE;
-
-CREATE OR REPLACE PROCEDURE hospital.USP_SIMULATE_DELETE AS
-BEGIN
-    EXECUTE IMMEDIATE 'BEGIN hospital.PKG_BACKUP_RECOVERY.USP_SIMULATE_DELETE; END;';
-END;
-/
-SHOW ERRORS PROCEDURE hospital.USP_SIMULATE_DELETE;
 
 
 -- Optional: audit HSBA and HSBA_DV illegal changes if your Requirement 3 scripts have not created them yet.

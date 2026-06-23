@@ -22,7 +22,6 @@ GRANT EXECUTE ON hospital.SP_COORD_GET_DOC_DEPT TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_TECHS TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_DEPTS TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_UPD_MED_REC TO rl_coordinator;
-GRANT EXECUTE ON hospital.SP_COORD_UPD_SRV_REC TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_SELF TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_UPD_SELF TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_PATS TO rl_coordinator;

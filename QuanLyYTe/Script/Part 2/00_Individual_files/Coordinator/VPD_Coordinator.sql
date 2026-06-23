@@ -48,11 +48,8 @@ CREATE OR REPLACE FUNCTION hospital.FN_VPD_STAFF_SELF (
 )
 RETURN VARCHAR2
 AS
-    v_current_user VARCHAR2(100);
-BEGIN
-    v_current_user := SYS_CONTEXT('USERENV', 'SESSION_USER');
-    
-    -- Bypass cho schema owner, DBA app, và khi trigger chạy (CURRENT_USER = 'HOSPITAL')
+BEGIN    
+    -- Bypass cho schema owner, DBA app
     IF SYS_CONTEXT('USERENV', 'CURRENT_USER') IN ('HOSPITAL', 'HOSPITAL_DBA') THEN
         RETURN '1=1';
     END IF;
@@ -140,8 +137,6 @@ LEFT JOIN hospital.department d
     ON d.dept_id = s.dept_id
 WHERE s.staff_role IN (
     N'Bác sĩ',
-    N'Bác sĩ/Y sĩ',
-    UNISTR('K\01EF thu\1EADt vi\00EAn'),
     N'Kỹ thuật viên'
 );
 
@@ -159,7 +154,7 @@ SELECT
     dept_id,
     specialty
 FROM hospital.COORD_ASSIGNMENT_STAFF
-WHERE staff_role IN (N'Bác sĩ', N'Bác sĩ/Y sĩ');
+WHERE staff_role = N'Bác sĩ';
 
 CREATE OR REPLACE VIEW hospital.VW_COORD_TECHNICIANS AS
 SELECT
@@ -167,7 +162,7 @@ SELECT
     staff_id,
     full_name
 FROM hospital.COORD_ASSIGNMENT_STAFF
-WHERE staff_role = UNISTR('K\01EF thu\1EADt vi\00EAn');
+WHERE staff_role = N'Kỹ thuật viên';
 
 
 -- ==============================================================================

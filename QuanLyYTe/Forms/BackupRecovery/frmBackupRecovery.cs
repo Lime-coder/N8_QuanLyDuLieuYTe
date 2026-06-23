@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -342,13 +342,13 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 ShowOperationError("Tat sao luu tu dong", ex);
             }
         }
-        // Giả lập sự cố: Xóa bản ghi BA000001
+        // Giả lập sự cố: Xóa bản ghi BA001
         private void SimulateDelete()
         {
             try
             {
                 int rows = _service.SimulateDelete();
-                MessageBox.Show($"Đã giả lập sự cố: Xóa thành công {rows} bản ghi của BA000001 khỏi bảng PRESCRIPTION.", "Giả lập sự cố", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Đã giả lập sự cố: Xóa thành công {rows} bản ghi của BA001 khỏi bảng PRESCRIPTION.", "Giả lập sự cố", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 LoadCurrentData();
                 LoadAuditRecoveryPoints();
                 LoadAuditLogs();
@@ -358,13 +358,13 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 ShowOperationError("Gia lap su co xoa", ex);
             }
         }
-        // Giả lập sự cố: Cập nhật sai thông tin bản ghi BA000001
+        // Giả lập sự cố: Cập nhật sai thông tin bản ghi BA001
         private void SimulateWrongUpdate()
         {
             try
             {
                 int rows = _service.SimulateWrongUpdate();
-                MessageBox.Show($"Đã giả lập sự cố: Cập nhật sai thông tin của {rows} bản ghi BA000001 thành công.", "Giả lập sự cố", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Đã giả lập sự cố: Cập nhật sai thông tin của {rows} bản ghi BA001 thành công.", "Giả lập sự cố", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 LoadCurrentData();
                 LoadAuditRecoveryPoints();
                 LoadAuditLogs();
@@ -374,7 +374,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 ShowOperationError("Gia lap su co cap nhat", ex);
             }
         }
-        // Thực hiện khôi phục dữ liệu cho bản ghi BA000001
+        // Thực hiện khôi phục dữ liệu cho bản ghi BA001
         private void BackupRestore()
         {
             if (cboBackupVersion.SelectedValue == null)
@@ -385,13 +385,13 @@ namespace QuanLyYTe.Forms.BackupRecovery
 
             DateTime auditTime = (DateTime)cboBackupVersion.SelectedValue;
 
-            var confirm = MessageBox.Show($"Bạn có chắc chắn muốn khôi phục dữ liệu BA000001 về trạng thái ngay trước thời điểm {auditTime:HH:mm:ss dd/MM/yyyy}?", "Khôi phục dữ liệu", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var confirm = MessageBox.Show($"Bạn có chắc chắn muốn khôi phục dữ liệu BA001 về trạng thái ngay trước thời điểm {auditTime:HH:mm:ss dd/MM/yyyy}?", "Khôi phục dữ liệu", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirm != DialogResult.Yes) return;
 
             try
             {
                 _service.BackupRestoreByAudit(auditTime);
-                MessageBox.Show($"Khôi phục dữ liệu thành công cho BA000001 bằng Flashback Query!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Khôi phục dữ liệu thành công cho BA001 bằng Flashback Query!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 LoadCurrentData();
                 LoadAuditRecoveryPoints();
                 LoadAuditLogs();
@@ -421,7 +421,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 return;
 
             btnImportDataPump.Enabled = false;
-            btnImportDataPump.Text = "Dang import...";
+            btnImportDataPump.Text = "Đang import...";
 
             try
             {

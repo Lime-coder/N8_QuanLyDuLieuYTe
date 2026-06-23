@@ -1,4 +1,4 @@
-﻿namespace QuanLyYTe.Forms.BackupRecovery
+namespace QuanLyYTe.Forms.BackupRecovery
 {
     partial class frmBackupRecovery
     {
@@ -208,7 +208,7 @@
             this.btnOpenErrorLog.Name = "btnOpenErrorLog";
             this.btnOpenErrorLog.Size = new System.Drawing.Size(110, 30);
             this.btnOpenErrorLog.TabIndex = 7;
-            this.btnOpenErrorLog.Text = "Mo log loi";
+            this.btnOpenErrorLog.Text = "Mở log lỗi";
             this.btnOpenErrorLog.UseVisualStyleBackColor = true;
             this.btnOpenErrorLog.Click += new System.EventHandler(this.btnOpenErrorLog_Click);
             //
@@ -322,7 +322,7 @@
             this.btnSimulateWrongUpdate.Name = "btnSimulateWrongUpdate";
             this.btnSimulateWrongUpdate.Size = new System.Drawing.Size(350, 42);
             this.btnSimulateWrongUpdate.TabIndex = 1;
-            this.btnSimulateWrongUpdate.Text = "Giả lập cập nhật sai dữ liệu BA000001";
+            this.btnSimulateWrongUpdate.Text = "Giả lập cập nhật sai dữ liệu BA001";
             this.btnSimulateWrongUpdate.UseVisualStyleBackColor = true;
             this.btnSimulateWrongUpdate.Click += new System.EventHandler(this.btnSimulateWrongUpdate_Click);
             // 
@@ -333,7 +333,7 @@
             this.btnSimulateDelete.Name = "btnSimulateDelete";
             this.btnSimulateDelete.Size = new System.Drawing.Size(350, 42);
             this.btnSimulateDelete.TabIndex = 0;
-            this.btnSimulateDelete.Text = "Giả lập xóa dữ liệu BA000001";
+            this.btnSimulateDelete.Text = "Giả lập xóa dữ liệu BA001";
             this.btnSimulateDelete.UseVisualStyleBackColor = true;
             this.btnSimulateDelete.Click += new System.EventHandler(this.btnSimulateDelete_Click);
             // 

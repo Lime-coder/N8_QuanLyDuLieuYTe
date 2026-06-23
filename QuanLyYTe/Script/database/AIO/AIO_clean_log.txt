@@ -20,14 +20,13 @@ Da xoa user: U3
 Da xoa user: U1                                                                 
 Da xoa user: NV000021                                                           
 Da xoa user: U8                                                                 
-Da xoa user: NV000001                                                           
 
 PL/SQL procedure successfully completed.
 
 ====================================================================
 = 3. XOA SCHEMA HOSPITAL_DBA VA HOSPITAL                           =
 ====================================================================
-Da xoa user hospital_dba                                                        
+User hospital_dba chua ton tai.                                                 
 
 PL/SQL procedure successfully completed.
 

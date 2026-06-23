@@ -96,8 +96,11 @@ Grant succeeded.
 
 Grant succeeded.
 
+CREATE USER hospital_dba IDENTIFIED BY "123"
+            *
+ERROR at line 1:
+ORA-01920: user name 'HOSPITAL_DBA' conflicts with another user or role name 
 
-User created.
 
 
 Grant succeeded.
@@ -1354,6 +1357,15 @@ Session altered.
 Session altered.
 
 
+Table created.
+
+
+150 rows created.
+
+
+Commit complete.
+
+
 View created.
 
 
@@ -1426,13 +1438,7 @@ Procedure created.
 Procedure created.
 
 
-Procedure created.
-
-
 Session altered.
-
-
-Grant succeeded.
 
 
 Grant succeeded.
@@ -1795,7 +1801,7 @@ System altered.
 
 NAME                                 TYPE        VALUE                          
 ------------------------------------ ----------- ------------------------------ 
-audit_trail                          string      DB, EXTENDED                   
+audit_trail                          string      DB                             
 
 Session altered.
 
@@ -2097,26 +2103,6 @@ Package created.
 No errors.
 
 Package body created.
-
-No errors.
-
-Procedure created.
-
-No errors.
-
-Procedure created.
-
-No errors.
-
-Procedure created.
-
-No errors.
-
-Procedure created.
-
-No errors.
-
-Procedure created.
 
 No errors.
 
