@@ -14,7 +14,7 @@ ALTER SESSION SET CONTAINER = PDB_QLYT;
 -- ============================================================
 
 -- *** Chạy với tài khoản: NV000001 (Điều phối viên - có quyền thêm HSBA) ***
-CONNECT NV000001/123@&pdb_url
+CONNECT NV000001/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THÀNH CÔNG: Điều phối viên lập hồ sơ bệnh án mới
@@ -23,13 +23,14 @@ VALUES ('BA_TEST002', 'BN000001', SYSDATE, 'NV000021', 'PB01', N'Chưa chẩn đ
 COMMIT;
 
 -- *** Chạy với tài khoản: NV000121 (Kỹ thuật viên - không có quyền INSERT) ***
-CONNECT NV000121/123@&pdb_url
+CONNECT NV000121/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Kỹ thuật viên cố tình tự tạo hồ sơ bệnh án
 BEGIN
     EXECUTE IMMEDIATE q'[INSERT INTO hospital.medical_record (record_id, diagnosis, treatment_plan, conclusion) VALUES ('BA_TEST002', N'Hack dữ liệu', N'Chưa điều trị', N'Chưa kết luận')]';
-EXCEPTION WHEN OTHERS THEN NULL; END;
+EXCEPTION WHEN OTHERS THEN NULL; 
+END;
 /
 
 
@@ -38,7 +39,7 @@ EXCEPTION WHEN OTHERS THEN NULL; END;
 -- ============================================================
 
 -- *** Chạy với tài khoản: NV000001 (Điều phối viên – có quyền update patient) ***
-CONNECT NV000001/123@&pdb_url
+CONNECT NV000001/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THÀNH CÔNG: Điều phối viên cập nhật dị ứng thuốc
@@ -46,7 +47,7 @@ UPDATE hospital.patient SET drug_allergies = N'Không có dị ứng' WHERE pati
 COMMIT;
 
 -- *** Chạy với tài khoản: NV000121 (Kỹ thuật viên – không có quyền update patient trực tiếp) ***
-CONNECT NV000121/123@&pdb_url
+CONNECT NV000121/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Kỹ thuật viên cố sửa thông tin bệnh nhân trực tiếp
@@ -61,14 +62,14 @@ EXCEPTION WHEN OTHERS THEN NULL; END;
 -- ============================================================
 
 -- *** Chạy với tài khoản: NV000001 (Điều phối viên – có quyền) ***
-CONNECT NV000001/123@&pdb_url
+CONNECT NV000001/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THÀNH CÔNG: Điều phối viên tra cứu danh sách bác sĩ
 SELECT * FROM hospital.VW_COORD_DOCTORS;
 
 -- *** Chạy với tài khoản: BN000001 (Bệnh nhân – không được xem view này) ***
-CONNECT BN000001/123@&pdb_url
+CONNECT BN000001/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Bệnh nhân cố xem danh sách bác sĩ
@@ -82,7 +83,7 @@ EXCEPTION WHEN OTHERS THEN NULL; END;
 -- NC#4 – STORED PROCEDURE: EXECUTE USP_MANAGE_PRESCRIPTION 
 -- ============================================================
 
-CONNECT NV000021/123@&pdb_url
+CONNECT NV000021/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THÀNH CÔNG: Bác sĩ kê đơn thuốc mới cho bệnh nhân
@@ -97,7 +98,7 @@ END;
 /
 
 -- *** Chạy với tài khoản: NV000121 (Kỹ thuật viên – không có quyền execute SP này) ***
-CONNECT NV000121/123@&pdb_url
+CONNECT NV000121/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Kỹ thuật viên lén gọi SP kê đơn thuốc
@@ -117,14 +118,14 @@ END;
 -- ============================================================
 
 -- *** Chạy với tài khoản: NV000021 (Bác sĩ – có quyền execute function) ***
-CONNECT NV000021/123@&pdb_url
+CONNECT NV000021/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THÀNH CÔNG: Bác sĩ gọi function trích xuất bệnh sử của bệnh nhân
 SELECT hospital_dba.F_EXTRACT_MEDICAL_HISTORY('BN000001') AS tien_su_benh FROM DUAL;
 
 -- *** Chạy với tài khoản: BN000001 (Bệnh nhân – không có quyền execute function) ***
-CONNECT BN000001/123@&pdb_url
+CONNECT BN000001/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Bệnh nhân cố gọi function trích xuất bệnh sử của người khác
@@ -138,43 +139,41 @@ EXCEPTION WHEN OTHERS THEN NULL; END;
 -- ============================================================
 -- 3.3a – FGA: Bác sĩ cập nhật các cột ĐƠNTHUỐC (RECORD_ID, PRESCRIPTION_DATE, MEDICINE_NAME, DOSAGE)
 -- Đăng nhập với user NV000021
-CONNECT NV000021/123@&pdb_url
+CONNECT NV000021/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 
 UPDATE hospital.prescription
 SET    medicine_name = 'Omeprazole-updatev2',
        dosage        = N'20mg, 2 viên/ngày'
-WHERE  record_id = 'BA001';
+WHERE  record_id = 'BA999999';
 COMMIT;
 
 -- 3.3b – FGA: Bác sĩ cập nhật thành công HSBA của mình (DIAGNOSIS, TREATMENT_PLAN, CONCLUSION)  
 -- Đăng nhập với user NV000021
-CONNECT NV000021/123@&pdb_url
+CONNECT NV000021/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 UPDATE hospital.medical_record
 SET    diagnosis      = N'Viêm dạ dày cấp - đã hồi phục tốt',
        treatment_plan = N'Ngưng thuốc, ăn uống bình thường',
        conclusion     = N'Khỏi bệnh'
-WHERE  record_id = 'BA001';
+WHERE  record_id = 'BA999999';
 COMMIT;
 
 -- 3.3c – UNIFIED: Cập nhật BẤT HỢP PHÁP trên HSBA 
-CONNECT NV000121/123@&pdb_url
+CONNECT NV000121/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
-BEGIN
-    EXECUTE IMMEDIATE q'[UPDATE hospital.medical_record
+UPDATE hospital.medical_record
 SET    diagnosis      = N'Viêm gan',
        treatment_plan = N'Uống thuốc đều đặn',
        conclusion     = N'Theo dõi định kỳ'
-WHERE  record_id = 'BA001']';
-EXCEPTION WHEN OTHERS THEN NULL; END;
+WHERE  record_id = 'BA999999'
 /
 
 -- 3.3d – UNIFIED: Thao tác BẤT HỢP PHÁP trên SERVICE_RECORD 
-CONNECT BN000001/123@&pdb_url
+CONNECT BN000001/Abc123456@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 BEGIN

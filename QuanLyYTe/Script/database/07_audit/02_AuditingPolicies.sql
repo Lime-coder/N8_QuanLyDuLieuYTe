@@ -136,9 +136,20 @@ CREATE AUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY
     UPDATE ON hospital.service_record, 
     DELETE ON hospital.service_record; 
 
--- Bắt hành vi Failed (Sai quyền/Bất hợp pháp)
+-- Bật Audit để bắt TẤT CẢ hành vi (Thành công + Thất bại)
 AUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY WHENEVER NOT SUCCESSFUL;
-
+-- Thêm yêu cầu ở TC#4: Các thao tác cập nhật trên trường KẾTQUẢ của HSBA_DV đều được ghi vết.
+BEGIN
+    DBMS_FGA.ADD_POLICY(
+        object_schema   => 'HOSPITAL',
+        object_name     => 'SERVICE_RECORD',
+        policy_name     => 'FGA_SERVICE_RECORD_COLS',
+        audit_column    => 'SERVICE_RESULT',
+        statement_types => 'UPDATE',
+        audit_trail     => DBMS_FGA.DB + DBMS_FGA.EXTENDED
+    );
+END;
+/
 -- ============================================================
 -- 3. STORED PROCEDURES
 -- ============================================================
@@ -197,17 +208,25 @@ BEGIN
 END; 
 /
 
--- 3.4. Tab Dịch vụ (Lấy từ Unified Thất bại)
+-- 3.4. Tab Dịch vụ (Gộp FGA-Thành công (update KETQUA) và Unified-Thất bại)
 CREATE OR REPLACE PROCEDURE hospital_dba.USP_GET_SERVICE_RECORD_AUDIT_LOGS (p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT CAST(DBUSERNAME AS VARCHAR2(128)) as USERNAME,
-           TO_CHAR(EVENT_TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
+    SELECT CAST(DB_USER AS VARCHAR2(128)) as USERNAME, 
+           TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
            CAST(OBJECT_NAME AS VARCHAR2(128)) as OBJECT, 
-           CAST(ACTION_NAME AS VARCHAR2(128)) as ACTION, 
+           CAST(STATEMENT_TYPE AS VARCHAR2(128)) as ACTION, 
+           '0' AS RETURNCODE, 
+           CAST(SQL_TEXT AS VARCHAR2(4000)) as SQL_TEXT
+    FROM DBA_FGA_AUDIT_TRAIL WHERE POLICY_NAME = 'FGA_SERVICE_RECORD_COLS'
+    UNION ALL
+    SELECT CAST(DBUSERNAME AS VARCHAR2(128)), 
+           TO_CHAR(EVENT_TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS'), 
+           CAST(OBJECT_NAME AS VARCHAR2(128)), 
+           CAST(ACTION_NAME AS VARCHAR2(128)), 
            TO_CHAR(RETURN_CODE) AS RETURNCODE, 
-           DBMS_LOB.SUBSTR(SQL_TEXT, 4000, 1) as SQL_TEXT
+           DBMS_LOB.SUBSTR(SQL_TEXT, 4000, 1) 
     FROM UNIFIED_AUDIT_TRAIL WHERE UNIFIED_AUDIT_POLICIES LIKE '%AUD_ILLEGAL_SERVICE_RECORD_POLICY%'
-    ORDER BY EVENT_TIMESTAMP DESC;
+    ORDER BY TIMESTAMP DESC;
 END;
 /
