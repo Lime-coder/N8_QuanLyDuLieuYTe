@@ -35,3 +35,13 @@ BEGIN
     );
 END;
 /
+GRANT HOSP_OLS_POL_DBA TO hospital_dba;
+
+BEGIN
+    SA_USER_ADMIN.SET_USER_PRIVS(
+        policy_name => 'HOSP_OLS_POL',
+        user_name   => 'HOSPITAL_DBA',
+        privileges  => 'FULL,PROFILE_ACCESS'
+    );
+END;
+/

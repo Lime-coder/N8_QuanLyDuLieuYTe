@@ -34,6 +34,8 @@ namespace QuanLyYTe.Repositories
         // Lấy các điểm phục hồi từ UNIFIED_AUDIT_TRAIL
         public DataTable GetAuditRecoveryPoints()
         {
+            try { _dbProvider.ExecuteQuery("BEGIN DBMS_AUDIT_MGMT.FLUSH_UNIFIED_AUDIT_TRAIL; END;"); } catch { }
+
             string sql = @"
                 SELECT EVENT_TIMESTAMP AS AUDIT_TIME, ACTION_NAME 
                 FROM UNIFIED_AUDIT_TRAIL 
@@ -47,6 +49,8 @@ namespace QuanLyYTe.Repositories
         // Lấy nhật ký Audit của PRESCRIPTION
         public DataTable GetAuditLogs()
         {
+            try { _dbProvider.ExecuteQuery("BEGIN DBMS_AUDIT_MGMT.FLUSH_UNIFIED_AUDIT_TRAIL; END;"); } catch { }
+
             string sql = @"
                 SELECT 
                     CAST(DBUSERNAME AS VARCHAR2(128)) as USERNAME, 

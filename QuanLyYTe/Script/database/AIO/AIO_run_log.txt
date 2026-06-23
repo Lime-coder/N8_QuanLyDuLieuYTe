@@ -7,6 +7,9 @@ Connected.
 System altered.
 
 
+System altered.
+
+
 Session altered.
 
 
@@ -96,11 +99,11 @@ Grant succeeded.
 
 Grant succeeded.
 
-CREATE USER hospital_dba IDENTIFIED BY "123"
-            *
-ERROR at line 1:
-ORA-01920: user name 'HOSPITAL_DBA' conflicts with another user or role name 
 
+Grant succeeded.
+
+
+User created.
 
 
 Grant succeeded.
@@ -193,7 +196,7 @@ Table created.
 
 
 ====================================================================
-= 01. RANG BUOC, CHI MUC & PHAN QUYEN BANG (SYSDBA)                =
+= 01. RANG BUOC, CHI MUC & PHAN QUYEN BANG (HOSPITAL_DBA)          =
 ====================================================================
 Connected.
 
@@ -241,6 +244,7 @@ Session altered.
 
 Session altered.
 
+Connected.
 
 Session altered.
 
@@ -285,7 +289,7 @@ Grant succeeded.
 
 
 ====================================================================
-= 02. DU LIEU MAU (SYSDBA thao tac cho HOSPITAL)                   =
+= 02. DU LIEU MAU (HOSPITAL_DBA thao tac cho HOSPITAL)             =
 ====================================================================
 Connected.
 
@@ -1182,7 +1186,7 @@ Grant succeeded.
 
 
 ====================================================================
-= 04. RBAC (SYSDBA thao tac cho HOSPITAL)                          =
+= 04. RBAC (HOSPITAL_DBA thao tac cho HOSPITAL)                    =
 ====================================================================
 Connected.
 
@@ -1328,7 +1332,7 @@ Grant succeeded.
 
 
 ====================================================================
-= 05. VPD (HOSPITAL_DBA & SYSDBA)                                  =
+= 05. VPD (HOSPITAL_DBA)                                           =
 ====================================================================
 Connected.
 
@@ -1676,48 +1680,54 @@ PL/SQL procedure successfully completed.
 PL/SQL procedure successfully completed.
 
 
-Session altered.
-
-
-Session altered.
-
-
-Role set.
-
-
-PL/SQL procedure successfully completed.
-
-
-PL/SQL procedure successfully completed.
-
-
-Session altered.
-
-
-Session altered.
-
-
-Role set.
-
-
-PL/SQL procedure successfully completed.
-
-
-Session altered.
-
-
-Session altered.
-
-
-PL/SQL procedure successfully completed.
-
-
-PL/SQL procedure successfully completed.
+Grant succeeded.
 
 
 PL/SQL procedure successfully completed.
 
 Connected.
+
+Session altered.
+
+
+Session altered.
+
+
+Role set.
+
+
+PL/SQL procedure successfully completed.
+
+
+PL/SQL procedure successfully completed.
+
+
+Session altered.
+
+
+Session altered.
+
+
+Role set.
+
+
+PL/SQL procedure successfully completed.
+
+
+Session altered.
+
+
+Session altered.
+
+
+PL/SQL procedure successfully completed.
+
+
+PL/SQL procedure successfully completed.
+
+
+PL/SQL procedure successfully completed.
+
 
 Session altered.
 
@@ -1801,7 +1811,7 @@ System altered.
 
 NAME                                 TYPE        VALUE                          
 ------------------------------------ ----------- ------------------------------ 
-audit_trail                          string      DB                             
+audit_trail                          string      DB, EXTENDED                   
 
 Session altered.
 

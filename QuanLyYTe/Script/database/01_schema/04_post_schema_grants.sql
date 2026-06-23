@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 01_post_schema_grants.sql (Bổ sung từ Part 1)
--- Chạy dưới quyền: SYS AS SYSDBA
+-- Ch?y du?i quy?n: SYS AS SYSDBA
 -- Cấp quyền thao tác trên các table/sequence của hospital cho hospital_dba
 -- Yêu cầu: Chạy SAU khi đã khởi tạo xong các tables ở bước 01
 -- ==============================================================================
@@ -15,11 +15,11 @@ GRANT SELECT ON hospital.service_record TO hospital_dba WITH GRANT OPTION;
 GRANT SELECT ON hospital.prescription   TO hospital_dba WITH GRANT OPTION;
 
 -- Cho phép hospital_dba thao tác DML trên staff và patient (để quản lý nhân viên, bệnh nhân qua trigger hoặc package)
-GRANT INSERT, UPDATE, DELETE ON hospital.staff TO hospital_dba;
-GRANT INSERT, UPDATE, DELETE ON hospital.patient TO hospital_dba;
-GRANT INSERT, UPDATE, DELETE ON hospital.medical_record TO hospital_dba;
-GRANT INSERT, UPDATE, DELETE ON hospital.service_record TO hospital_dba;
-GRANT INSERT, UPDATE, DELETE ON hospital.prescription TO hospital_dba;
+GRANT INSERT, UPDATE, DELETE ON hospital.staff TO hospital_dba WITH GRANT OPTION;
+GRANT INSERT, UPDATE, DELETE ON hospital.patient TO hospital_dba WITH GRANT OPTION;
+GRANT INSERT, UPDATE, DELETE ON hospital.medical_record TO hospital_dba WITH GRANT OPTION;
+GRANT INSERT, UPDATE, DELETE ON hospital.service_record TO hospital_dba WITH GRANT OPTION;
+GRANT INSERT, UPDATE, DELETE ON hospital.prescription TO hospital_dba WITH GRANT OPTION;
 
 -- Cấp quyền dùng Sequence để generate ID tự động cho tài khoản Linked
 GRANT SELECT ON hospital.SEQ_STAFF_ID TO hospital_dba;

@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 03_grant_roles_to_users.sql
--- Chạy dưới quyền: sysdba
+-- Ch?y du?i quy?n: hospital_dba
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;

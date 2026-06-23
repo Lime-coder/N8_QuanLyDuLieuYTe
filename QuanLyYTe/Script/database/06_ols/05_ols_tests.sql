@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 05_ols_tests.sql
--- Run as: SYS AS SYSDBA after HOSP_OLS_POL labels are created
+-- Ch?y du?i quy?n: hospital_dba after HOSP_OLS_POL labels are created
 -- Creates the U1-U8 OLS test accounts and bridges them into application RBAC data.
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;

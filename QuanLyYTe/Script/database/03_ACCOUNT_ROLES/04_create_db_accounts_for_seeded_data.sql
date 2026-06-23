@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 04_create_db_accounts_for_seeded_data.sql
--- Chạy dưới quyền: SYS AS SYSDBA
+-- Ch?y du?i quy?n: hospital_dba
 -- Mục đích: Tạo Oracle Database Login Account cho toàn bộ dữ liệu mẫu (Seed Data)
 --           Bao gồm cả U1 -> U8 và toàn bộ NV000xxx, BN000xxx
 -- ==============================================================================

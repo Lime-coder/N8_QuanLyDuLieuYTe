@@ -39,21 +39,25 @@ SET DEFINE OFF
 
 PROMPT 
 PROMPT ====================================================================
-PROMPT = 01. RANG BUOC, CHI MUC & PHAN QUYEN BANG (SYSDBA)                =
+PROMPT = 01. RANG BUOC, CHI MUC & PHAN QUYEN BANG (HOSPITAL_DBA)          =
 PROMPT ====================================================================
 SET DEFINE ON
-CONNECT sys/"&sys_password"@localhost:1521/PDB_QLYT AS SYSDBA
+CONNECT hospital_dba/"&dba_password"@localhost:1521/PDB_QLYT
 SET DEFINE OFF
 @@../01_SCHEMA/02_create_constraints.sql
 @@../01_SCHEMA/03_create_indexes.sql
+
+SET DEFINE ON
+CONNECT sys/"&sys_password"@localhost:1521/PDB_QLYT AS SYSDBA
+SET DEFINE OFF
 @@../01_SCHEMA/04_post_schema_grants.sql
 
 PROMPT 
 PROMPT ====================================================================
-PROMPT = 02. DU LIEU MAU (SYSDBA thao tac cho HOSPITAL)                   =
+PROMPT = 02. DU LIEU MAU (HOSPITAL_DBA thao tac cho HOSPITAL)             =
 PROMPT ====================================================================
 SET DEFINE ON
-CONNECT sys/"&sys_password"@localhost:1521/PDB_QLYT AS SYSDBA
+CONNECT hospital_dba/"&dba_password"@localhost:1521/PDB_QLYT
 SET DEFINE OFF
 @@../02_SEED_DATA/01_seed_department.sql
 @@../02_SEED_DATA/02_seed_staff.sql
@@ -68,7 +72,7 @@ PROMPT ====================================================================
 PROMPT = 03. TAI KHOAN VA PHAN QUYEN CO BAN                               =
 PROMPT ====================================================================
 SET DEFINE ON
-CONNECT sys/"&sys_password"@localhost:1521/PDB_QLYT AS SYSDBA
+CONNECT hospital_dba/"&dba_password"@localhost:1521/PDB_QLYT
 SET DEFINE OFF
 @@../03_ACCOUNT_ROLES/01_create_roles.sql
 
@@ -81,16 +85,16 @@ SET DEFINE OFF
 @@../03_ACCOUNT_ROLES/07_auth_procedures.sql
 
 SET DEFINE ON
-CONNECT sys/"&sys_password"@localhost:1521/PDB_QLYT AS SYSDBA
+CONNECT hospital_dba/"&dba_password"@localhost:1521/PDB_QLYT
 SET DEFINE OFF
 @@../03_ACCOUNT_ROLES/03_grant_roles_to_users.sql
 
 PROMPT 
 PROMPT ====================================================================
-PROMPT = 04. RBAC (SYSDBA thao tac cho HOSPITAL)                          =
+PROMPT = 04. RBAC (HOSPITAL_DBA thao tac cho HOSPITAL)                    =
 PROMPT ====================================================================
 SET DEFINE ON
-CONNECT sys/"&sys_password"@localhost:1521/PDB_QLYT AS SYSDBA
+CONNECT hospital_dba/"&dba_password"@localhost:1521/PDB_QLYT
 SET DEFINE OFF
 @@../04_RBAC/patient/01_patient_view.sql
 @@../04_RBAC/patient/02_patient_procedures.sql
@@ -102,7 +106,7 @@ SET DEFINE OFF
 
 PROMPT 
 PROMPT ====================================================================
-PROMPT = 05. VPD (HOSPITAL_DBA & SYSDBA)                                  =
+PROMPT = 05. VPD (HOSPITAL_DBA)                                           =
 PROMPT ====================================================================
 SET DEFINE ON
 CONNECT hospital_dba/"&dba_password"@localhost:1521/PDB_QLYT
@@ -111,7 +115,7 @@ SET DEFINE OFF
 @@../05_VPD/coordinator/02_coordinator_policies.sql
 
 SET DEFINE ON
-CONNECT sys/"&sys_password"@localhost:1521/PDB_QLYT AS SYSDBA
+CONNECT hospital_dba/"&dba_password"@localhost:1521/PDB_QLYT
 SET DEFINE OFF
 @@../05_VPD/coordinator/03_coordinator_procedures.sql
 @@../05_VPD/coordinator/04_coordinator_grants.sql
@@ -123,7 +127,7 @@ SET DEFINE OFF
 @@../05_VPD/doctor/02_doctor_policies.sql
 
 SET DEFINE ON
-CONNECT sys/"&sys_password"@localhost:1521/PDB_QLYT AS SYSDBA
+CONNECT hospital_dba/"&dba_password"@localhost:1521/PDB_QLYT
 SET DEFINE OFF
 @@../05_VPD/doctor/03_doctor_procedures.sql
 @@../05_VPD/doctor/04_doctor_grants.sql
@@ -136,13 +140,13 @@ SET DEFINE ON
 CONNECT sys/"&sys_password"@localhost:1521/PDB_QLYT AS SYSDBA
 SET DEFINE OFF
 @@../06_OLS/01_create_ols_policy.sql
-@@../06_OLS/02_create_labels.sql
-@@../06_OLS/03_assign_user_labels.sql
-@@../06_OLS/05_ols_tests.sql
 
 SET DEFINE ON
 CONNECT hospital_dba/"&dba_password"@localhost:1521/PDB_QLYT
 SET DEFINE OFF
+@@../06_OLS/02_create_labels.sql
+@@../06_OLS/03_assign_user_labels.sql
+@@../06_OLS/05_ols_tests.sql
 @@../06_OLS/04_label_notification_data.sql
 
 PROMPT 
@@ -164,7 +168,7 @@ PROMPT ====================================================================
 PROMPT = 08. TAO TAI KHOAN DATABASE CHO DU LIEU MAU                       =
 PROMPT ====================================================================
 SET DEFINE ON
-CONNECT sys/"&sys_password"@localhost:1521/PDB_QLYT AS SYSDBA
+CONNECT hospital_dba/"&dba_password"@localhost:1521/PDB_QLYT
 SET DEFINE OFF
 @@../03_ACCOUNT_ROLES/04_create_db_accounts_for_seeded_data.sql
 
