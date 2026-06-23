@@ -1,6 +1,6 @@
 -- ==============================================================================
--- ThÆ° má»¥c AIO - All In One Script
--- Tá»± Ä‘á»™ng cháº¡y táº¥t cáº£ cÃ¡c ká»‹ch báº£n khá»Ÿi táº¡o CÆ¡ sá»Ÿ dá»¯ liá»‡u Quáº£n lÃ½ Y táº¿
+-- Thư mục AIO - All In One Script
+-- Tự động chạy tất cả các kịch bản khởi tạo Cơ sở dữ liệu Quản lý Y tế
 -- ==============================================================================
 SET ECHO OFF
 SET VERIFY OFF
@@ -22,7 +22,7 @@ PROMPT = 00. KHOI TAO MOI TRUONG (SYS AS SYSDBA TRUOC, SAU DO CHUYEN PDB) =
 PROMPT ====================================================================
 SET DEFINE ON
 CONNECT sys/"&sys_password" AS SYSDBA
--- Cháº¡y enable audit trÆ°á»›c khi chuyá»ƒn qua PDB_QLYT vÃ¬ nÃ³ yÃªu cáº§u quyá»n á»Ÿ root
+-- Chạy enable audit trước khi chuyển qua PDB_QLYT vì nó yêu cầu quyền ở root
 @@../00_ENV/01_enable_audit_system.sql
 @@../00_ENV/00_set_container.sql
 @@../00_ENV/02_init_schemas.sql

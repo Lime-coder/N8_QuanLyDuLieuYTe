@@ -1,12 +1,12 @@
 -- ==============================================================================
 -- 01_create_ols_policy.sql
--- Cháº¡y dÆ°á»›i quyá»n: sysdba
+-- Chạy dưới quyền: sysdba
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 GRANT INHERIT PRIVILEGES ON USER sys TO lbacsys;
 
--- 1. Báº£ng cÆ¡ sá»Ÿ & Sequence
+-- 1. Bảng cơ sở & Sequence
 BEGIN EXECUTE IMMEDIATE 'DROP TABLE hospital.notification CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
 /
 BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE hospital.seq_notification_id'; EXCEPTION WHEN OTHERS THEN NULL; END;
@@ -24,7 +24,7 @@ CREATE SEQUENCE hospital.seq_notification_id START WITH 8 INCREMENT BY 1;
 GRANT SELECT, INSERT, UPDATE, DELETE ON hospital.notification TO hospital_dba WITH GRANT OPTION;
 GRANT SELECT ON hospital.seq_notification_id TO hospital_dba WITH GRANT OPTION;
 
--- 2. Khá»Ÿi táº¡o Policy
+-- 2. Khởi tạo Policy
 BEGIN SA_SYSDBA.DROP_POLICY('HOSP_OLS_POL', TRUE); EXCEPTION WHEN OTHERS THEN NULL; END;
 /
 BEGIN

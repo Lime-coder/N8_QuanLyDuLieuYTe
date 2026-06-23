@@ -1,4 +1,4 @@
--- Cháº¡y dÆ°á»›i quyá»n: hospital_dba | Container: PDB_QLYT
+-- Chạy dưới quyền: hospital_dba | Container: PDB_QLYT
 -- ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 -- Returns the granted role for a user (assumes one active role per user)
@@ -48,7 +48,7 @@ BEGIN
     END IF;
 END USP_GET_USER_ID;
 /
--- Cháº¡y dÆ°á»›i quyá»n: hospital_dba | Container: PDB_QLYT
+-- Chạy dưới quyền: hospital_dba | Container: PDB_QLYT
 -- This script contains the procedures for linking DB users to App tables.
 
 ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;

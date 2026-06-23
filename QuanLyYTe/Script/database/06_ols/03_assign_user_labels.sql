@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 03_assign_user_labels.sql
--- Cháº¡y dÆ°á»›i quyá»n: sysdba
+-- Chạy dưới quyền: sysdba
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
@@ -24,7 +24,7 @@ BEGIN
         END IF;
 
         -- 2. Determine Compartment
-        -- PB01 -> TiÃªu HÃ³a (TH), PB02 -> Tháº§n Kinh (TK), PB03 -> Tim Máº¡ch (TM)
+        -- PB01 -> Tiêu Hóa (TH), PB02 -> Thần Kinh (TK), PB03 -> Tim Mạch (TM)
         IF r.dept_id = 'PB01' THEN 
             v_comp := 'TH';
         ELSIF r.dept_id = 'PB02' THEN 

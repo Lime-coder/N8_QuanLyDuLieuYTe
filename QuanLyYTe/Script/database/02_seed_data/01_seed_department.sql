@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 01_seed_department.sql
--- Cháº¡y dÆ°á»›i quyá»n: hospital (or sysdba with CURRENT_SCHEMA=hospital)
+-- Chạy dưới quyền: hospital (or sysdba with CURRENT_SCHEMA=hospital)
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;

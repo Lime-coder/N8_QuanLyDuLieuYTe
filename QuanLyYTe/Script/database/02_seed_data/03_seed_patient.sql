@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 03_seed_patient.sql
--- Cháº¡y dÆ°á»›i quyá»n: sysdba
+-- Chạy dưới quyền: sysdba
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
@@ -8,7 +8,7 @@ ALTER SESSION SET CURRENT_SCHEMA = hospital;
 SET SQLBLANKLINES ON;
 
 -- ============================================================
--- AUTO-GENERATE 100.000 Bá»†NH NHÃ‚N
+-- AUTO-GENERATE 100.000 BỆNH NHÂN
 -- ============================================================
 INSERT /*+ APPEND */ INTO patient (patient_id, full_name, gender, birthdate, id_card, house_no, street, district, city_province, medical_history, family_medical_history, drug_allergies, username_db)
 SELECT

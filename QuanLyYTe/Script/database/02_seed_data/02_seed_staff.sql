@@ -1,13 +1,13 @@
 -- ==============================================================================
 -- 02_seed_staff.sql
--- Cháº¡y dÆ°á»›i quyá»n: hospital (or sysdba with CURRENT_SCHEMA=hospital)
+-- Chạy dưới quyền: hospital (or sysdba with CURRENT_SCHEMA=hospital)
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 -- ==============================================================================
--- PART 1: 20 ÄIá»€U PHá»I VIÃŠN (COORDINATORS) - ID: NV000001 to NV000020
+-- PART 1: 20 ĐIỀU PHỐI VIÊN (COORDINATORS) - ID: NV000001 to NV000020
 -- ==============================================================================
 -- Test Account:
 INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db, facility) VALUES ('NV000001', UNISTR('H\1ED3 Ph\01B0\01A1ng Minh'), UNISTR('N\1EEF'), TO_DATE('1999-10-07','YYYY-MM-DD'), '001570602400', UNISTR('H\00E0 N\1ED9i'), '0983054397', 'PB01', UNISTR('\0110i\1EC1u ph\1ED1i vi\00EAn'), 'NV000001', UNISTR('H\1ED3 Ch\00ED Minh'));
@@ -32,7 +32,7 @@ INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, ph
 INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db, facility) VALUES ('NV000020', UNISTR('Ph\1EA1m H\1EEFu D\0169ng'), UNISTR('Nam'), TO_DATE('1992-02-02','YYYY-MM-DD'), '001276720329', UNISTR('Ph\00FA Th\1ECD'), '0989911551', 'PB01', UNISTR('\0110i\1EC1u ph\1ED1i vi\00EAn'), 'DPV_20', UNISTR('H\00E0 N\1ED9i'));
 
 -- ==============================================================================
--- PART 2: 100 BÃC SÄ¨ (DOCTORS) - ID: NV000021 to NV000120
+-- PART 2: 100 BÁC SĨ (DOCTORS) - ID: NV000021 to NV000120
 -- ==============================================================================
 -- Test Account:
 INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db, facility) VALUES ('NV000021', UNISTR('L\00EA H\1EEFu T\00F9ng'), UNISTR('Nam'), TO_DATE('1982-02-07','YYYY-MM-DD'), '001189030267', UNISTR('Th\00E1i Nguy\00EAn'), '0940860293', 'PB01', UNISTR('B\00E1c s\0129'), 'NV000021', UNISTR('H\1ED3 Ch\00ED Minh'));
@@ -137,7 +137,7 @@ INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, ph
 INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db, facility) VALUES ('NV000120', UNISTR('H\1ED3 Anh D\0169ng'), UNISTR('Nam'), TO_DATE('1979-03-25','YYYY-MM-DD'), '001550791884', UNISTR('H\00E0 Nam'), '0967669753', 'PB02', UNISTR('B\00E1c s\0129'), 'BS_120', UNISTR('H\1EA3i Ph\00F2ng'));
 
 -- ==============================================================================
--- PART 3: 50 Ká»¸ THUáº¬T VIÃŠN (TECHNICIANS) - ID: NV000121 to NV000170
+-- PART 3: 50 KỸ THUẬT VIÊN (TECHNICIANS) - ID: NV000121 to NV000170
 -- ==============================================================================
 -- Test Account:
 INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db, facility) VALUES ('NV000121', UNISTR('\0110\1EB7ng Qu\1ED1c T\00E2m'), UNISTR('Nam'), TO_DATE('1995-12-09','YYYY-MM-DD'), '001553018198', UNISTR('H\00E0 N\1ED9i'), '0988823220', 'PB03', UNISTR('K\1EF9 thu\1EADt vi\00EAn'), 'NV000121', UNISTR('H\00E0 N\1ED9i'));

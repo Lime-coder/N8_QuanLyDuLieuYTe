@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 02_doctor_vpd_functions.sql
--- Cháº¡y dÆ°á»›i quyá»n: hospital_dba
+-- Chạy dưới quyền: hospital_dba
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
