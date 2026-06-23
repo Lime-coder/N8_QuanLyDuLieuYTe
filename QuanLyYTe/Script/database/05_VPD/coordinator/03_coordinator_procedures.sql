@@ -25,7 +25,7 @@ SELECT
     s.username_db, s.staff_id, s.full_name, s.staff_role, s.dept_id, d.dept_name AS specialty
 FROM hospital.STAFF s
 LEFT JOIN hospital.DEPARTMENT d ON s.dept_id = d.dept_id
-WHERE s.staff_role IN (UNISTR('B\00E1c s\0129'), UNISTR('B\00E1c s\0129/Y s\0129'), UNISTR('K\1EF9 thu\1EADt vi\00EAn'));
+WHERE s.staff_role IN (UNISTR('B\00E1c s\0129'), UNISTR('K\1EF9 thu\1EADt vi\00EAn'));
 
 COMMIT;
 
@@ -37,7 +37,7 @@ SELECT
     dept_id,
     specialty
 FROM hospital.COORD_ASSIGNMENT_STAFF
-WHERE staff_role IN (UNISTR('B\00E1c s\0129'), UNISTR('B\00E1c s\0129/Y s\0129'));
+WHERE staff_role = UNISTR('B\00E1c s\0129');
 
 CREATE OR REPLACE VIEW hospital.VW_COORD_TECHNICIANS AS
 SELECT
