@@ -33,8 +33,7 @@ BEGIN
         function_schema   => 'HOSPITAL',
         policy_function   => 'FN_VPD_STAFF_SELF',
         statement_types   => 'UPDATE',
-        sec_relevant_cols => 'PHONE,HOMETOWN',
-        update_check      => TRUE
+        sec_relevant_cols => 'PHONE,HOMETOWN'
     );
 END;
 /
