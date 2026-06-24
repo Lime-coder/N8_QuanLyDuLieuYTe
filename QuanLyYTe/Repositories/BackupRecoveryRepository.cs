@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Globalization;
 using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DataProvider;
 
@@ -40,54 +41,201 @@ namespace QuanLyYTe.Repositories
             return _dbProvider.ExecuteQuery(sql);
         }
 
-        // Lấy các điểm phục hồi từ UNIFIED_AUDIT_TRAIL và FGA (Chỉ lấy thành công)
-        public DataTable GetAuditRecoveryPoints()
-        {
-            try { _dbProvider.ExecuteQuery("BEGIN DBMS_AUDIT_MGMT.FLUSH_UNIFIED_AUDIT_TRAIL; END;"); } catch { }
-
-            string sql = @"
-                SELECT TO_CHAR(AUDIT_TIME, 'YYYY-MM-DD HH24:MI:SS') AS AUDIT_TIME_STR, ACTION_NAME, SOURCE 
-                FROM (
-                    SELECT EVENT_TIMESTAMP AS AUDIT_TIME, ACTION_NAME, 'Hệ thống' AS SOURCE 
-                    FROM UNIFIED_AUDIT_TRAIL 
-                    WHERE OBJECT_SCHEMA = 'HOSPITAL' 
-                      AND OBJECT_NAME IN ('PRESCRIPTION', 'MEDICAL_RECORD', 'SERVICE_RECORD', 'PATIENT')
-                      AND ACTION_NAME IN ('UPDATE', 'DELETE')
-                      AND RETURN_CODE = 0
-                    UNION ALL
-                    SELECT TIMESTAMP AS AUDIT_TIME, STATEMENT_TYPE AS ACTION_NAME, 'Chi tiết' AS SOURCE
-                    FROM DBA_FGA_AUDIT_TRAIL
-                    WHERE OBJECT_SCHEMA = 'HOSPITAL'
-                      AND OBJECT_NAME IN ('PRESCRIPTION', 'MEDICAL_RECORD', 'SERVICE_RECORD')
-                      AND STATEMENT_TYPE IN ('UPDATE', 'DELETE', 'INSERT')
-                    UNION ALL
-                    SELECT CAST(TIMESTAMP AS TIMESTAMP) AS AUDIT_TIME, ACTION_NAME, 'Hệ thống' AS SOURCE
-                    FROM DBA_AUDIT_TRAIL
-                    WHERE OWNER = 'HOSPITAL' 
-                      AND OBJ_NAME = 'PATIENT'
-                      AND ACTION_NAME IN ('UPDATE', 'DELETE')
-                      AND RETURNCODE = 0
-                )
-                ORDER BY AUDIT_TIME DESC";
-            return _dbProvider.ExecuteQuery(sql);
-        }
-
-        // Lấy nhật ký kiểm toán chi tiết (Fine-Grained Audit)
+        // Hien thi audit schema co SCN cho cac bang co the phuc hoi.
         public DataTable GetFgaAuditLogs()
         {
             try { _dbProvider.ExecuteQuery("BEGIN DBMS_AUDIT_MGMT.FLUSH_UNIFIED_AUDIT_TRAIL; END;"); } catch { }
 
             string sql = @"
-                SELECT 
-                    CAST(DB_USER AS VARCHAR2(128)) as USERNAME, 
-                    CAST(OBJECT_NAME AS VARCHAR2(128)) as OBJECT, 
-                    CAST(STATEMENT_TYPE AS VARCHAR2(128)) as ACTION, 
-                    TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP, 
-                    CAST(SQL_TEXT AS VARCHAR2(4000)) as SQL_TEXT
-                FROM DBA_FGA_AUDIT_TRAIL 
-                WHERE OBJECT_SCHEMA = 'HOSPITAL'
-                ORDER BY TO_DATE(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') DESC";
+                SELECT
+                    USERNAME,
+                    OBJECT_NAME AS OBJECT,
+                    ACTION_NAME AS ACTION,
+                    TO_CHAR(AUDIT_TIME, 'DD/MM/YYYY HH24:MI:SS') AS TIMESTAMP,
+                    SCN,
+                    SOURCE,
+                    SQL_TEXT
+                FROM (
+                    SELECT
+                        DBUSERNAME AS USERNAME,
+                        OBJECT_NAME,
+                        ACTION_NAME,
+                        EVENT_TIMESTAMP AS AUDIT_TIME,
+                        SCN,
+                        'UNIFIED' AS SOURCE,
+                        CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
+                    FROM UNIFIED_AUDIT_TRAIL
+                    WHERE OBJECT_SCHEMA = 'HOSPITAL'
+                      AND OBJECT_NAME IN ('PRESCRIPTION', 'MEDICAL_RECORD', 'SERVICE_RECORD', 'PATIENT')
+                      AND ACTION_NAME IN ('INSERT', 'UPDATE', 'DELETE')
+                      AND RETURN_CODE = 0
+                    UNION ALL
+                    SELECT
+                        DB_USER AS USERNAME,
+                        OBJECT_NAME,
+                        STATEMENT_TYPE AS ACTION_NAME,
+                        TIMESTAMP AS AUDIT_TIME,
+                        SCN,
+                        'FGA' AS SOURCE,
+                        CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
+                    FROM DBA_FGA_AUDIT_TRAIL
+                    WHERE OBJECT_SCHEMA = 'HOSPITAL'
+                      AND OBJECT_NAME IN ('PRESCRIPTION', 'MEDICAL_RECORD', 'SERVICE_RECORD', 'PATIENT')
+                      AND STATEMENT_TYPE IN ('INSERT', 'UPDATE', 'DELETE')
+                )
+                WHERE SCN IS NOT NULL
+                ORDER BY AUDIT_TIME DESC";
             return _dbProvider.ExecuteQuery(sql);
+        }
+
+        public DataTable GetFlashbackAuditLogs(string tableName)
+        {
+            string safeTable = NormalizeAuditedTableName(tableName);
+            try { _dbProvider.ExecuteQuery("BEGIN DBMS_AUDIT_MGMT.FLUSH_UNIFIED_AUDIT_TRAIL; END;"); } catch { }
+
+            string sql = $@"
+                SELECT
+                    TO_CHAR(AUDIT_TIME, 'DD/MM/YYYY HH24:MI:SS') AS TIMESTAMP,
+                    SCN,
+                    USERNAME,
+                    ACTION_NAME AS ACTION,
+                    OBJECT_NAME AS OBJECT,
+                    SOURCE,
+                    SQL_TEXT
+                FROM (
+                    SELECT
+                        EVENT_TIMESTAMP AS AUDIT_TIME,
+                        SCN,
+                        DBUSERNAME AS USERNAME,
+                        ACTION_NAME,
+                        OBJECT_NAME,
+                        'UNIFIED' AS SOURCE,
+                        CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
+                    FROM UNIFIED_AUDIT_TRAIL
+                    WHERE OBJECT_SCHEMA = 'HOSPITAL'
+                      AND OBJECT_NAME = '{safeTable}'
+                      AND ACTION_NAME IN ('INSERT', 'UPDATE', 'DELETE')
+                      AND RETURN_CODE = 0
+                    UNION ALL
+                    SELECT
+                        TIMESTAMP AS AUDIT_TIME,
+                        SCN,
+                        DB_USER AS USERNAME,
+                        STATEMENT_TYPE AS ACTION_NAME,
+                        OBJECT_NAME,
+                        'FGA' AS SOURCE,
+                        CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
+                    FROM DBA_FGA_AUDIT_TRAIL
+                    WHERE OBJECT_SCHEMA = 'HOSPITAL'
+                      AND OBJECT_NAME = '{safeTable}'
+                      AND STATEMENT_TYPE IN ('INSERT', 'UPDATE', 'DELETE')
+                )
+                WHERE SCN IS NOT NULL
+                ORDER BY AUDIT_TIME DESC";
+            return _dbProvider.ExecuteQuery(sql);
+        }
+
+        public DataTable GetCurrentAuditedRow(string tableName, string key1, string key2, string key3)
+        {
+            return GetAuditedRow(tableName, null, key1, key2, key3);
+        }
+
+        public DataTable GetFlashbackAuditedRow(string tableName, decimal auditScn, string key1, string key2, string key3)
+        {
+            if (auditScn <= 1)
+                throw new ArgumentException("SCN phai lon hon 1.");
+
+            return GetAuditedRow(tableName, auditScn - 1, key1, key2, key3);
+        }
+
+        private DataTable GetAuditedRow(string tableName, decimal? flashbackScn, string key1, string key2, string key3)
+        {
+            string safeTable = NormalizeAuditedTableName(tableName);
+            string flashbackClause = flashbackScn.HasValue ? $" AS OF SCN {flashbackScn.Value.ToString(CultureInfo.InvariantCulture)}" : string.Empty;
+            string sql;
+
+            using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
+            using (OracleCommand cmd = conn.CreateCommand())
+            {
+                cmd.BindByName = true;
+
+                switch (safeTable)
+                {
+                    case "PATIENT":
+                        sql = $"SELECT * FROM hospital.PATIENT{flashbackClause} WHERE PATIENT_ID = :key1";
+                        cmd.Parameters.Add("key1", OracleDbType.Varchar2).Value = key1;
+                        break;
+
+                    case "MEDICAL_RECORD":
+                        sql = $"SELECT * FROM hospital.MEDICAL_RECORD{flashbackClause} WHERE RECORD_ID = :key1";
+                        cmd.Parameters.Add("key1", OracleDbType.Varchar2).Value = key1;
+                        break;
+
+                    case "PRESCRIPTION":
+                        sql = $"SELECT * FROM hospital.PRESCRIPTION{flashbackClause} " +
+                              "WHERE RECORD_ID = :key1 AND TRUNC(PRESCRIPTION_DATE) = TRUNC(:key2) AND MEDICINE_NAME = :key3";
+                        cmd.Parameters.Add("key1", OracleDbType.Varchar2).Value = key1;
+                        cmd.Parameters.Add("key2", OracleDbType.Date).Value = ParseDateKey(key2);
+                        cmd.Parameters.Add("key3", OracleDbType.NVarchar2).Value = key3;
+                        break;
+
+                    case "SERVICE_RECORD":
+                        sql = $"SELECT * FROM hospital.SERVICE_RECORD{flashbackClause} " +
+                              "WHERE RECORD_ID = :key1 AND SERVICE_TYPE = :key2 AND TRUNC(SERVICE_DATE) = TRUNC(:key3)";
+                        cmd.Parameters.Add("key1", OracleDbType.Varchar2).Value = key1;
+                        cmd.Parameters.Add("key2", OracleDbType.NVarchar2).Value = key2;
+                        cmd.Parameters.Add("key3", OracleDbType.Date).Value = ParseDateKey(key3);
+                        break;
+
+                    default:
+                        throw new ArgumentException("Bang khong duoc ho tro Flashback.");
+                }
+
+                cmd.CommandText = sql;
+                using (OracleDataAdapter adapter = new OracleDataAdapter(cmd))
+                {
+                    DataTable result = new DataTable();
+                    conn.Open();
+                    adapter.Fill(result);
+                    return result;
+                }
+            }
+        }
+
+        private static string NormalizeAuditedTableName(string tableName)
+        {
+            string safeTable = (tableName ?? string.Empty).Trim().ToUpperInvariant();
+            switch (safeTable)
+            {
+                case "PATIENT":
+                case "MEDICAL_RECORD":
+                case "PRESCRIPTION":
+                case "SERVICE_RECORD":
+                    return safeTable;
+                default:
+                    throw new ArgumentException("Bang khong duoc ho tro Flashback.");
+            }
+        }
+
+        private static DateTime ParseDateKey(string value)
+        {
+            string[] formats =
+            {
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-dd",
+                "dd/MM/yyyy HH:mm:ss",
+                "dd/MM/yyyy",
+                "MM/dd/yyyy HH:mm:ss",
+                "MM/dd/yyyy"
+            };
+
+            if (DateTime.TryParseExact(value?.Trim(), formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime exact))
+                return exact;
+
+            if (DateTime.TryParse(value, out DateTime parsed))
+                return parsed;
+
+            throw new ArgumentException("Gia tri ngay khong hop le: " + value);
         }
 
         // Kiểm tra trạng thái của AUTO_BACKUP_JOB
@@ -205,17 +353,20 @@ namespace QuanLyYTe.Repositories
             }
         }
 
-        // Phục hồi dữ liệu dựa trên Audit (SP: USP_RESTORE_PRESCRIPTION_BY_AUDIT)
-        public void BackupRestoreByAudit(string recordId, DateTime auditTime)
+        // Phuc hoi dung mot dong cua bang duoc audit dua tren SCN.
+        public void BackupRestoreAuditedRow(string tableName, decimal auditScn, string key1, string key2, string key3)
         {
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
             {
-                using (OracleCommand cmd = new OracleCommand("hospital.PKG_BACKUP_RECOVERY.USP_RESTORE_ALL_RECORDS_BY_AUDIT", conn))
+                using (OracleCommand cmd = new OracleCommand("hospital.PKG_BACKUP_RECOVERY.USP_RESTORE_AUDITED_ROW_BY_SCN", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.Add(new OracleParameter("p_record_id", OracleDbType.Varchar2) { Value = recordId });
-                    cmd.Parameters.Add(new OracleParameter("p_audit_event_time", OracleDbType.TimeStamp) { Value = auditTime });
-                    cmd.Parameters.Add(new OracleParameter("p_seconds_before", OracleDbType.Int32) { Value = 5 });
+                    cmd.BindByName = true;
+                    cmd.Parameters.Add("p_table_name", OracleDbType.Varchar2, 128).Value = tableName;
+                    cmd.Parameters.Add("p_audit_scn", OracleDbType.Decimal).Value = auditScn;
+                    cmd.Parameters.Add("p_key1", OracleDbType.Varchar2, 400).Value = key1;
+                    cmd.Parameters.Add("p_key2", OracleDbType.Varchar2, 400).Value = string.IsNullOrWhiteSpace(key2) ? (object)DBNull.Value : key2;
+                    cmd.Parameters.Add("p_key3", OracleDbType.Varchar2, 400).Value = string.IsNullOrWhiteSpace(key3) ? (object)DBNull.Value : key3;
                     conn.Open();
                     cmd.ExecuteNonQuery();
                 }

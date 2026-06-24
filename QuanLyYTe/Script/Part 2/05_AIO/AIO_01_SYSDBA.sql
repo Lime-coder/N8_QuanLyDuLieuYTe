@@ -298,15 +298,21 @@ GRANT SELECT ON UNIFIED_AUDIT_TRAIL TO HOSPITAL_DBA;
 
 
 -- ==============================================================================
--- 10. UNIFIED AUDIT POLICY FOR PRESCRIPTION RECOVERY
+-- 10. UNIFIED AUDIT POLICY FOR ROW-LEVEL FLASHBACK RECOVERY
 -- ==============================================================================
--- This section requires HOSPITAL.PRESCRIPTION to already exist.
--- It audits UPDATE and DELETE operations on HOSPITAL.PRESCRIPTION so that
--- recovery can identify the incident timestamp and use Flashback Query.
+-- This section requires the audited HOSPITAL tables to already exist.
+-- It audits successful DML so recovery can identify SCN and restore one row.
 -- ==============================================================================
 
 BEGIN
     EXECUTE IMMEDIATE 'NOAUDIT POLICY audit_prescription_recovery_policy';
+EXCEPTION
+    WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'NOAUDIT POLICY audit_row_recovery_policy';
 EXCEPTION
     WHEN OTHERS THEN NULL;
 END;
@@ -319,13 +325,23 @@ EXCEPTION
 END;
 /
 
+BEGIN
+    EXECUTE IMMEDIATE 'DROP AUDIT POLICY audit_row_recovery_policy';
+EXCEPTION
+    WHEN OTHERS THEN NULL;
+END;
+/
 
-CREATE AUDIT POLICY audit_prescription_recovery_policy
+CREATE AUDIT POLICY audit_row_recovery_policy
 ACTIONS
-    UPDATE ON HOSPITAL.PRESCRIPTION,
-    DELETE ON HOSPITAL.PRESCRIPTION;
+    INSERT ON HOSPITAL.PATIENT,
+    UPDATE ON HOSPITAL.PATIENT,
+    DELETE ON HOSPITAL.PATIENT,
+    INSERT ON HOSPITAL.MEDICAL_RECORD,
+    UPDATE ON HOSPITAL.MEDICAL_RECORD,
+    DELETE ON HOSPITAL.MEDICAL_RECORD;
 
-AUDIT POLICY audit_prescription_recovery_policy;
+AUDIT POLICY audit_row_recovery_policy WHENEVER SUCCESSFUL;
 
 
 

@@ -19,11 +19,6 @@ namespace QuanLyYTe.Services
             return _repo.GetBackupHistory();
         }
 
-        public DataTable GetAuditRecoveryPoints()
-        {
-            return _repo.GetAuditRecoveryPoints();
-        }
-
         public DataTable GetJobState()
         {
             return _repo.GetJobState();
@@ -32,6 +27,21 @@ namespace QuanLyYTe.Services
         public DataTable GetFgaAuditLogs()
         {
             return _repo.GetFgaAuditLogs();
+        }
+
+        public DataTable GetFlashbackAuditLogs(string tableName)
+        {
+            return _repo.GetFlashbackAuditLogs(tableName);
+        }
+
+        public DataTable GetCurrentAuditedRow(string tableName, string key1, string key2, string key3)
+        {
+            return _repo.GetCurrentAuditedRow(tableName, key1, key2, key3);
+        }
+
+        public DataTable GetFlashbackAuditedRow(string tableName, decimal auditScn, string key1, string key2, string key3)
+        {
+            return _repo.GetFlashbackAuditedRow(tableName, auditScn, key1, key2, key3);
         }
 
         public void ManualBackup()
@@ -70,9 +80,9 @@ namespace QuanLyYTe.Services
 
 
 
-        public void BackupRestoreByAudit(string recordId, DateTime auditTime)
+        public void BackupRestoreAuditedRow(string tableName, decimal auditScn, string key1, string key2, string key3)
         {
-            _repo.BackupRestoreByAudit(recordId, auditTime);
+            _repo.BackupRestoreAuditedRow(tableName, auditScn, key1, key2, key3);
         }
 
         public DataTable GetPrescriptions()

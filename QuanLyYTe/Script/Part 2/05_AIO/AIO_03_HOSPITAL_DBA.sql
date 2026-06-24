@@ -1887,10 +1887,12 @@ CREATE OR REPLACE PACKAGE hospital.PKG_BACKUP_RECOVERY AS
 
     PROCEDURE USP_AUTO_BACKUP;
 
-    PROCEDURE USP_RESTORE_PRESCRIPTION_BY_AUDIT(
-        p_record_id         IN VARCHAR2,
-        p_audit_event_time  IN TIMESTAMP DEFAULT NULL,
-        p_seconds_before    IN NUMBER DEFAULT 1
+    PROCEDURE USP_RESTORE_AUDITED_ROW_BY_SCN(
+        p_table_name IN VARCHAR2,
+        p_audit_scn  IN NUMBER,
+        p_key1       IN VARCHAR2,
+        p_key2       IN VARCHAR2 DEFAULT NULL,
+        p_key3       IN VARCHAR2 DEFAULT NULL
     );
 
     PROCEDURE USP_SIMULATE_WRONG_UPDATE;
@@ -1954,6 +1956,18 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
 
         COMMIT;
     END LOG_RECOVERY;
+
+    FUNCTION PARSE_DATE_KEY(p_value IN VARCHAR2) RETURN DATE AS
+    BEGIN
+        BEGIN RETURN TO_DATE(p_value, 'YYYY-MM-DD HH24:MI:SS'); EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN RETURN TO_DATE(p_value, 'YYYY-MM-DD'); EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN RETURN TO_DATE(p_value, 'DD/MM/YYYY HH24:MI:SS'); EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN RETURN TO_DATE(p_value, 'DD/MM/YYYY'); EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN RETURN TO_DATE(p_value, 'MM/DD/YYYY HH24:MI:SS'); EXCEPTION WHEN OTHERS THEN NULL; END;
+        BEGIN RETURN TO_DATE(p_value, 'MM/DD/YYYY'); EXCEPTION WHEN OTHERS THEN NULL; END;
+
+        RAISE_APPLICATION_ERROR(-20011, 'Invalid date key: ' || p_value);
+    END PARSE_DATE_KEY;
 
     PROCEDURE USP_BACKUP_DATAPUMP(
         p_backup_type    IN VARCHAR2 DEFAULT 'MANUAL',
@@ -2059,95 +2073,143 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
         USP_BACKUP_DATAPUMP('AUTO', 'HOSPITAL_BACKUP_DIR');
     END USP_AUTO_BACKUP;
 
-    PROCEDURE USP_RESTORE_PRESCRIPTION_BY_AUDIT(
-        p_record_id         IN VARCHAR2,
-        p_audit_event_time  IN TIMESTAMP DEFAULT NULL,
-        p_seconds_before    IN NUMBER DEFAULT 1
+    
+
+    PROCEDURE USP_RESTORE_AUDITED_ROW_BY_SCN(
+        p_table_name IN VARCHAR2,
+        p_audit_scn  IN NUMBER,
+        p_key1       IN VARCHAR2,
+        p_key2       IN VARCHAR2 DEFAULT NULL,
+        p_key3       IN VARCHAR2 DEFAULT NULL
     ) AS
-        v_audit_time      TIMESTAMP;
-        v_flashback_time  TIMESTAMP;
-        v_old_count       NUMBER;
+        v_table_name     VARCHAR2(128) := UPPER(TRIM(p_table_name));
+        v_flashback_scn  NUMBER;
+        v_audit_time     TIMESTAMP;
+        v_flashback_time TIMESTAMP;
+        v_past_count     NUMBER;
+        v_now_count      NUMBER;
+        v_key_date       DATE;
+        v_target_key     VARCHAR2(1000);
     BEGIN
-        IF p_record_id IS NULL THEN
-            RAISE_APPLICATION_ERROR(-20001, 'p_record_id must not be null.');
+        IF p_audit_scn IS NULL OR p_audit_scn <= 1 THEN
+            RAISE_APPLICATION_ERROR(-20001, 'p_audit_scn must be greater than 1.');
         END IF;
 
-        -- If GUI passes a selected audit timestamp, use it.
-        -- Otherwise, use the latest Unified Audit record for UPDATE/DELETE on HOSPITAL.PRESCRIPTION.
-        IF p_audit_event_time IS NOT NULL THEN
-            v_audit_time := p_audit_event_time;
+        IF p_key1 IS NULL THEN
+            RAISE_APPLICATION_ERROR(-20002, 'p_key1 must not be null.');
+        END IF;
+
+        v_flashback_scn := p_audit_scn - 1;
+        v_target_key := p_key1 ||
+            CASE WHEN p_key2 IS NOT NULL THEN '|' || p_key2 ELSE NULL END ||
+            CASE WHEN p_key3 IS NOT NULL THEN '|' || p_key3 ELSE NULL END;
+
+        BEGIN v_audit_time := SCN_TO_TIMESTAMP(p_audit_scn); EXCEPTION WHEN OTHERS THEN v_audit_time := NULL; END;
+        BEGIN v_flashback_time := SCN_TO_TIMESTAMP(v_flashback_scn); EXCEPTION WHEN OTHERS THEN v_flashback_time := NULL; END;
+
+        IF v_table_name = 'PATIENT' THEN
+            SELECT COUNT(*) INTO v_past_count FROM hospital.PATIENT AS OF SCN v_flashback_scn WHERE PATIENT_ID = p_key1;
+            SELECT COUNT(*) INTO v_now_count FROM hospital.PATIENT WHERE PATIENT_ID = p_key1;
+
+            IF v_past_count = 1 AND v_now_count = 1 THEN
+                FOR rec IN (SELECT * FROM hospital.PATIENT AS OF SCN v_flashback_scn WHERE PATIENT_ID = p_key1) LOOP
+                    UPDATE hospital.PATIENT
+                    SET FULL_NAME = rec.FULL_NAME,
+                        GENDER = rec.GENDER,
+                        BIRTHDATE = rec.BIRTHDATE,
+                        ID_CARD = rec.ID_CARD,
+                        HOUSE_NO = rec.HOUSE_NO,
+                        STREET = rec.STREET,
+                        DISTRICT = rec.DISTRICT,
+                        CITY_PROVINCE = rec.CITY_PROVINCE,
+                        MEDICAL_HISTORY = rec.MEDICAL_HISTORY,
+                        FAMILY_MEDICAL_HISTORY = rec.FAMILY_MEDICAL_HISTORY,
+                        DRUG_ALLERGIES = rec.DRUG_ALLERGIES,
+                        USERNAME_DB = rec.USERNAME_DB,
+                        IS_ACTIVE = rec.IS_ACTIVE
+                    WHERE PATIENT_ID = rec.PATIENT_ID;
+                END LOOP;
+            ELSIF v_past_count = 1 AND v_now_count = 0 THEN
+                FOR rec IN (SELECT * FROM hospital.PATIENT AS OF SCN v_flashback_scn WHERE PATIENT_ID = p_key1) LOOP
+                    INSERT INTO hospital.PATIENT(
+                        PATIENT_ID, FULL_NAME, GENDER, BIRTHDATE, ID_CARD,
+                        HOUSE_NO, STREET, DISTRICT, CITY_PROVINCE,
+                        MEDICAL_HISTORY, FAMILY_MEDICAL_HISTORY, DRUG_ALLERGIES,
+                        USERNAME_DB, IS_ACTIVE
+                    ) VALUES (
+                        rec.PATIENT_ID, rec.FULL_NAME, rec.GENDER, rec.BIRTHDATE, rec.ID_CARD,
+                        rec.HOUSE_NO, rec.STREET, rec.DISTRICT, rec.CITY_PROVINCE,
+                        rec.MEDICAL_HISTORY, rec.FAMILY_MEDICAL_HISTORY, rec.DRUG_ALLERGIES,
+                        rec.USERNAME_DB, rec.IS_ACTIVE
+                    );
+                END LOOP;
+            ELSIF v_past_count = 0 AND v_now_count = 1 THEN
+                DELETE FROM hospital.PATIENT WHERE PATIENT_ID = p_key1;
+            ELSE
+                RAISE_APPLICATION_ERROR(-20003, 'No current or flashback row found for PATIENT key ' || p_key1);
+            END IF;
+
+        ELSIF v_table_name = 'MEDICAL_RECORD' THEN
+            SELECT COUNT(*) INTO v_past_count FROM hospital.MEDICAL_RECORD AS OF SCN v_flashback_scn WHERE RECORD_ID = p_key1;
+            SELECT COUNT(*) INTO v_now_count FROM hospital.MEDICAL_RECORD WHERE RECORD_ID = p_key1;
+
+            IF v_past_count = 1 AND v_now_count = 1 THEN
+                FOR rec IN (SELECT * FROM hospital.MEDICAL_RECORD AS OF SCN v_flashback_scn WHERE RECORD_ID = p_key1) LOOP
+                    UPDATE hospital.MEDICAL_RECORD
+                    SET PATIENT_ID = rec.PATIENT_ID,
+                        RECORD_DATE = rec.RECORD_DATE,
+                        DIAGNOSIS = rec.DIAGNOSIS,
+                        TREATMENT_PLAN = rec.TREATMENT_PLAN,
+                        DOCTOR_ID = rec.DOCTOR_ID,
+                        DEPT_ID = rec.DEPT_ID,
+                        CONCLUSION = rec.CONCLUSION
+                    WHERE RECORD_ID = rec.RECORD_ID;
+                END LOOP;
+            ELSIF v_past_count = 1 AND v_now_count = 0 THEN
+                FOR rec IN (SELECT * FROM hospital.MEDICAL_RECORD AS OF SCN v_flashback_scn WHERE RECORD_ID = p_key1) LOOP
+                    INSERT INTO hospital.MEDICAL_RECORD(
+                        RECORD_ID, PATIENT_ID, RECORD_DATE, DIAGNOSIS,
+                        TREATMENT_PLAN, DOCTOR_ID, DEPT_ID, CONCLUSION
+                    ) VALUES (
+                        rec.RECORD_ID, rec.PATIENT_ID, rec.RECORD_DATE, rec.DIAGNOSIS,
+                        rec.TREATMENT_PLAN, rec.DOCTOR_ID, rec.DEPT_ID, rec.CONCLUSION
+                    );
+                END LOOP;
+            ELSIF v_past_count = 0 AND v_now_count = 1 THEN
+                DELETE FROM hospital.MEDICAL_RECORD WHERE RECORD_ID = p_key1;
+            ELSE
+                RAISE_APPLICATION_ERROR(-20003, 'No current or flashback row found for MEDICAL_RECORD key ' || p_key1);
+            END IF;
+
         ELSE
-            EXECUTE IMMEDIATE '
-                SELECT MAX(event_timestamp)
-                FROM unified_audit_trail
-                WHERE object_schema = ''HOSPITAL''
-                  AND object_name = ''PRESCRIPTION''
-                  AND action_name IN (''UPDATE'', ''DELETE'')'
-            INTO v_audit_time;
+            RAISE_APPLICATION_ERROR(-20006, 'Unsupported audited table: ' || v_table_name);
         END IF;
-
-        IF v_audit_time IS NULL THEN
-            RAISE_APPLICATION_ERROR(-20002, 'No Unified Audit record found for HOSPITAL.PRESCRIPTION UPDATE/DELETE.');
-        END IF;
-
-        v_flashback_time := v_audit_time - NUMTODSINTERVAL(NVL(p_seconds_before, 1), 'SECOND');
-
-        SELECT COUNT(*)
-        INTO v_old_count
-        FROM hospital.PRESCRIPTION AS OF TIMESTAMP v_flashback_time
-        WHERE RECORD_ID = p_record_id;
-
-        IF v_old_count = 0 THEN
-            RAISE_APPLICATION_ERROR(
-                -20003,
-                'No flashback data found for RECORD_ID = ' || p_record_id ||
-                ' at ' || TO_CHAR(v_flashback_time, 'YYYY-MM-DD HH24:MI:SS')
-            );
-        END IF;
-
-        -- Restore the full prescription set of this medical record to the state before incident.
-        DELETE FROM hospital.PRESCRIPTION
-        WHERE RECORD_ID = p_record_id;
-
-        INSERT INTO hospital.PRESCRIPTION(
-            RECORD_ID,
-            PRESCRIPTION_DATE,
-            MEDICINE_NAME,
-            DOSAGE
-        )
-        SELECT
-            RECORD_ID,
-            PRESCRIPTION_DATE,
-            MEDICINE_NAME,
-            DOSAGE
-        FROM hospital.PRESCRIPTION AS OF TIMESTAMP v_flashback_time
-        WHERE RECORD_ID = p_record_id;
 
         COMMIT;
 
         LOG_RECOVERY(
-            p_target_table     => 'PRESCRIPTION',
-            p_target_key       => p_record_id,
+            p_target_table     => v_table_name,
+            p_target_key       => v_target_key,
             p_audit_event_time => v_audit_time,
             p_flashback_time   => v_flashback_time,
             p_status           => 'SUCCESS',
-            p_note             => 'Restored by Flashback Query based on Unified Audit timestamp.'
+            p_note             => 'Restored one audited row by Flashback Query AS OF SCN.'
         );
 
     EXCEPTION
         WHEN OTHERS THEN
             ROLLBACK;
             LOG_RECOVERY(
-                p_target_table     => 'PRESCRIPTION',
-                p_target_key       => p_record_id,
+                p_target_table     => NVL(v_table_name, 'UNKNOWN'),
+                p_target_key       => v_target_key,
                 p_audit_event_time => v_audit_time,
                 p_flashback_time   => v_flashback_time,
                 p_status           => 'FAILED',
-                p_note             => 'Flashback recovery failed. Use nearest Data Pump dump file if UNDO is no longer available.',
+                p_note             => 'Audited row Flashback SCN recovery failed.',
                 p_error_message    => SQLERRM
             );
             RAISE;
-    END USP_RESTORE_PRESCRIPTION_BY_AUDIT;
+    END USP_RESTORE_AUDITED_ROW_BY_SCN;
 
     PROCEDURE USP_SIMULATE_WRONG_UPDATE AS
     BEGIN
