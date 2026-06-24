@@ -19,7 +19,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
         {
             this.tblMainLayout = new System.Windows.Forms.TableLayoutPanel();
             this.grpCurrentData = new System.Windows.Forms.GroupBox();
-            this.dgvDonThuoc = new System.Windows.Forms.DataGridView();
+            this.dgvStandardAudit = new System.Windows.Forms.DataGridView();
             this.pnlCurrentDataActions = new System.Windows.Forms.Panel();
             this.btnRefresh = new System.Windows.Forms.Button();
             this.grpBackupManagement = new System.Windows.Forms.GroupBox();
@@ -32,12 +32,16 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.cboInterval = new System.Windows.Forms.ComboBox();
             this.lblInterval = new System.Windows.Forms.Label();
             this.btnBackupNow = new System.Windows.Forms.Button();
-            this.grpIncidentSimulation = new System.Windows.Forms.GroupBox();
-            this.pnlIncidentButtons = new System.Windows.Forms.Panel();
-            this.btnSimulateWrongUpdate = new System.Windows.Forms.Button();
-            this.btnSimulateDelete = new System.Windows.Forms.Button();
+            this.grpDataView = new System.Windows.Forms.GroupBox();
+            this.tabControlData = new System.Windows.Forms.TabControl();
+            this.tabPrescription = new System.Windows.Forms.TabPage();
+            this.dgvPrescription = new System.Windows.Forms.DataGridView();
+            this.tabMedicalRecord = new System.Windows.Forms.TabPage();
+            this.dgvMedicalRecord = new System.Windows.Forms.DataGridView();
+            this.tabServiceRecord = new System.Windows.Forms.TabPage();
+            this.dgvServiceRecord = new System.Windows.Forms.DataGridView();
             this.grpAuditLog = new System.Windows.Forms.GroupBox();
-            this.dgvAudit = new System.Windows.Forms.DataGridView();
+            this.dgvFgaAudit = new System.Windows.Forms.DataGridView();
             this.pnlAuditActions = new System.Windows.Forms.Panel();
             this.btnLoadAudit = new System.Windows.Forms.Button();
             this.grpRestore = new System.Windows.Forms.GroupBox();
@@ -52,15 +56,21 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.btnRefreshBackup = new System.Windows.Forms.Button();
             this.tblMainLayout.SuspendLayout();
             this.grpCurrentData.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvDonThuoc)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvStandardAudit)).BeginInit();
             this.pnlCurrentDataActions.SuspendLayout();
             this.grpBackupManagement.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvBackupHistory)).BeginInit();
             this.pnlBackupControls.SuspendLayout();
-            this.grpIncidentSimulation.SuspendLayout();
-            this.pnlIncidentButtons.SuspendLayout();
+            this.grpDataView.SuspendLayout();
+            this.tabControlData.SuspendLayout();
+            this.tabPrescription.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvPrescription)).BeginInit();
+            this.tabMedicalRecord.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMedicalRecord)).BeginInit();
+            this.tabServiceRecord.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvServiceRecord)).BeginInit();
             this.grpAuditLog.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvAudit)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvFgaAudit)).BeginInit();
             this.pnlAuditActions.SuspendLayout();
             this.grpRestore.SuspendLayout();
             this.pnlRestoreControls.SuspendLayout();
@@ -72,24 +82,24 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.tblMainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tblMainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tblMainLayout.Controls.Add(this.grpCurrentData, 0, 0);
-            this.tblMainLayout.Controls.Add(this.grpBackupManagement, 1, 0);
-            this.tblMainLayout.Controls.Add(this.grpIncidentSimulation, 0, 1);
-            this.tblMainLayout.Controls.Add(this.grpAuditLog, 1, 1);
+            this.tblMainLayout.Controls.Add(this.grpAuditLog, 0, 1);
             this.tblMainLayout.Controls.Add(this.grpRestore, 0, 2);
+            this.tblMainLayout.Controls.Add(this.grpBackupManagement, 1, 0);
+            this.tblMainLayout.Controls.Add(this.grpDataView, 1, 1);
             this.tblMainLayout.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tblMainLayout.Location = new System.Drawing.Point(0, 0);
             this.tblMainLayout.Name = "tblMainLayout";
             this.tblMainLayout.Padding = new System.Windows.Forms.Padding(12);
             this.tblMainLayout.RowCount = 3;
-            this.tblMainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 42F));
-            this.tblMainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 38F));
+            this.tblMainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 35F));
+            this.tblMainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 45F));
             this.tblMainLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
             this.tblMainLayout.Size = new System.Drawing.Size(1100, 650);
             this.tblMainLayout.TabIndex = 0;
             // 
             // grpCurrentData
             // 
-            this.grpCurrentData.Controls.Add(this.dgvDonThuoc);
+            this.grpCurrentData.Controls.Add(this.dgvStandardAudit);
             this.grpCurrentData.Controls.Add(this.pnlCurrentDataActions);
             this.grpCurrentData.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpCurrentData.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
@@ -101,22 +111,22 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.grpCurrentData.Size = new System.Drawing.Size(523, 256);
             this.grpCurrentData.TabIndex = 0;
             this.grpCurrentData.TabStop = false;
-            this.grpCurrentData.Text = "Dữ liệu bảng PRESCRIPTION";
+            this.grpCurrentData.Text = "Nhật ký kiểm toán hệ thống (Standard Audit)";
             // 
-            // dgvDonThuoc
+            // dgvStandardAudit
             // 
-            this.dgvDonThuoc.AllowUserToAddRows = false;
-            this.dgvDonThuoc.AllowUserToDeleteRows = false;
-            this.dgvDonThuoc.BackgroundColor = System.Drawing.Color.White;
-            this.dgvDonThuoc.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvDonThuoc.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvDonThuoc.Location = new System.Drawing.Point(8, 70);
-            this.dgvDonThuoc.MultiSelect = false;
-            this.dgvDonThuoc.Name = "dgvDonThuoc";
-            this.dgvDonThuoc.ReadOnly = true;
-            this.dgvDonThuoc.RowHeadersWidth = 51;
-            this.dgvDonThuoc.Size = new System.Drawing.Size(507, 178);
-            this.dgvDonThuoc.TabIndex = 1;
+            this.dgvStandardAudit.AllowUserToAddRows = false;
+            this.dgvStandardAudit.AllowUserToDeleteRows = false;
+            this.dgvStandardAudit.BackgroundColor = System.Drawing.Color.White;
+            this.dgvStandardAudit.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvStandardAudit.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvStandardAudit.Location = new System.Drawing.Point(8, 70);
+            this.dgvStandardAudit.MultiSelect = false;
+            this.dgvStandardAudit.Name = "dgvStandardAudit";
+            this.dgvStandardAudit.ReadOnly = true;
+            this.dgvStandardAudit.RowHeadersWidth = 51;
+            this.dgvStandardAudit.Size = new System.Drawing.Size(507, 178);
+            this.dgvStandardAudit.TabIndex = 1;
             // 
             // pnlCurrentDataActions
             // 
@@ -290,84 +300,137 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.btnBackupNow.UseVisualStyleBackColor = true;
             this.btnBackupNow.Click += new System.EventHandler(this.btnBackupNow_Click);
             // 
-            // grpIncidentSimulation
+            // grpDataView
             // 
-            this.grpIncidentSimulation.Controls.Add(this.pnlIncidentButtons);
-            this.grpIncidentSimulation.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.grpIncidentSimulation.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
-            this.grpIncidentSimulation.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(28)))), ((int)(((byte)(32)))));
-            this.grpIncidentSimulation.Location = new System.Drawing.Point(15, 277);
-            this.grpIncidentSimulation.Margin = new System.Windows.Forms.Padding(3, 3, 10, 3);
-            this.grpIncidentSimulation.Name = "grpIncidentSimulation";
-            this.grpIncidentSimulation.Padding = new System.Windows.Forms.Padding(8);
-            this.grpIncidentSimulation.Size = new System.Drawing.Size(523, 231);
-            this.grpIncidentSimulation.TabIndex = 2;
-            this.grpIncidentSimulation.TabStop = false;
-            this.grpIncidentSimulation.Text = "Giả lập sự cố";
+            this.grpDataView.Controls.Add(this.tabControlData);
+            this.grpDataView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.grpDataView.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
+            this.grpDataView.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(28)))), ((int)(((byte)(32)))));
+            this.grpDataView.Location = new System.Drawing.Point(558, 277);
+            this.grpDataView.Margin = new System.Windows.Forms.Padding(10, 3, 3, 3);
+            this.tblMainLayout.SetRowSpan(this.grpDataView, 2);
+            this.grpDataView.Name = "grpDataView";
+            this.grpDataView.Padding = new System.Windows.Forms.Padding(8);
+            this.grpDataView.Size = new System.Drawing.Size(530, 358);
+            this.grpDataView.TabIndex = 5;
+            this.grpDataView.TabStop = false;
+            this.grpDataView.Text = "Dữ liệu hiện tại";
             // 
-            // pnlIncidentButtons
+            // tabControlData
             // 
-            this.pnlIncidentButtons.Controls.Add(this.btnSimulateWrongUpdate);
-            this.pnlIncidentButtons.Controls.Add(this.btnSimulateDelete);
-            this.pnlIncidentButtons.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlIncidentButtons.Location = new System.Drawing.Point(8, 30);
-            this.pnlIncidentButtons.Name = "pnlIncidentButtons";
-            this.pnlIncidentButtons.Size = new System.Drawing.Size(507, 193);
-            this.pnlIncidentButtons.TabIndex = 0;
+            this.tabControlData.Controls.Add(this.tabPrescription);
+            this.tabControlData.Controls.Add(this.tabMedicalRecord);
+            this.tabControlData.Controls.Add(this.tabServiceRecord);
+            this.tabControlData.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControlData.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.tabControlData.Location = new System.Drawing.Point(8, 30);
+            this.tabControlData.Name = "tabControlData";
+            this.tabControlData.SelectedIndex = 0;
+            this.tabControlData.Size = new System.Drawing.Size(514, 320);
+            this.tabControlData.TabIndex = 0;
             // 
-            // btnSimulateWrongUpdate
+            // tabPrescription
             // 
-            this.btnSimulateWrongUpdate.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.btnSimulateWrongUpdate.Location = new System.Drawing.Point(3, 62);
-            this.btnSimulateWrongUpdate.Name = "btnSimulateWrongUpdate";
-            this.btnSimulateWrongUpdate.Size = new System.Drawing.Size(350, 42);
-            this.btnSimulateWrongUpdate.TabIndex = 1;
-            this.btnSimulateWrongUpdate.Text = "Giả lập cập nhật sai dữ liệu BA001";
-            this.btnSimulateWrongUpdate.UseVisualStyleBackColor = true;
-            this.btnSimulateWrongUpdate.Click += new System.EventHandler(this.btnSimulateWrongUpdate_Click);
+            this.tabPrescription.Controls.Add(this.dgvPrescription);
+            this.tabPrescription.Location = new System.Drawing.Point(4, 29);
+            this.tabPrescription.Name = "tabPrescription";
+            this.tabPrescription.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPrescription.Size = new System.Drawing.Size(506, 287);
+            this.tabPrescription.TabIndex = 0;
+            this.tabPrescription.Text = "Đơn thuốc";
+            this.tabPrescription.UseVisualStyleBackColor = true;
             // 
-            // btnSimulateDelete
+            // dgvPrescription
             // 
-            this.btnSimulateDelete.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this.btnSimulateDelete.Location = new System.Drawing.Point(3, 10);
-            this.btnSimulateDelete.Name = "btnSimulateDelete";
-            this.btnSimulateDelete.Size = new System.Drawing.Size(350, 42);
-            this.btnSimulateDelete.TabIndex = 0;
-            this.btnSimulateDelete.Text = "Giả lập xóa dữ liệu BA001";
-            this.btnSimulateDelete.UseVisualStyleBackColor = true;
-            this.btnSimulateDelete.Click += new System.EventHandler(this.btnSimulateDelete_Click);
+            this.dgvPrescription.AllowUserToAddRows = false;
+            this.dgvPrescription.AllowUserToDeleteRows = false;
+            this.dgvPrescription.BackgroundColor = System.Drawing.Color.White;
+            this.dgvPrescription.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvPrescription.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvPrescription.Location = new System.Drawing.Point(3, 3);
+            this.dgvPrescription.Name = "dgvPrescription";
+            this.dgvPrescription.ReadOnly = true;
+            this.dgvPrescription.Size = new System.Drawing.Size(500, 281);
+            this.dgvPrescription.TabIndex = 0;
             // 
+            // tabMedicalRecord
+            // 
+            this.tabMedicalRecord.Controls.Add(this.dgvMedicalRecord);
+            this.tabMedicalRecord.Location = new System.Drawing.Point(4, 29);
+            this.tabMedicalRecord.Name = "tabMedicalRecord";
+            this.tabMedicalRecord.Padding = new System.Windows.Forms.Padding(3);
+            this.tabMedicalRecord.Size = new System.Drawing.Size(506, 287);
+            this.tabMedicalRecord.TabIndex = 1;
+            this.tabMedicalRecord.Text = "Hồ sơ bệnh án";
+            this.tabMedicalRecord.UseVisualStyleBackColor = true;
+            // 
+            // dgvMedicalRecord
+            // 
+            this.dgvMedicalRecord.AllowUserToAddRows = false;
+            this.dgvMedicalRecord.AllowUserToDeleteRows = false;
+            this.dgvMedicalRecord.BackgroundColor = System.Drawing.Color.White;
+            this.dgvMedicalRecord.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvMedicalRecord.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvMedicalRecord.Location = new System.Drawing.Point(3, 3);
+            this.dgvMedicalRecord.Name = "dgvMedicalRecord";
+            this.dgvMedicalRecord.ReadOnly = true;
+            this.dgvMedicalRecord.Size = new System.Drawing.Size(500, 281);
+            this.dgvMedicalRecord.TabIndex = 0;
+            // 
+            // tabServiceRecord
+            // 
+            this.tabServiceRecord.Controls.Add(this.dgvServiceRecord);
+            this.tabServiceRecord.Location = new System.Drawing.Point(4, 29);
+            this.tabServiceRecord.Name = "tabServiceRecord";
+            this.tabServiceRecord.Padding = new System.Windows.Forms.Padding(3);
+            this.tabServiceRecord.Size = new System.Drawing.Size(506, 287);
+            this.tabServiceRecord.TabIndex = 2;
+            this.tabServiceRecord.Text = "Hồ sơ dịch vụ";
+            this.tabServiceRecord.UseVisualStyleBackColor = true;
+            // 
+            // dgvServiceRecord
+            // 
+            this.dgvServiceRecord.AllowUserToAddRows = false;
+            this.dgvServiceRecord.AllowUserToDeleteRows = false;
+            this.dgvServiceRecord.BackgroundColor = System.Drawing.Color.White;
+            this.dgvServiceRecord.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvServiceRecord.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvServiceRecord.Location = new System.Drawing.Point(3, 3);
+            this.dgvServiceRecord.Name = "dgvServiceRecord";
+            this.dgvServiceRecord.ReadOnly = true;
+            this.dgvServiceRecord.Size = new System.Drawing.Size(500, 281);
+            this.dgvServiceRecord.TabIndex = 0;
+
             // grpAuditLog
             // 
-            this.grpAuditLog.Controls.Add(this.dgvAudit);
+            this.grpAuditLog.Controls.Add(this.dgvFgaAudit);
             this.grpAuditLog.Controls.Add(this.pnlAuditActions);
             this.grpAuditLog.Dock = System.Windows.Forms.DockStyle.Fill;
             this.grpAuditLog.Font = new System.Drawing.Font("Segoe UI", 9.5F, System.Drawing.FontStyle.Bold);
             this.grpAuditLog.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(28)))), ((int)(((byte)(28)))), ((int)(((byte)(32)))));
             this.grpAuditLog.Location = new System.Drawing.Point(558, 277);
             this.grpAuditLog.Margin = new System.Windows.Forms.Padding(10, 3, 3, 3);
-            this.tblMainLayout.SetRowSpan(this.grpAuditLog, 2);
             this.grpAuditLog.Name = "grpAuditLog";
             this.grpAuditLog.Padding = new System.Windows.Forms.Padding(8);
             this.grpAuditLog.Size = new System.Drawing.Size(530, 358);
             this.grpAuditLog.TabIndex = 3;
             this.grpAuditLog.TabStop = false;
-            this.grpAuditLog.Text = "Nhật ký kiểm toán";
+            this.grpAuditLog.Text = "Nhật ký kiểm toán chi tiết (Fine-Grained Audit)";
             // 
-            // dgvAudit
+            // dgvFgaAudit
             // 
-            this.dgvAudit.AllowUserToAddRows = false;
-            this.dgvAudit.AllowUserToDeleteRows = false;
-            this.dgvAudit.BackgroundColor = System.Drawing.Color.White;
-            this.dgvAudit.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvAudit.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvAudit.Location = new System.Drawing.Point(8, 70);
-            this.dgvAudit.MultiSelect = false;
-            this.dgvAudit.Name = "dgvAudit";
-            this.dgvAudit.ReadOnly = true;
-            this.dgvAudit.RowHeadersWidth = 51;
-            this.dgvAudit.Size = new System.Drawing.Size(514, 280);
-            this.dgvAudit.TabIndex = 1;
+            this.dgvFgaAudit.AllowUserToAddRows = false;
+            this.dgvFgaAudit.AllowUserToDeleteRows = false;
+            this.dgvFgaAudit.BackgroundColor = System.Drawing.Color.White;
+            this.dgvFgaAudit.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvFgaAudit.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvFgaAudit.Location = new System.Drawing.Point(8, 70);
+            this.dgvFgaAudit.MultiSelect = false;
+            this.dgvFgaAudit.Name = "dgvFgaAudit";
+            this.dgvFgaAudit.ReadOnly = true;
+            this.dgvFgaAudit.RowHeadersWidth = 51;
+            this.dgvFgaAudit.Size = new System.Drawing.Size(514, 280);
+            this.dgvFgaAudit.TabIndex = 1;
             // 
             // pnlAuditActions
             // 
@@ -490,16 +553,22 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.Load += new System.EventHandler(this.frmBackupRecovery_Load);
             this.tblMainLayout.ResumeLayout(false);
             this.grpCurrentData.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvDonThuoc)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvStandardAudit)).EndInit();
             this.pnlCurrentDataActions.ResumeLayout(false);
             this.grpBackupManagement.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvBackupHistory)).EndInit();
             this.pnlBackupControls.ResumeLayout(false);
             this.pnlBackupControls.PerformLayout();
-            this.grpIncidentSimulation.ResumeLayout(false);
-            this.pnlIncidentButtons.ResumeLayout(false);
+            this.grpDataView.ResumeLayout(false);
+            this.tabControlData.ResumeLayout(false);
+            this.tabPrescription.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvPrescription)).EndInit();
+            this.tabMedicalRecord.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvMedicalRecord)).EndInit();
+            this.tabServiceRecord.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvServiceRecord)).EndInit();
             this.grpAuditLog.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvAudit)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvFgaAudit)).EndInit();
             this.pnlAuditActions.ResumeLayout(false);
             this.grpRestore.ResumeLayout(false);
             this.pnlRestoreControls.ResumeLayout(false);
@@ -514,7 +583,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
         private System.Windows.Forms.GroupBox grpCurrentData;
         private System.Windows.Forms.Panel pnlCurrentDataActions;
         private System.Windows.Forms.Button btnRefresh;
-        private System.Windows.Forms.DataGridView dgvDonThuoc;
+        private System.Windows.Forms.DataGridView dgvStandardAudit;
         private System.Windows.Forms.GroupBox grpBackupManagement;
         private System.Windows.Forms.Panel pnlBackupControls;
         private System.Windows.Forms.Button btnBackupNow;
@@ -524,14 +593,10 @@ namespace QuanLyYTe.Forms.BackupRecovery
         private System.Windows.Forms.Button btnDisableAutoBackup;
         private System.Windows.Forms.Label lblSchedulerStatus;
         private System.Windows.Forms.DataGridView dgvBackupHistory;
-        private System.Windows.Forms.GroupBox grpIncidentSimulation;
-        private System.Windows.Forms.Panel pnlIncidentButtons;
-        private System.Windows.Forms.Button btnSimulateDelete;
-        private System.Windows.Forms.Button btnSimulateWrongUpdate;
         private System.Windows.Forms.GroupBox grpAuditLog;
         private System.Windows.Forms.Panel pnlAuditActions;
         private System.Windows.Forms.Button btnLoadAudit;
-        private System.Windows.Forms.DataGridView dgvAudit;
+        private System.Windows.Forms.DataGridView dgvFgaAudit;
         private System.Windows.Forms.GroupBox grpRestore;
         private System.Windows.Forms.Panel pnlRestoreControls;
         private System.Windows.Forms.Label lblBackupVersion;
@@ -543,5 +608,13 @@ namespace QuanLyYTe.Forms.BackupRecovery
         private System.Windows.Forms.Label lblTotalRows;
         private System.Windows.Forms.Button btnRefreshBackup;
         private System.Windows.Forms.Button btnOpenErrorLog;
+        private System.Windows.Forms.GroupBox grpDataView;
+        private System.Windows.Forms.TabControl tabControlData;
+        private System.Windows.Forms.TabPage tabPrescription;
+        private System.Windows.Forms.DataGridView dgvPrescription;
+        private System.Windows.Forms.TabPage tabMedicalRecord;
+        private System.Windows.Forms.DataGridView dgvMedicalRecord;
+        private System.Windows.Forms.TabPage tabServiceRecord;
+        private System.Windows.Forms.DataGridView dgvServiceRecord;
     }
 }

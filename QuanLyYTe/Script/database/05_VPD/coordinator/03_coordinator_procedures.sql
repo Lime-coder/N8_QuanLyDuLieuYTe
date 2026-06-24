@@ -102,8 +102,7 @@ BEGIN
     OPEN p_cursor FOR
     SELECT s.staff_id, s.full_name, s.staff_role, s.phone, s.hometown, d.dept_name AS specialty 
     FROM hospital.staff s 
-    LEFT JOIN hospital.department d ON s.dept_id = d.dept_id 
-    WHERE s.username_db = SYS_CONTEXT('USERENV', 'SESSION_USER');
+    LEFT JOIN hospital.department d ON s.dept_id = d.dept_id;
 END;
 /
 

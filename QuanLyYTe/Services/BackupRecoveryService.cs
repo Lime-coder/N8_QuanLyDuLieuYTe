@@ -9,9 +9,9 @@ namespace QuanLyYTe.Services
     {
         private readonly BackupRecoveryRepository _repo = new BackupRecoveryRepository();
 
-        public DataTable GetCurrentData()
+        public DataTable GetStandardAuditLogs()
         {
-            return _repo.GetCurrentData();
+            return _repo.GetStandardAuditLogs();
         }
 
         public DataTable GetBackupHistory()
@@ -29,9 +29,9 @@ namespace QuanLyYTe.Services
             return _repo.GetJobState();
         }
 
-        public DataTable GetAuditLogs()
+        public DataTable GetFgaAuditLogs()
         {
-            return _repo.GetAuditLogs();
+            return _repo.GetFgaAuditLogs();
         }
 
         public void ManualBackup()
@@ -68,19 +68,26 @@ namespace QuanLyYTe.Services
             _repo.DisableAutoBackup();
         }
 
-        public int SimulateDelete()
+
+
+        public void BackupRestoreByAudit(string recordId, DateTime auditTime)
         {
-            return _repo.SimulateDelete();
+            _repo.BackupRestoreByAudit(recordId, auditTime);
         }
 
-        public int SimulateWrongUpdate()
+        public DataTable GetPrescriptions()
         {
-            return _repo.SimulateWrongUpdate();
+            return _repo.GetPrescriptions();
         }
 
-        public void BackupRestoreByAudit(DateTime auditTime)
+        public DataTable GetMedicalRecords()
         {
-            _repo.BackupRestoreByAudit("BA001", auditTime);
+            return _repo.GetMedicalRecords();
+        }
+
+        public DataTable GetServiceRecords()
+        {
+            return _repo.GetServiceRecords();
         }
     }
 }
