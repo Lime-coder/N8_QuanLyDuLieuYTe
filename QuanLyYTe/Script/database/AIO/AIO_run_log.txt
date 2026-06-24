@@ -1364,30 +1364,6 @@ Session altered.
 Session altered.
 
 
-PL/SQL procedure successfully completed.
-
-
-PL/SQL procedure successfully completed.
-
-
-PL/SQL procedure successfully completed.
-
-
-Table created.
-
-
-150 rows created.
-
-
-Commit complete.
-
-
-View created.
-
-
-View created.
-
-
 Trigger created.
 
 
@@ -1799,7 +1775,7 @@ System altered.
 
 NAME                                 TYPE        VALUE                          
 ------------------------------------ ----------- ------------------------------ 
-audit_trail                          string      DB                             
+audit_trail                          string      DB, EXTENDED                   
 
 Session altered.
 
@@ -1840,6 +1816,12 @@ Noaudit succeeded.
 
 Noaudit succeeded.
 
+NOAUDIT SELECT ON hospital.VW_COORD_DOCTORS
+                           *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
 
 Noaudit succeeded.
 
@@ -1847,9 +1829,6 @@ Noaudit succeeded.
 Noaudit succeeded.
 
 
-Noaudit succeeded.
-
-
 Audit succeeded.
 
 
@@ -1861,11 +1840,17 @@ Audit succeeded.
 
 Audit succeeded.
 
+AUDIT SELECT ON hospital.VW_COORD_DOCTORS BY ACCESS WHENEVER SUCCESSFUL
+                         *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
 
-Audit succeeded.
 
+AUDIT SELECT ON hospital.VW_COORD_DOCTORS BY ACCESS WHENEVER NOT SUCCESSFUL
+                         *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
 
-Audit succeeded.
 
 
 Audit succeeded.
