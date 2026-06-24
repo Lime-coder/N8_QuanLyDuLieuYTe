@@ -34,6 +34,7 @@ BEGIN
     END IF;
 
     UPDATE hospital.medical_record SET diagnosis = p_dg, treatment_plan = p_tr, conclusion = p_cl WHERE record_id = p_id;
+    COMMIT;
 END;
 /
 
@@ -55,6 +56,7 @@ BEGIN
     IF v_count = 0 THEN RAISE_APPLICATION_ERROR(-20001, 'Ma HSBA ' || p_id || ' khong ton tai!'); END IF;
 
     INSERT INTO hospital.service_record VALUES (UPPER(TRIM(p_id)), p_type, TRUNC(SYSDATE), NULL, NULL);
+    COMMIT;
 END;
 /
 
@@ -64,6 +66,7 @@ BEGIN
     WHERE record_id = UPPER(TRIM(p_id)) 
       AND service_type = p_type 
       AND TRUNC(service_date) = TRUNC(p_date);
+    COMMIT;
 END;
 /
 
@@ -106,15 +109,18 @@ BEGIN
 
         INSERT INTO hospital.prescription (record_id, prescription_date, medicine_name, dosage)
         VALUES (v_id, TRUNC(SYSDATE), p_med_name, p_dosage);
+        COMMIT;
         
     ELSIF p_action = 'UPDATE' THEN
         UPDATE hospital.prescription 
         SET medicine_name = p_med_name, dosage = p_dosage 
         WHERE record_id = v_id AND TRUNC(prescription_date) = TRUNC(p_date) AND medicine_name = p_old_med_name; 
+        COMMIT;
           
     ELSIF p_action = 'DELETE' THEN
         DELETE FROM hospital.prescription 
         WHERE record_id = v_id AND TRUNC(prescription_date) = TRUNC(p_date) AND medicine_name = p_med_name;
+        COMMIT;
     END IF;
 END;
 /
@@ -166,6 +172,7 @@ BEGIN
         family_medical_history = p_family_history, 
         drug_allergies = p_allergy 
     WHERE patient_id = UPPER(TRIM(p_id));
+    COMMIT;
 END;
 /
 
@@ -182,5 +189,6 @@ END;
 CREATE OR REPLACE PROCEDURE USP_UPDATE_SELF_INFO(p_hometown NVARCHAR2, p_phone VARCHAR2) AS
 BEGIN
     UPDATE hospital.staff SET hometown = p_hometown, phone = p_phone;
+    COMMIT;
 END;
 /
