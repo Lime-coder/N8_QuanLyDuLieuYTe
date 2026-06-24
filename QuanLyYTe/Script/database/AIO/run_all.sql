@@ -156,6 +156,7 @@ PROMPT ====================================================================
 SET DEFINE ON
 CONNECT sys/"&sys_password"@localhost:1521/PDB_QLYT AS SYSDBA
 SET DEFINE OFF
+@@../07_AUDIT/04_CleanupLogs.sql
 @@../07_AUDIT/01_GrantAudit.sql
 
 SET DEFINE ON
