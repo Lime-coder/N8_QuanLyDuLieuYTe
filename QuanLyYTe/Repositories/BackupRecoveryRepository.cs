@@ -46,29 +46,29 @@ namespace QuanLyYTe.Repositories
             try { _dbProvider.ExecuteQuery("BEGIN DBMS_AUDIT_MGMT.FLUSH_UNIFIED_AUDIT_TRAIL; END;"); } catch { }
 
             string sql = @"
-                SELECT TO_CHAR(AUDIT_TIME, 'YYYY-MM-DD HH24:MI:SS') AS AUDIT_TIME_STR, ACTION_NAME, SOURCE 
+                SELECT DISTINCT TO_CHAR(AUDIT_TIME, 'YYYY-MM-DD HH24:MI:SS') AS AUDIT_TIME_STR, ACTION_NAME
                 FROM (
-                    SELECT EVENT_TIMESTAMP AS AUDIT_TIME, ACTION_NAME, 'Hệ thống' AS SOURCE 
+                    SELECT EVENT_TIMESTAMP AS AUDIT_TIME, ACTION_NAME
                     FROM UNIFIED_AUDIT_TRAIL 
                     WHERE OBJECT_SCHEMA = 'HOSPITAL' 
                       AND OBJECT_NAME IN ('PRESCRIPTION', 'MEDICAL_RECORD', 'SERVICE_RECORD', 'PATIENT')
                       AND ACTION_NAME IN ('UPDATE', 'DELETE')
                       AND RETURN_CODE = 0
                     UNION ALL
-                    SELECT TIMESTAMP AS AUDIT_TIME, STATEMENT_TYPE AS ACTION_NAME, 'Chi tiết' AS SOURCE
+                    SELECT TIMESTAMP AS AUDIT_TIME, STATEMENT_TYPE AS ACTION_NAME
                     FROM DBA_FGA_AUDIT_TRAIL
                     WHERE OBJECT_SCHEMA = 'HOSPITAL'
                       AND OBJECT_NAME IN ('PRESCRIPTION', 'MEDICAL_RECORD', 'SERVICE_RECORD')
                       AND STATEMENT_TYPE IN ('UPDATE', 'DELETE', 'INSERT')
                     UNION ALL
-                    SELECT CAST(TIMESTAMP AS TIMESTAMP) AS AUDIT_TIME, ACTION_NAME, 'Hệ thống' AS SOURCE
+                    SELECT CAST(TIMESTAMP AS TIMESTAMP) AS AUDIT_TIME, ACTION_NAME
                     FROM DBA_AUDIT_TRAIL
                     WHERE OWNER = 'HOSPITAL' 
                       AND OBJ_NAME = 'PATIENT'
                       AND ACTION_NAME IN ('UPDATE', 'DELETE')
                       AND RETURNCODE = 0
                 )
-                ORDER BY AUDIT_TIME DESC";
+                ORDER BY AUDIT_TIME_STR DESC";
             return _dbProvider.ExecuteQuery(sql);
         }
 
