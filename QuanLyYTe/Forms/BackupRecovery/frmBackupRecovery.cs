@@ -54,10 +54,11 @@ namespace QuanLyYTe.Forms.BackupRecovery
         private void frmBackupRecovery_Load(object sender, EventArgs e)
         {
             cboInterval.SelectedIndex = 0; // Default to 1 minute
-            LoadCurrentData();
+            LoadStandardAuditLogs();
             LoadBackupHistory();
             LoadAuditRecoveryPoints();
             UpdateSchedulerStatusUI();
+            LoadTableData();
         }
         // Áp dụng các kiểu nút hiện đại tương tự các Form quản trị khác trong hệ thống
         private void ApplyButtonStyles()
@@ -113,8 +114,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             StyleBlue(btnBackupNow);
             StyleGreen(btnEnableAutoBackup);
             StyleDanger(btnDisableAutoBackup);
-            StyleDanger(btnSimulateDelete);
-            StyleDanger(btnSimulateWrongUpdate);
+
             StyleNeutral(btnLoadAudit);
             StylePrimary(btnBackupRestore);
             StyleBlue(btnImportDataPump);
@@ -126,24 +126,62 @@ namespace QuanLyYTe.Forms.BackupRecovery
             LoadAuditRecoveryPoints();
             UpdateSchedulerStatusUI();
         }
-        // Tải dữ liệu hiện tại của bảng PRESCRIPTION
-        private void LoadCurrentData()
+        // Tải nhật ký kiểm toán hệ thống (Standard Audit)
+        private void LoadStandardAuditLogs()
         {
             try
             {
-                DataTable dt = _service.GetCurrentData();
-                dgvDonThuoc.DataSource = dt;
+                DataTable dt = _service.GetStandardAuditLogs();
+                dgvStandardAudit.DataSource = dt;
                 lblTotalRows.Text = $"Tổng số dòng: {dt.Rows.Count}";
-                GridViewStyler.Format(dgvDonThuoc);
+                GridViewStyler.Format(dgvStandardAudit);
 
-                if (dgvDonThuoc.Columns.Contains("RECORD_ID")) dgvDonThuoc.Columns["RECORD_ID"].HeaderText = "Mã HSBA";
-                if (dgvDonThuoc.Columns.Contains("PRESCRIPTION_DATE")) dgvDonThuoc.Columns["PRESCRIPTION_DATE"].HeaderText = "Ngày kê toa";
-                if (dgvDonThuoc.Columns.Contains("MEDICINE_NAME")) dgvDonThuoc.Columns["MEDICINE_NAME"].HeaderText = "Tên thuốc";
-                if (dgvDonThuoc.Columns.Contains("DOSAGE")) dgvDonThuoc.Columns["DOSAGE"].HeaderText = "Liều dùng";
+                if (dgvStandardAudit.Columns.Contains("USERNAME")) dgvStandardAudit.Columns["USERNAME"].HeaderText = "Người dùng";
+                if (dgvStandardAudit.Columns.Contains("OBJECT")) dgvStandardAudit.Columns["OBJECT"].HeaderText = "Đối tượng";
+                if (dgvStandardAudit.Columns.Contains("ACTION")) dgvStandardAudit.Columns["ACTION"].HeaderText = "Hành động";
+                if (dgvStandardAudit.Columns.Contains("TIMESTAMP")) dgvStandardAudit.Columns["TIMESTAMP"].HeaderText = "Thời gian ghi nhận";
             }
             catch (Exception ex)
             {
-                ShowOperationError("Tai du lieu PRESCRIPTION", ex);
+                ShowOperationError("Tai nhat ky Standard Audit", ex);
+            }
+        }
+
+        private void LoadTableData()
+        {
+            try
+            {
+                dgvPrescription.DataSource = _service.GetPrescriptions();
+                GridViewStyler.Format(dgvPrescription);
+                if (dgvPrescription.Columns.Contains("RECORD_ID")) dgvPrescription.Columns["RECORD_ID"].HeaderText = "Mã bệnh án";
+                if (dgvPrescription.Columns.Contains("PRESCRIPTION_DATE")) dgvPrescription.Columns["PRESCRIPTION_DATE"].HeaderText = "Ngày kê đơn";
+                if (dgvPrescription.Columns.Contains("MEDICINE_NAME")) dgvPrescription.Columns["MEDICINE_NAME"].HeaderText = "Tên thuốc";
+                if (dgvPrescription.Columns.Contains("DOSAGE")) dgvPrescription.Columns["DOSAGE"].HeaderText = "Liều lượng";
+
+                dgvMedicalRecord.DataSource = _service.GetMedicalRecords();
+                GridViewStyler.Format(dgvMedicalRecord);
+                dgvMedicalRecord.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+                if (dgvMedicalRecord.Columns.Contains("RECORD_ID")) dgvMedicalRecord.Columns["RECORD_ID"].HeaderText = "Mã bệnh án";
+                if (dgvMedicalRecord.Columns.Contains("PATIENT_ID")) dgvMedicalRecord.Columns["PATIENT_ID"].HeaderText = "Mã BN";
+                if (dgvMedicalRecord.Columns.Contains("RECORD_DATE")) dgvMedicalRecord.Columns["RECORD_DATE"].HeaderText = "Ngày khám";
+                if (dgvMedicalRecord.Columns.Contains("DIAGNOSIS")) dgvMedicalRecord.Columns["DIAGNOSIS"].HeaderText = "Chẩn đoán";
+                if (dgvMedicalRecord.Columns.Contains("TREATMENT_PLAN")) dgvMedicalRecord.Columns["TREATMENT_PLAN"].HeaderText = "Hướng điều trị";
+                if (dgvMedicalRecord.Columns.Contains("DOCTOR_ID")) dgvMedicalRecord.Columns["DOCTOR_ID"].HeaderText = "Mã BS";
+                if (dgvMedicalRecord.Columns.Contains("DEPT_ID")) dgvMedicalRecord.Columns["DEPT_ID"].HeaderText = "Mã khoa";
+                if (dgvMedicalRecord.Columns.Contains("CONCLUSION")) dgvMedicalRecord.Columns["CONCLUSION"].HeaderText = "Kết luận";
+
+                dgvServiceRecord.DataSource = _service.GetServiceRecords();
+                GridViewStyler.Format(dgvServiceRecord);
+                dgvServiceRecord.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+                if (dgvServiceRecord.Columns.Contains("RECORD_ID")) dgvServiceRecord.Columns["RECORD_ID"].HeaderText = "Mã bệnh án";
+                if (dgvServiceRecord.Columns.Contains("SERVICE_TYPE")) dgvServiceRecord.Columns["SERVICE_TYPE"].HeaderText = "Tên dịch vụ";
+                if (dgvServiceRecord.Columns.Contains("SERVICE_DATE")) dgvServiceRecord.Columns["SERVICE_DATE"].HeaderText = "Ngày thực hiện";
+                if (dgvServiceRecord.Columns.Contains("TECHNICIAN_ID")) dgvServiceRecord.Columns["TECHNICIAN_ID"].HeaderText = "Mã KTV";
+                if (dgvServiceRecord.Columns.Contains("SERVICE_RESULT")) dgvServiceRecord.Columns["SERVICE_RESULT"].HeaderText = "Kết quả";
+            }
+            catch (Exception ex)
+            {
+                ShowOperationError("Tai du lieu cac bang", ex);
             }
         }
         // Tải lịch sử các phiên bản sao lưu từ BACKUP_HISTORY
@@ -192,13 +230,12 @@ namespace QuanLyYTe.Forms.BackupRecovery
 
                 if (dt.Rows.Count > 0)
                 {
-                    var points = new List<KeyValuePair<long, string>>();
+                    var points = new List<KeyValuePair<DateTime, string>>();
                     foreach (DataRow row in dt.Rows)
                     {
-                        long scn = Convert.ToInt64(row["SCN"]);
-                        DateTime time = Convert.ToDateTime(row["AUDIT_TIME"]);
+                        DateTime time = DateTime.ParseExact(row["AUDIT_TIME_STR"].ToString(), "yyyy-MM-dd HH:mm:ss", null);
                         string action = row["ACTION_NAME"].ToString();
-                        points.Add(new KeyValuePair<long, string>(scn, $"{action} lúc {time:dd/MM/yyyy HH:mm:ss}"));
+                        points.Add(new KeyValuePair<DateTime, string>(time, $"{action} lúc {time:dd/MM/yyyy HH:mm:ss}"));
                     }
                     cboBackupVersion.DataSource = points;
                     cboBackupVersion.DisplayMember = "Value";
@@ -244,25 +281,24 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 lblSchedulerStatus.ForeColor = Color.OrangeRed;
             }
         }
-        // Nạp nhật ký kiểm toán (Audit Log) từ Service
-        private void LoadAuditLogs()
+        // Nạp nhật ký kiểm toán chi tiết (Fine-Grained Audit)
+        private void LoadFgaAuditLogs()
         {
             try
             {
-                DataTable dt = _service.GetAuditLogs();
-                dgvAudit.DataSource = dt;
-                GridViewStyler.Format(dgvAudit);
+                DataTable dt = _service.GetFgaAuditLogs();
+                dgvFgaAudit.DataSource = dt;
+                GridViewStyler.Format(dgvFgaAudit);
 
-                if (dgvAudit.Columns.Contains("USERNAME")) dgvAudit.Columns["USERNAME"].HeaderText = "Người dùng";
-                if (dgvAudit.Columns.Contains("TIMESTAMP")) dgvAudit.Columns["TIMESTAMP"].HeaderText = "Thời điểm";
-                if (dgvAudit.Columns.Contains("ACTION")) dgvAudit.Columns["ACTION"].HeaderText = "Hành động";
-                if (dgvAudit.Columns.Contains("OBJECT")) dgvAudit.Columns["OBJECT"].HeaderText = "Đối tượng";
-                if (dgvAudit.Columns.Contains("SQL_TEXT")) dgvAudit.Columns["SQL_TEXT"].HeaderText = "Câu lệnh SQL";
-                if (dgvAudit.Columns.Contains("STATUS")) dgvAudit.Columns["STATUS"].HeaderText = "Trạng thái";
+                if (dgvFgaAudit.Columns.Contains("USERNAME")) dgvFgaAudit.Columns["USERNAME"].HeaderText = "Người dùng";
+                if (dgvFgaAudit.Columns.Contains("TIMESTAMP")) dgvFgaAudit.Columns["TIMESTAMP"].HeaderText = "Thời điểm";
+                if (dgvFgaAudit.Columns.Contains("ACTION")) dgvFgaAudit.Columns["ACTION"].HeaderText = "Hành động";
+                if (dgvFgaAudit.Columns.Contains("OBJECT")) dgvFgaAudit.Columns["OBJECT"].HeaderText = "Đối tượng";
+                if (dgvFgaAudit.Columns.Contains("SQL_TEXT")) dgvFgaAudit.Columns["SQL_TEXT"].HeaderText = "Câu lệnh SQL";
             }
             catch (Exception ex)
             {
-                ShowOperationError("Tai nhat ky kiem toan", ex, MessageBoxIcon.Warning);
+                ShowOperationError("Tai nhat ky kiem toan FGA", ex, MessageBoxIcon.Warning);
             }
         }
         // Thực hiện sao lưu thủ công thông qua Service
@@ -305,7 +341,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
         }
         // Kích hoạt sao lưu tự động dùng DBMS_SCHEDULER thông qua Service
-        private void EnableAutoBackup()
+        private async void EnableAutoBackup()
         {
             if (cboInterval.SelectedIndex == -1)
             {
@@ -314,10 +350,12 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
 
             string intervalSel = cboInterval.SelectedItem.ToString();
+            btnEnableAutoBackup.Enabled = false;
+            btnEnableAutoBackup.Text = "Đang kích hoạt...";
 
             try
             {
-                _service.EnableAutoBackup(intervalSel);
+                await System.Threading.Tasks.Task.Run(() => _service.EnableAutoBackup(intervalSel));
                 MessageBox.Show($"Kích hoạt sao lưu tự động thành công! Chu kỳ: {intervalSel}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
                 UpdateSchedulerStatusUI();
@@ -327,13 +365,20 @@ namespace QuanLyYTe.Forms.BackupRecovery
             {
                 ShowOperationError("Bat sao luu tu dong", ex);
             }
+            finally
+            {
+                btnEnableAutoBackup.Enabled = true;
+                btnEnableAutoBackup.Text = "Bật sao lưu Tự động";
+            }
         }
         // Tắt sao lưu tự động thông qua Service
-        private void DisableAutoBackup()
+        private async void DisableAutoBackup()
         {
+            btnDisableAutoBackup.Enabled = false;
+            btnDisableAutoBackup.Text = "Đang tắt...";
             try
             {
-                _service.DisableAutoBackup();
+                await System.Threading.Tasks.Task.Run(() => _service.DisableAutoBackup());
                 MessageBox.Show("Đã dừng sao lưu tự động (Job disabled).", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
                 UpdateSchedulerStatusUI();
@@ -342,40 +387,14 @@ namespace QuanLyYTe.Forms.BackupRecovery
             {
                 ShowOperationError("Tat sao luu tu dong", ex);
             }
-        }
-        // Giả lập sự cố: Xóa bản ghi BA001
-        private void SimulateDelete()
-        {
-            try
+            finally
             {
-                int rows = _service.SimulateDelete();
-                MessageBox.Show($"Đã giả lập sự cố: Xóa thành công {rows} bản ghi của BA001 khỏi bảng PRESCRIPTION.", "Giả lập sự cố", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                LoadCurrentData();
-                LoadAuditRecoveryPoints();
-                LoadAuditLogs();
-            }
-            catch (Exception ex)
-            {
-                ShowOperationError("Gia lap su co xoa", ex);
+                btnDisableAutoBackup.Enabled = true;
+                btnDisableAutoBackup.Text = "Tắt sao lưu Tự động";
             }
         }
-        // Giả lập sự cố: Cập nhật sai thông tin bản ghi BA001
-        private void SimulateWrongUpdate()
-        {
-            try
-            {
-                int rows = _service.SimulateWrongUpdate();
-                MessageBox.Show($"Đã giả lập sự cố: Cập nhật sai thông tin của {rows} bản ghi BA001 thành công.", "Giả lập sự cố", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                LoadCurrentData();
-                LoadAuditRecoveryPoints();
-                LoadAuditLogs();
-            }
-            catch (Exception ex)
-            {
-                ShowOperationError("Gia lap su co cap nhat", ex);
-            }
-        }
-        // Thực hiện khôi phục dữ liệu cho bản ghi BA001
+
+        // Thực hiện khôi phục dữ liệu cho bản ghi
         private void BackupRestore()
         {
             if (cboBackupVersion.SelectedValue == null)
@@ -384,19 +403,26 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 return;
             }
 
-            long auditScn = (long)cboBackupVersion.SelectedValue;
-            string displayInfo = ((KeyValuePair<long, string>)cboBackupVersion.SelectedItem).Value;
+            DateTime auditTime = (DateTime)cboBackupVersion.SelectedValue;
 
-            var confirm = MessageBox.Show($"Bạn có chắc chắn muốn khôi phục dữ liệu BA001 về trạng thái ngay trước thời điểm {displayInfo}?", "Khôi phục dữ liệu", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            string recordId = Prompt.ShowDialog("Nhập mã bệnh án (RECORD_ID) cần khôi phục:\n(Ví dụ: BA001)", "Nhập mã bệnh án");
+            if (string.IsNullOrWhiteSpace(recordId))
+            {
+                return;
+            }
+            recordId = recordId.Trim().ToUpper();
+
+            var confirm = MessageBox.Show($"Bạn có chắc chắn muốn khôi phục dữ liệu {recordId} về trạng thái ngay trước thời điểm {auditTime:HH:mm:ss dd/MM/yyyy}?", "Khôi phục dữ liệu", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirm != DialogResult.Yes) return;
 
             try
             {
-                _service.BackupRestoreByAudit(auditScn);
-                MessageBox.Show($"Khôi phục dữ liệu thành công cho BA001 bằng Flashback Query!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                LoadCurrentData();
+                _service.BackupRestoreByAudit(recordId, auditTime);
+                MessageBox.Show($"Khôi phục dữ liệu thành công cho {recordId} bằng Flashback Query!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                LoadStandardAuditLogs();
                 LoadAuditRecoveryPoints();
-                LoadAuditLogs();
+                LoadFgaAuditLogs();
+                LoadTableData();
             }
             catch (Exception ex)
             {
@@ -435,6 +461,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
                     "Data Pump import",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
+                LoadTableData();
             }
             catch (Exception ex)
             {
@@ -448,15 +475,44 @@ namespace QuanLyYTe.Forms.BackupRecovery
         }
 
         // --- Event Handlers ---
-        private void btnRefresh_Click(object sender, EventArgs e) => LoadCurrentData();
+        private void btnRefresh_Click(object sender, EventArgs e)
+        {
+            LoadStandardAuditLogs();
+            LoadTableData();
+        }
         private void btnBackupNow_Click(object sender, EventArgs e) => ManualBackup();
         private void btnEnableAutoBackup_Click(object sender, EventArgs e) => EnableAutoBackup();
         private void btnDisableAutoBackup_Click(object sender, EventArgs e) => DisableAutoBackup();
-        private void btnSimulateDelete_Click(object sender, EventArgs e) => SimulateDelete();
-        private void btnSimulateWrongUpdate_Click(object sender, EventArgs e) => SimulateWrongUpdate();
-        private void btnLoadAudit_Click(object sender, EventArgs e) => LoadAuditLogs();
+
+        private void btnLoadAudit_Click(object sender, EventArgs e) => LoadFgaAuditLogs();
         private void btnBackupRestore_Click(object sender, EventArgs e) => BackupRestore();
         private async void btnImportDataPump_Click(object sender, EventArgs e) => await ImportDataPumpAsync();
         private void btnOpenErrorLog_Click(object sender, EventArgs e) => OpenErrorLogFolder();
+    }
+
+    public static class Prompt
+    {
+        public static string ShowDialog(string text, string caption)
+        {
+            Form prompt = new Form()
+            {
+                Width = 350,
+                Height = 160,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                Text = caption,
+                StartPosition = FormStartPosition.CenterScreen,
+                MinimizeBox = false,
+                MaximizeBox = false
+            };
+            Label textLabel = new Label() { Left = 20, Top = 20, Text = text, AutoSize = true };
+            TextBox textBox = new TextBox() { Left = 20, Top = 60, Width = 290 };
+            Button confirmation = new Button() { Text = "Xác nhận", Left = 210, Width = 100, Top = 90, DialogResult = DialogResult.OK };
+            prompt.Controls.Add(textBox);
+            prompt.Controls.Add(confirmation);
+            prompt.Controls.Add(textLabel);
+            prompt.AcceptButton = confirmation;
+
+            return prompt.ShowDialog() == DialogResult.OK ? textBox.Text : "";
+        }
     }
 }
