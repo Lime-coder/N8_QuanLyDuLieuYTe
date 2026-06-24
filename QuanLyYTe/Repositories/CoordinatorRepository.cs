@@ -122,18 +122,13 @@ namespace QuanLyYTe.Repositories
             string maxId = "BN000";
             try
             {
-                using (var conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
+                var parameters = new OracleParameter[] {
+                    new OracleParameter("p_max_id", OracleDbType.Varchar2, 50) { Direction = ParameterDirection.Output }
+                };
+                _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_GET_MAX_PAT_ID", parameters);
+                if (parameters[0].Value != null && parameters[0].Value != DBNull.Value)
                 {
-                    conn.Open();
-                    string query = "SELECT MAX(patient_id) FROM hospital.patient";
-                    using (var cmd = new OracleCommand(query, conn))
-                    {
-                        object result = cmd.ExecuteScalar();
-                        if (result != null && result != DBNull.Value)
-                        {
-                            maxId = result.ToString();
-                        }
-                    }
+                    maxId = parameters[0].Value.ToString();
                 }
             }
             catch { }

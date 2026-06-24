@@ -143,8 +143,7 @@ CREATE OR REPLACE PACKAGE hospital.PKG_BACKUP_RECOVERY AS
 
     PROCEDURE USP_RESTORE_PRESCRIPTION_BY_AUDIT(
         p_record_id         IN VARCHAR2,
-        p_audit_event_time  IN TIMESTAMP DEFAULT NULL,
-        p_seconds_before    IN NUMBER DEFAULT 1
+        p_audit_scn         IN NUMBER DEFAULT NULL
     );
 
     PROCEDURE USP_SIMULATE_WRONG_UPDATE;
@@ -315,47 +314,45 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
 
     PROCEDURE USP_RESTORE_PRESCRIPTION_BY_AUDIT(
         p_record_id         IN VARCHAR2,
-        p_audit_event_time  IN TIMESTAMP DEFAULT NULL,
-        p_seconds_before    IN NUMBER DEFAULT 1
+        p_audit_scn         IN NUMBER DEFAULT NULL
     ) AS
-        v_audit_time      TIMESTAMP;
-        v_flashback_time  TIMESTAMP;
+        v_audit_scn       NUMBER;
+        v_flashback_scn   NUMBER;
         v_old_count       NUMBER;
+        v_flashback_time  TIMESTAMP;
     BEGIN
         IF p_record_id IS NULL THEN
             RAISE_APPLICATION_ERROR(-20001, 'p_record_id must not be null.');
         END IF;
 
-        -- If GUI passes a selected audit timestamp, use it.
-        -- Otherwise, use the latest Unified Audit record for UPDATE/DELETE on HOSPITAL.PRESCRIPTION.
-        IF p_audit_event_time IS NOT NULL THEN
-            v_audit_time := p_audit_event_time;
+        IF p_audit_scn IS NOT NULL THEN
+            v_audit_scn := p_audit_scn;
         ELSE
             EXECUTE IMMEDIATE '
-                SELECT MAX(event_timestamp)
+                SELECT MAX(scn)
                 FROM unified_audit_trail
                 WHERE object_schema = ''HOSPITAL''
                   AND object_name = ''PRESCRIPTION''
                   AND action_name IN (''UPDATE'', ''DELETE'')'
-            INTO v_audit_time;
+            INTO v_audit_scn;
         END IF;
 
-        IF v_audit_time IS NULL THEN
+        IF v_audit_scn IS NULL THEN
             RAISE_APPLICATION_ERROR(-20002, 'No Unified Audit record found for HOSPITAL.PRESCRIPTION UPDATE/DELETE.');
         END IF;
 
-        v_flashback_time := v_audit_time - NUMTODSINTERVAL(NVL(p_seconds_before, 1), 'SECOND');
+        v_flashback_scn := v_audit_scn - 1;
 
         SELECT COUNT(*)
         INTO v_old_count
-        FROM hospital.PRESCRIPTION AS OF TIMESTAMP v_flashback_time
+        FROM hospital.PRESCRIPTION AS OF SCN v_flashback_scn
         WHERE RECORD_ID = p_record_id;
 
         IF v_old_count = 0 THEN
             RAISE_APPLICATION_ERROR(
                 -20003,
                 'No flashback data found for RECORD_ID = ' || p_record_id ||
-                ' at ' || TO_CHAR(v_flashback_time, 'YYYY-MM-DD HH24:MI:SS')
+                ' at SCN = ' || v_flashback_scn
             );
         END IF;
 
@@ -374,18 +371,24 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
             PRESCRIPTION_DATE,
             MEDICINE_NAME,
             DOSAGE
-        FROM hospital.PRESCRIPTION AS OF TIMESTAMP v_flashback_time
+        FROM hospital.PRESCRIPTION AS OF SCN v_flashback_scn
         WHERE RECORD_ID = p_record_id;
 
         COMMIT;
+        
+        BEGIN
+            v_flashback_time := SCN_TO_TIMESTAMP(v_flashback_scn);
+        EXCEPTION
+            WHEN OTHERS THEN v_flashback_time := SYSTIMESTAMP;
+        END;
 
         LOG_RECOVERY(
             p_target_table     => 'PRESCRIPTION',
             p_target_key       => p_record_id,
-            p_audit_event_time => v_audit_time,
+            p_audit_event_time => SYSTIMESTAMP,
             p_flashback_time   => v_flashback_time,
             p_status           => 'SUCCESS',
-            p_note             => 'Restored by Flashback Query based on Unified Audit timestamp.'
+            p_note             => 'Restored by Flashback Query based on SCN.'
         );
 
     EXCEPTION
@@ -394,10 +397,10 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
             LOG_RECOVERY(
                 p_target_table     => 'PRESCRIPTION',
                 p_target_key       => p_record_id,
-                p_audit_event_time => v_audit_time,
-                p_flashback_time   => v_flashback_time,
+                p_audit_event_time => SYSTIMESTAMP,
+                p_flashback_time   => NULL,
                 p_status           => 'FAILED',
-                p_note             => 'Flashback recovery failed. Use nearest Data Pump dump file if UNDO is no longer available.',
+                p_note             => 'Flashback recovery failed based on SCN.',
                 p_error_message    => SQLERRM
             );
             RAISE;
@@ -591,8 +594,8 @@ END;
 BEGIN
     DBMS_SCHEDULER.CREATE_JOB(
         job_name        => 'HOSPITAL.AUTO_BACKUP_JOB',
-        job_type        => 'PLSQL_BLOCK',
-        job_action      => 'BEGIN hospital.USP_AUTO_BACKUP; END;',
+        job_type        => 'STORED_PROCEDURE',
+        job_action      => 'hospital.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP',
         start_date      => SYSTIMESTAMP,
         repeat_interval => 'FREQ=DAILY;BYHOUR=2;BYMINUTE=0;BYSECOND=0',
         enabled         => FALSE,
