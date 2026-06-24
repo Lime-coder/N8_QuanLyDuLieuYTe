@@ -1,6 +1,6 @@
 -- ==============================================================================
--- 04_doctor_procedures.sql
--- Cháº¡y dÆ°á»›i quyá»n: hospital
+-- 03_doctor_procedures.sql
+-- Chạy dưới quyền: hospital
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
@@ -169,23 +169,18 @@ BEGIN
 END;
 /
 
--- E. TC#5
+-- E. STAFF
 CREATE OR REPLACE PROCEDURE USP_GET_SELF_INFO(p_c OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_c FOR 
     SELECT s.full_name, s.gender, s.birthdate, s.id_card, s.hometown, s.phone, s.staff_role, d.dept_name, s.facility
     FROM hospital.staff s
-    JOIN hospital.department d ON d.dept_id = s.dept_id
-    WHERE UPPER(username_db) = SYS_CONTEXT('USERENV', 'SESSION_USER');
+    JOIN hospital.department d ON d.dept_id = s.dept_id;
 END;
 /
 
 CREATE OR REPLACE PROCEDURE USP_UPDATE_SELF_INFO(p_hometown NVARCHAR2, p_phone VARCHAR2) AS
 BEGIN
-    UPDATE hospital.staff SET hometown = p_hometown, phone = p_phone 
-    WHERE UPPER(username_db) = SYS_CONTEXT('USERENV', 'SESSION_USER');
-    COMMIT;
+    UPDATE hospital.staff SET hometown = p_hometown, phone = p_phone;
 END;
 /
-
-

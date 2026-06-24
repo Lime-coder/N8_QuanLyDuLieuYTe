@@ -52,10 +52,11 @@ namespace QuanLyYTe.Forms.Doctor
             // pnlSearch
             // 
             pnlSearch.Size = new Size(839, 75);
+            pnlSearch.Visible = false;
             // 
             // btnE
             // 
-            btnE.BackColor = Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(140)))), ((int)(((byte)(40)))));
+            btnE.BackColor = Color.FromArgb(255, 140, 40);
             btnE.Cursor = Cursors.Hand;
             btnE.FlatAppearance.BorderSize = 0;
             btnE.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
@@ -276,7 +277,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblLabelFacility.ForeColor = Color.DimGray;
             lblLabelFacility.Location = new Point(35, 413);
             lblLabelFacility.Name = "lblLabelFacility";
-            lblLabelFacility.Size = new Size(100, 23);
+            lblLabelFacility.Size = new Size(95, 23);
             lblLabelFacility.TabIndex = 16;
             lblLabelFacility.Text = "Cơ sở y tế:";
             // 
@@ -298,7 +299,7 @@ namespace QuanLyYTe.Forms.Doctor
             lblLabelMaNV.ForeColor = Color.DimGray;
             lblLabelMaNV.Location = new Point(35, 35);
             lblLabelMaNV.Name = "lblLabelMaNV";
-            lblLabelMaNV.Size = new Size(125, 23);
+            lblLabelMaNV.Size = new Size(122, 23);
             lblLabelMaNV.TabIndex = 18;
             lblLabelMaNV.Text = "Mã nhân viên:";
             // 
