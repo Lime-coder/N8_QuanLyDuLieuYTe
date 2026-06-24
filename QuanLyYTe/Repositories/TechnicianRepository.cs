@@ -19,7 +19,7 @@ namespace QuanLyYTe.Repositories
                 }
             };
 
-            return _dbProvider.ExecuteQuerySP(Sp("GET_TECHNICIAN_SERVICE_RECORDS"), parameters);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_TECHNICIAN_SERVICE_RECORDS"), parameters);
         }
 
         // Lấy thông tin cá nhân của kỹ thuật viên (SP: GET_TECHNICIAN_PERSONAL_INFO)
@@ -30,7 +30,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("P_CURSOR", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
 
-            return _dbProvider.ExecuteQuerySP(Sp("GET_TECHNICIAN_PERSONAL_INFO"), parameters);
+            return _dbProvider.ExecuteQuerySP(Sp("USP_GET_TECHNICIAN_PERSONAL_INFO"), parameters);
         }
 
         // Cập nhật thông tin cá nhân (SP: UPDATE_TECHNICIAN_PERSONAL_INFO)
@@ -42,7 +42,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("P_PHONE",    OracleDbType.Varchar2)  { Value = (object?)phone    ?? DBNull.Value }
             };
 
-            _dbProvider.ExecuteNonQuerySP(Sp("UPDATE_TECHNICIAN_PERSONAL_INFO"), parameters);
+            _dbProvider.ExecuteNonQuerySP(Sp("USP_UPDATE_TECHNICIAN_PERSONAL_INFO"), parameters);
         }
 
         // Cập nhật kết quả dịch vụ (SP: UPDATE_TECHNICIAN_SERVICE_RESULT)
@@ -56,7 +56,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("P_SERVICE_RESULT", OracleDbType.NVarchar2) { Value = serviceResult }
             };
 
-            _dbProvider.ExecuteNonQuerySP(Sp("UPDATE_TECHNICIAN_SERVICE_RESULT"), parameters);
+            _dbProvider.ExecuteNonQuerySP(Sp("USP_UPDATE_TECHNICIAN_SERVICE_RESULT"), parameters);
         }
     }
 }

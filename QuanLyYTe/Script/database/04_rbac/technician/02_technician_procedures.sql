@@ -1,12 +1,55 @@
 -- ==============================================================================
 -- 02_technician_procedures.sql
--- Cháº¡y dÆ°á»›i quyá»n: hospital
+-- Mục đích: Tạo các Stored Procedures để Kỹ thuật viên truy xuất và cập nhật dữ liệu.
+-- Người thực thi: hospital_dba
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
-CREATE OR REPLACE PROCEDURE GET_TECHNICIAN_SERVICE_RECORDS (
+-- Xóa thủ tục nếu đã tồn tại
+BEGIN
+    EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_GET_TECHNICIAN_SERVICE_RECORDS';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -4043 THEN
+            DBMS_OUTPUT.PUT_LINE('Drop procedure error: ' || SQLERRM);
+        END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_UPDATE_TECHNICIAN_SERVICE_RESULT';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -4043 THEN
+            DBMS_OUTPUT.PUT_LINE('Drop procedure error: ' || SQLERRM);
+        END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_GET_TECHNICIAN_PERSONAL_INFO';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -4043 THEN
+            DBMS_OUTPUT.PUT_LINE('Drop procedure error: ' || SQLERRM);
+        END IF;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP PROCEDURE hospital_dba.USP_UPDATE_TECHNICIAN_PERSONAL_INFO';
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE != -4043 THEN
+            DBMS_OUTPUT.PUT_LINE('Drop procedure error: ' || SQLERRM);
+        END IF;
+END;
+/
+    
+-- Thủ tục lấy danh sách hồ sơ dịch vụ của Kỹ thuật viên đang đăng nhập
+CREATE OR REPLACE PROCEDURE USP_GET_TECHNICIAN_SERVICE_RECORDS (
     P_CURSOR OUT SYS_REFCURSOR
 )
 AUTHID CURRENT_USER
@@ -24,7 +67,8 @@ BEGIN
 END;
 /
 
-CREATE OR REPLACE PROCEDURE UPDATE_TECHNICIAN_SERVICE_RESULT (
+-- Thủ tục cập nhật kết quả dịch vụ do Kỹ thuật viên phụ trách
+CREATE OR REPLACE PROCEDURE USP_UPDATE_TECHNICIAN_SERVICE_RESULT (
     P_RECORD_ID      IN VARCHAR2,
     P_SERVICE_TYPE   IN NVARCHAR2,
     P_SERVICE_DATE   IN DATE,
@@ -42,7 +86,8 @@ BEGIN
 END;
 /
 
-CREATE OR REPLACE PROCEDURE GET_TECHNICIAN_PERSONAL_INFO (
+-- Thủ tục xem thông tin cá nhân của Kỹ thuật viên đang đăng nhập
+CREATE OR REPLACE PROCEDURE USP_GET_TECHNICIAN_PERSONAL_INFO (
     P_CURSOR OUT SYS_REFCURSOR
 )
 AUTHID CURRENT_USER
@@ -50,24 +95,22 @@ AS
 BEGIN
     OPEN P_CURSOR FOR
         SELECT ST.STAFF_ID, ST.FULL_NAME, ST.GENDER, ST.BIRTHDATE, ST.ID_CARD, 
-               ST.HOMETOWN, ST.PHONE, D.DEPT_NAME, ST.FACILITY, ST.STAFF_ROLE AS ROLE
-        FROM hospital.STAFF ST
-        LEFT JOIN hospital.DEPARTMENT D ON ST.DEPT_ID = D.DEPT_ID
-        WHERE UPPER(ST.USERNAME_DB) = SYS_CONTEXT('USERENV', 'SESSION_USER');
+               ST.HOMETOWN, ST.PHONE, ST.DEPT_NAME, ST.FACILITY, ST.ROLE
+        FROM hospital_dba.V_TECHNICIAN_PERSONAL_INFO ST;
 END;
 /
 
-CREATE OR REPLACE PROCEDURE UPDATE_TECHNICIAN_PERSONAL_INFO (
+-- Thủ tục cập nhật thông tin cá nhân (quê quán, số điện thoại) của Kỹ thuật viên
+CREATE OR REPLACE PROCEDURE USP_UPDATE_TECHNICIAN_PERSONAL_INFO (
     P_HOMETOWN IN NVARCHAR2,
     P_PHONE    IN VARCHAR2
 )
 AUTHID CURRENT_USER
 AS
 BEGIN
-    UPDATE hospital.STAFF
+    UPDATE hospital_dba.V_TECHNICIAN_PERSONAL_INFO
     SET HOMETOWN = P_HOMETOWN,
-        PHONE = P_PHONE
-    WHERE UPPER(USERNAME_DB) = SYS_CONTEXT('USERENV', 'SESSION_USER');
+        PHONE = P_PHONE;
     COMMIT;
 END;
 /

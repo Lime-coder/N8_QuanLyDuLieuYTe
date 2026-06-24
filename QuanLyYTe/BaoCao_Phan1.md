@@ -27,31 +27,39 @@ Mục tiêu cuối cùng là xây dựng một hệ thống phần mềm C# WinF
 Để đảm bảo khả năng quản lý và bảo mật, cơ sở dữ liệu của hệ thống (lược đồ `hospital`) được thiết kế với sự liên kết chặt chẽ giữa các thực thể.
 
 ### 1. Sơ lược về chức năng các bảng
-Hệ thống bao gồm 6 bảng dữ liệu chính, được thiết kế để phản ánh luồng thông tin trong một cơ sở y tế:
+Hệ thống bao gồm 10 bảng dữ liệu (chính và phụ trợ) được thiết kế để phản ánh luồng thông tin trong một cơ sở y tế và lưu trữ các thiết lập bảo mật:
 
 1. **Bảng `department` (Phòng ban/Khoa):** 
-   - Chức năng: Lưu trữ thông tin danh mục các khoa/phòng ban trong bệnh viện. 
-   - Các trường chính: `dept_id` (Mã khoa - Khóa chính), `dept_name` (Tên khoa).
+   - Chức năng: Lưu trữ thông tin danh mục các khoa/phòng ban. 
    
 2. **Bảng `staff` (Nhân viên):** 
-   - Chức năng: Quản lý thông tin chi tiết của toàn bộ đội ngũ nhân sự bao gồm bác sĩ, kỹ thuật viên, điều phối viên.
-   - Đặc điểm: Chứa thông tin nhạy cảm như CMND/CCCD, số điện thoại, quê quán. Đặc biệt có trường `username_db` liên kết trực tiếp tài khoản nhân viên với user trong Oracle, phục vụ cho việc kiểm soát quyền truy cập. Trường `staff_role` xác định vai trò của nhân sự.
+   - Chức năng: Quản lý thông tin chi tiết của toàn bộ đội ngũ nhân sự (Bác sĩ, Kỹ thuật viên, Lễ tân).
+   - Đặc điểm: Chứa trường `username_db` liên kết trực tiếp tài khoản nhân viên với user trong Oracle để kiểm soát truy cập VPD.
 
 3. **Bảng `patient` (Bệnh nhân):**
-   - Chức năng: Lưu trữ hồ sơ hành chính và tiền sử bệnh lý của bệnh nhân.
-   - Đặc điểm: Chứa các trường dữ liệu kiểu `NCLOB` cho tiền sử bệnh, dị ứng thuốc do dữ liệu có thể rất lớn. Bệnh nhân cũng được cấp `username_db` để tự tra cứu hồ sơ cá nhân.
+   - Chức năng: Lưu trữ hồ sơ hành chính và tiền sử bệnh lý (`NCLOB`) của bệnh nhân. Liên kết với `username_db` để bệnh nhân tự tra cứu.
 
 4. **Bảng `medical_record` (Hồ sơ bệnh án):**
-   - Chức năng: Ghi nhận các thông tin trong một lần khám của bệnh nhân, là thực thể trung tâm của quy trình khám bệnh.
-   - Các trường chính: `record_id` (Khóa chính), `patient_id` (Khóa ngoại đến bệnh nhân), `doctor_id` (Khóa ngoại đến bác sĩ phụ trách), kết luận, chẩn đoán.
+   - Chức năng: Ghi nhận thông tin khám chữa bệnh. Là thực thể trung tâm kết nối Bác sĩ và Bệnh nhân.
 
 5. **Bảng `service_record` (Hồ sơ dịch vụ / Cận lâm sàng):**
-   - Chức năng: Lưu trữ các kết quả dịch vụ y tế do kỹ thuật viên thực hiện (VD: xét nghiệm máu, X-Quang, siêu âm) thuộc về một `medical_record` cụ thể.
-   - Đặc điểm: Khóa chính bao gồm tổ hợp `(record_id, service_type, service_date)` nhằm hỗ trợ một bệnh án có nhiều dịch vụ khác nhau trong ngày.
+   - Chức năng: Lưu trữ các kết quả dịch vụ y tế (xét nghiệm, siêu âm) do kỹ thuật viên thực hiện.
 
 6. **Bảng `prescription` (Đơn thuốc):**
    - Chức năng: Chi tiết đơn thuốc do bác sĩ kê toa tương ứng với một hồ sơ bệnh án.
-   - Các trường: `medicine_name` (Tên thuốc), `dosage` (Liều lượng).
+
+7. **Bảng `notification` (Thông báo OLS):**
+   - Chức năng: Lưu trữ các thông báo nội bộ của bệnh viện.
+   - Đặc điểm: Bảng này được gắn nhãn bảo mật (cột ẩn `ols_label`) thông qua Oracle Label Security để lọc nội dung hiển thị tùy theo cấp bậc và phòng ban của nhân viên.
+
+8. **Bảng `coord_assignment_staff` (Phân công nhân sự):**
+   - Chức năng: Bảng phụ trợ do Điều phối viên (Coordinator) quản lý để phân luồng hiển thị danh sách Bác sĩ và Kỹ thuật viên.
+
+9. **Bảng `backup_history` (Lịch sử Sao lưu):**
+   - Chức năng: Ghi nhận lịch sử các lần Data Pump Export (Backup) thành công/thất bại, thời gian và vị trí file dump.
+
+10. **Bảng `recovery_history` (Lịch sử Phục hồi):**
+   - Chức năng: Ghi vết các hành động sử dụng Flashback Query để phục hồi dữ liệu từ Audit Log. Đảm bảo mọi tác động khôi phục dữ liệu quá khứ đều minh bạch.
 
 ### 2. Ràng buộc dữ liệu (Trigger, Index, Constraint)
 Việc duy trì tính toàn vẹn dữ liệu được thực hiện thông qua các ràng buộc (Constraints) ở mức CSDL.

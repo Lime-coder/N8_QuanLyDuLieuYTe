@@ -23,7 +23,7 @@ BEGIN
     SA_COMPONENTS.CREATE_COMPARTMENT('HOSP_OLS_POL', 200, 'TK', 'Khoa Than Kinh');
     SA_COMPONENTS.CREATE_COMPARTMENT('HOSP_OLS_POL', 300, 'TM', 'Khoa Tim Mach');
 
-    -- NHÓM (Groups): Phân chia theo sơ đồ tổ chức hoặc địa lý (Cây phân cấp - Hierarchical).
+    -- NHÓM (Groups): Phân chia theo sơ đồ tổ chức hoặc địa lý.
     SA_COMPONENTS.CREATE_GROUP('HOSP_OLS_POL', 10, 'HCM', 'Ho Chi Minh');
     SA_COMPONENTS.CREATE_GROUP('HOSP_OLS_POL', 20, 'HP',  'Hai Phong');
     SA_COMPONENTS.CREATE_GROUP('HOSP_OLS_POL', 30, 'HN',  'Ha Noi');
