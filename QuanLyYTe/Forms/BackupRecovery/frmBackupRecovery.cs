@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -52,9 +52,27 @@ namespace QuanLyYTe.Forms.BackupRecovery
             }
         }
 
+        
+        private void Dgv_DataError(object sender, DataGridViewDataErrorEventArgs e)
+        {
+            // Ignore OracleClob rendering errors or any binding errors to prevent app crash
+            e.ThrowException = false;
+        }
+
         private void frmBackupRecovery_Load(object sender, EventArgs e)
         {
             cboInterval.SelectedIndex = 0; // Default to 1 minute
+            
+            // Prevent DataGridView crashes due to OracleClob or unrecognized data types
+            dgvPatient.DataError += Dgv_DataError;
+            dgvMedicalRecord.DataError += Dgv_DataError;
+            dgvFgaAudit.DataError += Dgv_DataError;
+            dgvCurrentRow.DataError += Dgv_DataError;
+            dgvFlashbackRow.DataError += Dgv_DataError;
+            dgvBackupHistory.DataError += Dgv_DataError;
+            dgvRestoreHistory.DataError += Dgv_DataError;
+            dgvStandardAudit.DataError += Dgv_DataError;
+
             LoadStandardAuditLogs();
             LoadBackupHistory();
             LoadAuditRecoveryPoints();
@@ -153,9 +171,18 @@ namespace QuanLyYTe.Forms.BackupRecovery
         {
             try
             {
+                dgvPatient.DataSource = _service.GetPatients();
+                GridViewStyler.Format(dgvPatient);
+                dgvPatient.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
+                if (dgvPatient.Columns.Contains("PATIENT_ID")) dgvPatient.Columns["PATIENT_ID"].HeaderText = "Mã BN";
+                if (dgvPatient.Columns.Contains("FULL_NAME")) dgvPatient.Columns["FULL_NAME"].HeaderText = "Họ tên";
+                if (dgvPatient.Columns.Contains("GENDER")) dgvPatient.Columns["GENDER"].HeaderText = "Giới tính";
+                if (dgvPatient.Columns.Contains("BIRTHDATE")) dgvPatient.Columns["BIRTHDATE"].HeaderText = "Ngày sinh";
+                if (dgvPatient.Columns.Contains("ID_CARD")) dgvPatient.Columns["ID_CARD"].HeaderText = "CMND/CCCD";
+
                 dgvMedicalRecord.DataSource = _service.GetMedicalRecords();
                 GridViewStyler.Format(dgvMedicalRecord);
-                dgvMedicalRecord.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+                dgvMedicalRecord.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
                 if (dgvMedicalRecord.Columns.Contains("RECORD_ID")) dgvMedicalRecord.Columns["RECORD_ID"].HeaderText = "Mã bệnh án";
                 if (dgvMedicalRecord.Columns.Contains("PATIENT_ID")) dgvMedicalRecord.Columns["PATIENT_ID"].HeaderText = "Mã BN";
                 if (dgvMedicalRecord.Columns.Contains("RECORD_DATE")) dgvMedicalRecord.Columns["RECORD_DATE"].HeaderText = "Ngày khám";
@@ -226,7 +253,17 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 if (dt.Rows.Count > 0)
                 {
                     string state = dt.Rows[0]["STATE"].ToString();
-                    if (state == "SCHEDULED" || state == "RUNNING" || state == "RETRY RUNNING")
+                    string enabled = dt.Columns.Contains("ENABLED") ? dt.Rows[0]["ENABLED"]?.ToString() : null;
+
+                    // ENABLED column is the definitive source - it updates immediately after DISABLE.
+                    // STATE can lag behind (e.g. still "RUNNING" for an in-progress export).
+                    bool isEnabled;
+                    if (enabled != null)
+                        isEnabled = string.Equals(enabled, "TRUE", System.StringComparison.OrdinalIgnoreCase);
+                    else
+                        isEnabled = state == "SCHEDULED" || state == "RUNNING" || state == "RETRY RUNNING";
+
+                    if (isEnabled)
                     {
                         lblSchedulerStatus.Text = "Trạng thái Backup Auto: 🟢 Đang bật";
                         lblSchedulerStatus.ForeColor = Color.Green;
@@ -420,45 +457,33 @@ namespace QuanLyYTe.Forms.BackupRecovery
             lblSchedulerStatus.Text = "Trạng thái Backup Auto: 🟡 Đang chờ tắt...";
             lblSchedulerStatus.ForeColor = Color.Orange;
 
+            Exception caughtEx = null;
             try
             {
-                await System.Threading.Tasks.Task.Run(async () =>
+                await System.Threading.Tasks.Task.Run(() =>
                 {
-                    while (true)
-                    {
-                        if (this.IsDisposed) return;
-                        try
-                        {
-                            _service.DisableAutoBackup();
-                            break; // Success!
-                        }
-                        catch (OracleException ex) when (ex.Number == 27478)
-                        {
-                            // Job is running, wait 2 seconds and retry
-                            await System.Threading.Tasks.Task.Delay(2000);
-                        }
-                    }
+                    _service.DisableAutoBackup();
                 });
-
-                if (this.IsDisposed) return;
-
-                MessageBox.Show("Đã dừng sao lưu tự động (Job disabled).", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                UpdateSchedulerStatusUI();
             }
             catch (Exception ex)
             {
-                if (this.IsDisposed) return;
-                ShowOperationError("Tat sao luu tu dong", ex);
-                UpdateSchedulerStatusUI();
+                caughtEx = ex;
             }
-            finally
+
+            if (this.IsDisposed) return;
+
+            if (caughtEx != null)
             {
-                if (!this.IsDisposed)
-                {
-                    btnDisableAutoBackup.Enabled = true;
-                    btnDisableAutoBackup.Text = "Tắt sao lưu Tự động";
-                }
+                ShowOperationError("Tat sao luu tu dong", caughtEx);
             }
+            else
+            {
+                MessageBox.Show("Đã dừng sao lưu tự động (Job disabled).", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            UpdateSchedulerStatusUI();
+            btnDisableAutoBackup.Enabled = true;
+            btnDisableAutoBackup.Text = "Tắt sao lưu Tự động";
         }
 
         private static string GetAuditValue(DataRowView row, string columnName)
@@ -656,8 +681,8 @@ namespace QuanLyYTe.Forms.BackupRecovery
                     GetProcedureKey(keys, tableName, 2));
                 GridViewStyler.Format(dgvCurrentRow);
                 GridViewStyler.Format(dgvFlashbackRow);
-                dgvCurrentRow.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
-                dgvFlashbackRow.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+                dgvCurrentRow.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
+                dgvFlashbackRow.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
                 lblCurrentRow.Text = $"Hien tai: {tableName} ({keySummary})";
                 lblFlashbackRow.Text = $"AS OF SCN {auditScn - 1}";
             }
@@ -695,7 +720,18 @@ namespace QuanLyYTe.Forms.BackupRecovery
                     GetProcedureKey(keys, tableName, 2));
 
                 MessageBox.Show($"Khoi phuc thanh cong dong {tableName}: {keySummary}", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                LoadStandardAuditLogs();
+                
+            // Prevent DataGridView crashes due to OracleClob or unrecognized data types
+            dgvPatient.DataError += Dgv_DataError;
+            dgvMedicalRecord.DataError += Dgv_DataError;
+            dgvFgaAudit.DataError += Dgv_DataError;
+            dgvCurrentRow.DataError += Dgv_DataError;
+            dgvFlashbackRow.DataError += Dgv_DataError;
+            dgvBackupHistory.DataError += Dgv_DataError;
+            dgvRestoreHistory.DataError += Dgv_DataError;
+            dgvStandardAudit.DataError += Dgv_DataError;
+
+            LoadStandardAuditLogs();
                 LoadAuditRecoveryPoints();
                 LoadFgaAuditLogs();
                 LoadTableData();
@@ -753,6 +789,17 @@ namespace QuanLyYTe.Forms.BackupRecovery
         // --- Event Handlers ---
         private void btnRefresh_Click(object sender, EventArgs e)
         {
+            
+            // Prevent DataGridView crashes due to OracleClob or unrecognized data types
+            dgvPatient.DataError += Dgv_DataError;
+            dgvMedicalRecord.DataError += Dgv_DataError;
+            dgvFgaAudit.DataError += Dgv_DataError;
+            dgvCurrentRow.DataError += Dgv_DataError;
+            dgvFlashbackRow.DataError += Dgv_DataError;
+            dgvBackupHistory.DataError += Dgv_DataError;
+            dgvRestoreHistory.DataError += Dgv_DataError;
+            dgvStandardAudit.DataError += Dgv_DataError;
+
             LoadStandardAuditLogs();
             LoadTableData();
         }

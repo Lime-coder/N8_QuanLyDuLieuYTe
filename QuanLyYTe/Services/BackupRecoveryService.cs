@@ -90,6 +90,11 @@ namespace QuanLyYTe.Services
             return _repo.GetPrescriptions();
         }
 
+        public DataTable GetPatients()
+        {
+            return _repo.GetPatients();
+        }
+
         public DataTable GetMedicalRecords()
         {
             return _repo.GetMedicalRecords();

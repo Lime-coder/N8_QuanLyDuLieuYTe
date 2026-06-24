@@ -1,4 +1,4 @@
-﻿namespace QuanLyYTe.Forms.BackupRecovery
+namespace QuanLyYTe.Forms.BackupRecovery
 {
     partial class frmBackupRecovery
     {
@@ -57,6 +57,8 @@
             this.lblFlashbackRow = new System.Windows.Forms.Label();
             this.grpDataView = new System.Windows.Forms.GroupBox();
             this.tabControlData = new System.Windows.Forms.TabControl();
+            this.tabPatient = new System.Windows.Forms.TabPage();
+            this.dgvPatient = new System.Windows.Forms.DataGridView();
             this.tabMedicalRecord = new System.Windows.Forms.TabPage();
             this.dgvMedicalRecord = new System.Windows.Forms.DataGridView();
             this.grpCurrentData = new System.Windows.Forms.GroupBox();
@@ -86,6 +88,7 @@
             this.grpDataView.SuspendLayout();
             this.tabControlData.SuspendLayout();
             this.tabMedicalRecord.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvPatient)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvMedicalRecord)).BeginInit();
             this.grpCurrentData.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvStandardAudit)).BeginInit();
@@ -580,6 +583,7 @@
             //
             // tabControlData
             //
+            this.tabControlData.Controls.Add(this.tabPatient);
             this.tabControlData.Controls.Add(this.tabMedicalRecord);
             this.tabControlData.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControlData.Location = new System.Drawing.Point(8, 30);
@@ -588,6 +592,32 @@
             this.tabControlData.Size = new System.Drawing.Size(439, 369);
             this.tabControlData.TabIndex = 0;
             //
+            // 
+            // tabPatient
+            // 
+            this.tabPatient.Controls.Add(this.dgvPatient);
+            this.tabPatient.Location = new System.Drawing.Point(4, 29);
+            this.tabPatient.Name = "tabPatient";
+            this.tabPatient.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPatient.Size = new System.Drawing.Size(431, 336);
+            this.tabPatient.TabIndex = 2;
+            this.tabPatient.Text = "Bệnh nhân";
+            this.tabPatient.UseVisualStyleBackColor = true;
+            // 
+            // dgvPatient
+            // 
+            this.dgvPatient.AllowUserToAddRows = false;
+            this.dgvPatient.AllowUserToDeleteRows = false;
+            this.dgvPatient.BackgroundColor = System.Drawing.Color.White;
+            this.dgvPatient.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvPatient.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvPatient.Location = new System.Drawing.Point(3, 3);
+            this.dgvPatient.Name = "dgvPatient";
+            this.dgvPatient.ReadOnly = true;
+            this.dgvPatient.RowHeadersWidth = 51;
+            this.dgvPatient.Size = new System.Drawing.Size(425, 330);
+            this.dgvPatient.TabIndex = 0;
+            // 
             // tabMedicalRecord
             //
             this.tabMedicalRecord.Controls.Add(this.dgvMedicalRecord);
@@ -708,7 +738,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.dgvFlashbackRow)).EndInit();
             this.grpDataView.ResumeLayout(false);
             this.tabControlData.ResumeLayout(false);
+            this.tabPatient.ResumeLayout(false);
             this.tabMedicalRecord.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvPatient)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvMedicalRecord)).EndInit();
             this.grpCurrentData.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvStandardAudit)).EndInit();
@@ -759,6 +791,8 @@
         private System.Windows.Forms.Label lblFlashbackRow;
         private System.Windows.Forms.GroupBox grpDataView;
         private System.Windows.Forms.TabControl tabControlData;
+        private System.Windows.Forms.TabPage tabPatient;
+        private System.Windows.Forms.DataGridView dgvPatient;
         private System.Windows.Forms.TabPage tabMedicalRecord;
         private System.Windows.Forms.DataGridView dgvMedicalRecord;
         private System.Windows.Forms.GroupBox grpCurrentData;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Globalization;
 using Oracle.ManagedDataAccess.Client;
@@ -162,7 +162,7 @@ namespace QuanLyYTe.Repositories
                 switch (safeTable)
                 {
                     case "PATIENT":
-                        sql = $"SELECT * FROM hospital.PATIENT{flashbackClause} WHERE PATIENT_ID = :key1";
+                        sql = $"SELECT PATIENT_ID, FULL_NAME, GENDER, BIRTHDATE, ID_CARD FROM hospital.PATIENT{flashbackClause} WHERE PATIENT_ID = :key1";
                         cmd.Parameters.Add("key1", OracleDbType.Varchar2).Value = key1;
                         break;
 
@@ -241,7 +241,7 @@ namespace QuanLyYTe.Repositories
         // Kiểm tra trạng thái của AUTO_BACKUP_JOB
         public DataTable GetJobState()
         {
-            string sql = "SELECT STATE, REPEAT_INTERVAL FROM ALL_SCHEDULER_JOBS WHERE OWNER = 'HOSPITAL' AND JOB_NAME = 'AUTO_BACKUP_JOB'";
+            string sql = "SELECT STATE, ENABLED, REPEAT_INTERVAL FROM ALL_SCHEDULER_JOBS WHERE OWNER = 'HOSPITAL' AND JOB_NAME = 'AUTO_BACKUP_JOB'";
             return _dbProvider.ExecuteQuery(sql);
         }
 
@@ -340,7 +340,13 @@ namespace QuanLyYTe.Repositories
         {
             string sql = @"
             BEGIN
-                DBMS_SCHEDULER.DISABLE('hospital.AUTO_BACKUP_JOB', force => FALSE);
+                -- Stop any currently running instance first
+                BEGIN
+                    DBMS_SCHEDULER.STOP_JOB('hospital.AUTO_BACKUP_JOB', force => TRUE);
+                EXCEPTION WHEN OTHERS THEN NULL; -- OK if not running
+                END;
+                -- Then disable to prevent rescheduling
+                DBMS_SCHEDULER.DISABLE('hospital.AUTO_BACKUP_JOB', force => TRUE);
             END;";
 
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
@@ -376,6 +382,11 @@ namespace QuanLyYTe.Repositories
         public DataTable GetPrescriptions()
         {
             return _dbProvider.ExecuteQuery("SELECT * FROM hospital.PRESCRIPTION");
+        }
+
+        public DataTable GetPatients()
+        {
+            return _dbProvider.ExecuteQuery("SELECT PATIENT_ID, FULL_NAME, GENDER, BIRTHDATE, ID_CARD FROM hospital.PATIENT");
         }
 
         public DataTable GetMedicalRecords()
