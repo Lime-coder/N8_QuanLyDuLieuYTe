@@ -192,12 +192,13 @@ namespace QuanLyYTe.Forms.BackupRecovery
 
                 if (dt.Rows.Count > 0)
                 {
-                    var points = new List<KeyValuePair<DateTime, string>>();
+                    var points = new List<KeyValuePair<long, string>>();
                     foreach (DataRow row in dt.Rows)
                     {
+                        long scn = Convert.ToInt64(row["SCN"]);
                         DateTime time = Convert.ToDateTime(row["AUDIT_TIME"]);
                         string action = row["ACTION_NAME"].ToString();
-                        points.Add(new KeyValuePair<DateTime, string>(time, $"{action} lúc {time:dd/MM/yyyy HH:mm:ss}"));
+                        points.Add(new KeyValuePair<long, string>(scn, $"{action} lúc {time:dd/MM/yyyy HH:mm:ss}"));
                     }
                     cboBackupVersion.DataSource = points;
                     cboBackupVersion.DisplayMember = "Value";
@@ -383,14 +384,15 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 return;
             }
 
-            DateTime auditTime = (DateTime)cboBackupVersion.SelectedValue;
+            long auditScn = (long)cboBackupVersion.SelectedValue;
+            string displayInfo = ((KeyValuePair<long, string>)cboBackupVersion.SelectedItem).Value;
 
-            var confirm = MessageBox.Show($"Bạn có chắc chắn muốn khôi phục dữ liệu BA001 về trạng thái ngay trước thời điểm {auditTime:HH:mm:ss dd/MM/yyyy}?", "Khôi phục dữ liệu", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var confirm = MessageBox.Show($"Bạn có chắc chắn muốn khôi phục dữ liệu BA001 về trạng thái ngay trước thời điểm {displayInfo}?", "Khôi phục dữ liệu", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (confirm != DialogResult.Yes) return;
 
             try
             {
-                _service.BackupRestoreByAudit(auditTime);
+                _service.BackupRestoreByAudit(auditScn);
                 MessageBox.Show($"Khôi phục dữ liệu thành công cho BA001 bằng Flashback Query!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 LoadCurrentData();
                 LoadAuditRecoveryPoints();

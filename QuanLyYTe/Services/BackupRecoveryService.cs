@@ -78,9 +78,9 @@ namespace QuanLyYTe.Services
             return _repo.SimulateWrongUpdate();
         }
 
-        public void BackupRestoreByAudit(DateTime auditTime)
+        public void BackupRestoreByAudit(long auditScn)
         {
-            _repo.BackupRestoreByAudit("BA001", auditTime);
+            _repo.BackupRestoreByAudit("BA001", auditScn);
         }
     }
 }

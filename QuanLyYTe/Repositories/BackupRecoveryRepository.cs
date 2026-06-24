@@ -35,7 +35,7 @@ namespace QuanLyYTe.Repositories
         public DataTable GetAuditRecoveryPoints()
         {
             string sql = @"
-                SELECT EVENT_TIMESTAMP AS AUDIT_TIME, ACTION_NAME 
+                SELECT SCN, EVENT_TIMESTAMP AS AUDIT_TIME, ACTION_NAME 
                 FROM UNIFIED_AUDIT_TRAIL 
                 WHERE OBJECT_SCHEMA = 'HOSPITAL' 
                   AND OBJECT_NAME = 'PRESCRIPTION' 
@@ -203,7 +203,7 @@ namespace QuanLyYTe.Repositories
         }
 
         // Phục hồi dữ liệu dựa trên Audit (SP: USP_RESTORE_PRESCRIPTION_BY_AUDIT)
-        public void BackupRestoreByAudit(string recordId, DateTime auditTime)
+        public void BackupRestoreByAudit(string recordId, long auditScn)
         {
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
             {
@@ -211,8 +211,7 @@ namespace QuanLyYTe.Repositories
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.Add(new OracleParameter("p_record_id", OracleDbType.Varchar2) { Value = recordId });
-                    cmd.Parameters.Add(new OracleParameter("p_audit_event_time", OracleDbType.TimeStamp) { Value = auditTime });
-                    cmd.Parameters.Add(new OracleParameter("p_seconds_before", OracleDbType.Int32) { Value = 0 });
+                    cmd.Parameters.Add(new OracleParameter("p_audit_scn", OracleDbType.Decimal) { Value = auditScn });
                     conn.Open();
                     cmd.ExecuteNonQuery();
                 }
