@@ -90,7 +90,7 @@ namespace QuanLyYTe.Forms.Technician
             // 
             // panelHeader
             // 
-            panelHeader.BackColor = Color.FromArgb(30, 41, 59);
+            panelHeader.BackColor = Color.Black;
             panelHeader.Controls.Add(btnLogout);
             panelHeader.Controls.Add(lblAppSubtitle);
             panelHeader.Controls.Add(lblAppTitle);
@@ -127,17 +127,20 @@ namespace QuanLyYTe.Forms.Technician
             lblAppSubtitle.Size = new Size(369, 20);
             lblAppSubtitle.TabIndex = 1;
             lblAppSubtitle.Text = "Thực hiện dịch vụ được phân công và ghi nhận kết quả";
+            lblAppSubtitle.Visible = false;
             // 
             // lblAppTitle
             // 
-            lblAppTitle.AutoSize = true;
+            lblAppTitle.AutoSize = false;
+            lblAppTitle.Dock = DockStyle.Fill;
             lblAppTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            lblAppTitle.ForeColor = Color.White;
-            lblAppTitle.Location = new Point(18, 12);
+            lblAppTitle.ForeColor = Color.FromArgb(255, 140, 40);
+            lblAppTitle.Location = new Point(0, 0);
             lblAppTitle.Name = "lblAppTitle";
-            lblAppTitle.Size = new Size(187, 37);
+            lblAppTitle.Size = new Size(1000, 80);
             lblAppTitle.TabIndex = 2;
-            lblAppTitle.Text = "Kỹ thuật viên";
+            lblAppTitle.Text = "QUẢN LÝ Y TẾ - KỸ THUẬT VIÊN";
+            lblAppTitle.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // tabControlMain
             // 
@@ -764,6 +767,7 @@ namespace QuanLyYTe.Forms.Technician
             Name = "frmTechnician";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Kỹ thuật viên";
+            WindowState = FormWindowState.Maximized;
             panelHeader.ResumeLayout(false);
             panelHeader.PerformLayout();
             tabControlMain.ResumeLayout(false);
