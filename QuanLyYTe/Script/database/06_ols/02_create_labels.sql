@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 02_create_labels.sql
--- Cháº¡y dÆ°á»›i quyá»n: sysdba
+-- Ch?y du?i quy?n: hospital_dba
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 ALTER SESSION SET CURRENT_SCHEMA = hospital;

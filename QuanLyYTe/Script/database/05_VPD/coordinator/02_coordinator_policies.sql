@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 03_coordinator_policies.sql
--- Cháº¡y dÆ°á»›i quyá»n: hospital_dba
+-- Chạy dưới quyền: hospital_dba
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
@@ -15,7 +15,7 @@ BEGIN
         DBMS_RLS.DROP_POLICY('HOSPITAL', 'STAFF', 'POL_VPD_STAFF_SELF_UPDATE');
     EXCEPTION WHEN OTHERS THEN NULL; END;
 
-    -- Policy 1: SELECT trá»±c tiáº¿p STAFF chá»‰ tháº¥y chÃ­nh mÃ¬nh
+    -- Policy 1: SELECT trực tiếp STAFF chỉ thấy chính mình
     DBMS_RLS.ADD_POLICY(
         object_schema   => 'HOSPITAL',
         object_name     => 'STAFF',
@@ -25,7 +25,7 @@ BEGIN
         statement_types => 'SELECT'
     );
 
-    -- Policy 2: UPDATE phone, hometown chá»‰ trÃªn dÃ²ng chÃ­nh mÃ¬nh
+    -- Policy 2: UPDATE phone, hometown chỉ trên dòng chính mình
     DBMS_RLS.ADD_POLICY(
         object_schema     => 'HOSPITAL',
         object_name       => 'STAFF',

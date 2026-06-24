@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 02_coordinator_vpd_functions.sql
--- Cháº¡y dÆ°á»›i quyá»n: hospital_dba
+-- Chạy dưới quyền: hospital_dba
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
@@ -13,7 +13,7 @@ CREATE OR REPLACE FUNCTION FN_VPD_STAFF_SELF (
 RETURN VARCHAR2
 AS
 BEGIN
-    IF SYS_CONTEXT('USERENV', 'CURRENT_USER') IN ('HOSPITAL', 'HOSPITAL_DBA') THEN
+    IF SYS_CONTEXT('USERENV', 'SESSION_USER') IN ('HOSPITAL', 'HOSPITAL_DBA') THEN
         RETURN '1=1';
     END IF;
 

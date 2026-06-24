@@ -1,8 +1,8 @@
 -- ==============================================================================
 -- 04_create_db_accounts_for_seeded_data.sql
--- Cháº¡y dÆ°á»›i quyá»n: SYS AS SYSDBA
--- Má»¥c Ä‘Ã­ch: Táº¡o Oracle Database Login Account cho toÃ n bá»™ dá»¯ liá»‡u máº«u (Seed Data)
---           Bao gá»“m cáº£ U1 -> U8 vÃ  toÃ n bá»™ NV000xxx, BN000xxx
+-- Ch?y du?i quy?n: hospital_dba
+-- Mục đích: Tạo Oracle Database Login Account cho toàn bộ dữ liệu mẫu (Seed Data)
+--           Bao gồm cả U1 -> U8 và toàn bộ NV000xxx, BN000xxx
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 
@@ -16,7 +16,7 @@ BEGIN
         BEGIN
             v_sql := 'CREATE USER ' || r.username_db || ' IDENTIFIED BY "123"';
             EXECUTE IMMEDIATE v_sql;
-        EXCEPTION WHEN OTHERS THEN NULL; -- Bá» qua náº¿u user Ä‘Ã£ tá»“n táº¡i
+        EXCEPTION WHEN OTHERS THEN NULL; -- Bỏ qua nếu user đã tồn tại
         END;
         
         BEGIN
@@ -44,7 +44,7 @@ BEGIN
             v_sql := 'ALTER USER ' || r.username_db || ' DEFAULT ROLE ALL';
             EXECUTE IMMEDIATE v_sql;
         EXCEPTION WHEN OTHERS THEN 
-            NULL; -- Bá» qua náº¿u user Ä‘Ã£ tá»“n táº¡i
+            NULL; -- Bỏ qua nếu user đã tồn tại
         END;
     END LOOP;
 END;
@@ -80,7 +80,7 @@ BEGIN
             v_sql := 'ALTER USER ' || r.username_db || ' DEFAULT ROLE ALL';
             EXECUTE IMMEDIATE v_sql;
         EXCEPTION WHEN OTHERS THEN 
-            NULL; -- Bá» qua náº¿u user Ä‘Ã£ tá»“n táº¡i
+            NULL; -- Bỏ qua nếu user đã tồn tại
         END;
     END LOOP;
 END;

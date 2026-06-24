@@ -247,9 +247,8 @@ namespace QuanLyYTe.Forms.DBA
         private void UpdateDeptVisibility()
         {
             if (_isPatient) return;
-            bool isDoctor = Role == "RL_DOCTOR";
-            lblDept.Visible = isDoctor;
-            cmbDept.Visible = isDoctor;
+            lblDept.Visible = true;
+            cmbDept.Visible = true;
         }
 
         private void cmbRole_SelectedIndexChanged(object sender, EventArgs e)

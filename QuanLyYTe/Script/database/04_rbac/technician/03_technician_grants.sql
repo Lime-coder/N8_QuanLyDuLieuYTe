@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 03_technician_grants.sql
--- ChÃ¡ÂºÂ¡y dÃ†Â°Ã¡Â»â€ºi quyÃ¡Â»Ân: hospital (or sysdba with CURRENT_SCHEMA=hospital)
+-- Cháº¡y dÆ°á»›i quyá»n: hospital (or sysdba with CURRENT_SCHEMA=hospital)
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;

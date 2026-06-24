@@ -146,29 +146,35 @@ namespace QuanLyYTe.Repositories
         public void EnableAutoBackup(string repeatInterval)
         {
             string sql = $@"
+            DECLARE
+                v_count NUMBER;
             BEGIN
-                -- Disable job cũ nếu đang chạy
-                BEGIN
-                    DBMS_SCHEDULER.DISABLE('hospital.AUTO_BACKUP_JOB', force => TRUE);
-                EXCEPTION WHEN OTHERS THEN NULL;
-                END;
+                SELECT COUNT(*) INTO v_count FROM ALL_SCHEDULER_JOBS WHERE JOB_NAME = 'AUTO_BACKUP_JOB' AND OWNER = 'HOSPITAL';
+                IF v_count = 0 THEN
+                    DBMS_SCHEDULER.CREATE_JOB (
+                        job_name        => 'hospital.AUTO_BACKUP_JOB',
+                        job_type        => 'STORED_PROCEDURE',
+                        job_action      => 'hospital.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP',
+                        start_date      => SYSTIMESTAMP,
+                        repeat_interval => '{repeatInterval}',
+                        enabled         => TRUE,
+                        comments        => 'Automatic backup job for PRESCRIPTION table'
+                    );
+                ELSE
+                    DBMS_SCHEDULER.DISABLE('hospital.AUTO_BACKUP_JOB', force => FALSE);
+                    DBMS_SCHEDULER.SET_ATTRIBUTE('hospital.AUTO_BACKUP_JOB', 'job_type', 'STORED_PROCEDURE');
+                    DBMS_SCHEDULER.SET_ATTRIBUTE('hospital.AUTO_BACKUP_JOB', 'job_action', 'hospital.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP');
+                    DBMS_SCHEDULER.SET_ATTRIBUTE('hospital.AUTO_BACKUP_JOB', 'repeat_interval', '{repeatInterval}');
+                    DBMS_SCHEDULER.SET_ATTRIBUTE('hospital.AUTO_BACKUP_JOB', 'start_date', SYSTIMESTAMP);
+                    DBMS_SCHEDULER.SET_ATTRIBUTE_NULL('hospital.AUTO_BACKUP_JOB', 'end_date');
+                    DBMS_SCHEDULER.ENABLE('hospital.AUTO_BACKUP_JOB');
+                END IF;
 
-                -- Xóa job cũ
                 BEGIN
-                    DBMS_SCHEDULER.DROP_JOB('hospital.AUTO_BACKUP_JOB', force => TRUE);
-                EXCEPTION WHEN OTHERS THEN NULL;
+                    DBMS_SCHEDULER.RUN_JOB('hospital.AUTO_BACKUP_JOB', use_current_session => FALSE);
+                EXCEPTION WHEN OTHERS THEN
+                    NULL;
                 END;
-
-                -- Tạo và kích hoạt job mới
-                DBMS_SCHEDULER.CREATE_JOB (
-                    job_name        => 'hospital.AUTO_BACKUP_JOB',
-                    job_type        => 'STORED_PROCEDURE',
-                    job_action      => 'hospital.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP',
-                    start_date      => SYSTIMESTAMP,
-                    repeat_interval => '{repeatInterval}',
-                    enabled         => TRUE,
-                    comments        => 'Automatic backup job for PRESCRIPTION table'
-                );
             END;";
 
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
@@ -186,7 +192,7 @@ namespace QuanLyYTe.Repositories
         {
             string sql = @"
             BEGIN
-                DBMS_SCHEDULER.DISABLE('hospital.AUTO_BACKUP_JOB', force => TRUE);
+                DBMS_SCHEDULER.DISABLE('hospital.AUTO_BACKUP_JOB', force => FALSE);
             END;";
 
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))

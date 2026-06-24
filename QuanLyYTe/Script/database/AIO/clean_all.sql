@@ -1,6 +1,6 @@
 -- ==============================================================================
--- ThÆ° má»¥c AIO - Script XÃ³a ToÃ n Bá»™ (Clean All)
--- ChÃº Ã½: Script nÃ y sáº½ xÃ³a TOÃ€N Bá»˜ dá»¯ liá»‡u, ngÆ°á»i dÃ¹ng, policy vÃ  cáº¥u hÃ¬nh
+-- Thư mục AIO - Script Xóa Toàn Bộ (Clean All)
+-- Chú ý: Script này sẽ xóa TOÀN BỘ dữ liệu, người dùng, policy và cấu hình
 -- ==============================================================================
 SET ECHO OFF
 SET VERIFY OFF

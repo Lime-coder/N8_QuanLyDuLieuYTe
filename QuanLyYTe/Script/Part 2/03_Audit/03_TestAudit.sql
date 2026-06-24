@@ -29,7 +29,8 @@ SHOW CON_NAME;
 -- THẤT BẠI: Kỹ thuật viên cố tình tự tạo hồ sơ bệnh án
 BEGIN
     EXECUTE IMMEDIATE q'[INSERT INTO hospital.medical_record (record_id, diagnosis, treatment_plan, conclusion) VALUES ('BA_TEST002', N'Hack dữ liệu', N'Chưa điều trị', N'Chưa kết luận')]';
-EXCEPTION WHEN OTHERS THEN NULL; END;
+EXCEPTION WHEN OTHERS THEN NULL; 
+END;
 /
 
 

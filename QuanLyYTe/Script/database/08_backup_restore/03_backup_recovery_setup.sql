@@ -705,8 +705,8 @@ END;
 BEGIN
     DBMS_SCHEDULER.CREATE_JOB(
         job_name        => 'HOSPITAL.AUTO_BACKUP_JOB',
-        job_type        => 'PLSQL_BLOCK',
-        job_action      => 'BEGIN hospital.USP_AUTO_BACKUP; END;',
+        job_type        => 'STORED_PROCEDURE',
+        job_action      => 'hospital.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP',
         start_date      => SYSTIMESTAMP,
         repeat_interval => 'FREQ=DAILY;BYHOUR=2;BYMINUTE=0;BYSECOND=0',
         enabled         => FALSE,

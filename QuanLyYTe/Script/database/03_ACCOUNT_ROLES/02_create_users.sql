@@ -1,4 +1,4 @@
--- Cháº¡y dÆ°á»›i quyá»n: hospital_dba | Container: PDB_QLYT
+-- Chạy dưới quyền: hospital_dba | Container: PDB_QLYT
 -- ALTER SESSION SET CONTAINER = PDB_QLYT;
 
 -- Returns the granted role for a user (assumes one active role per user)
@@ -48,13 +48,13 @@ BEGIN
     END IF;
 END USP_GET_USER_ID;
 /
--- Cháº¡y dÆ°á»›i quyá»n: hospital_dba | Container: PDB_QLYT
+-- Chạy dưới quyền: hospital_dba | Container: PDB_QLYT
 -- This script contains the procedures for linking DB users to App tables.
 
 ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 -- CREATE LINKED USER
-CREATE OR REPLACE PROCEDURE USP_CREATE_USER_LINKED (
+CREATE OR REPLACE PROCEDURE hospital_dba.USP_CREATE_USER_LINKED (
     p_username IN VARCHAR2,
     p_password IN VARCHAR2,
     p_full_name IN NVARCHAR2,
@@ -78,10 +78,17 @@ CREATE OR REPLACE PROCEDURE USP_CREATE_USER_LINKED (
     v_id   VARCHAR2(10);
     v_role VARCHAR2(128);
     v_pwd  VARCHAR2(4000);
+    v_count NUMBER;
 BEGIN
     v_user := DBMS_ASSERT.SIMPLE_SQL_NAME(UPPER(TRIM(p_username)));
     v_role := UPPER(TRIM(p_role));
     v_pwd  := REPLACE(p_password, '"', '""');
+
+    -- Pre-flight check: ensure user doesn't already exist to prevent unhandled DDL errors
+    SELECT COUNT(*) INTO v_count FROM dba_users WHERE username = v_user;
+    IF v_count > 0 THEN
+        RAISE_APPLICATION_ERROR(-20001, UNISTR('T\00EAn \0111\0103ng nh\1EADp \0111\00E3 t\1ED3n t\1EA1i trong h\1EC7 th\1ED1ng.'));
+    END IF;
 
     -- 1. Create DB User
     EXECUTE IMMEDIATE 'CREATE USER ' || v_user || ' IDENTIFIED BY "' || v_pwd || '"';
@@ -92,29 +99,34 @@ BEGIN
     EXECUTE IMMEDIATE 'ALTER USER ' || v_user || ' DEFAULT ROLE ALL';
 
     -- 2. Insert into App Tables (is_active is 1 by default)
-    IF v_role = 'RL_PATIENT' THEN
-        v_id := 'BN' || LPAD(hospital.SEQ_PATIENT_ID.NEXTVAL, 6, '0');
-        INSERT INTO hospital.patient (patient_id, full_name, gender, birthdate, id_card, house_no, street, district, city_province, medical_history, family_medical_history, drug_allergies, username_db, is_active)
-        VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_house_no, p_street, p_district, p_city_province, p_medical_history, p_family_medical_history, p_drug_allergies, v_user, 1);
-    ELSE
-        v_id := 'NV' || LPAD(hospital.SEQ_STAFF_ID.NEXTVAL, 6, '0');
-        INSERT INTO hospital.staff (staff_id, full_name, gender, birthdate, id_card, phone, hometown, dept_id, facility, staff_role, username_db, is_active)
-        VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_phone, p_hometown, 
-                CASE WHEN v_role = 'RL_DOCTOR' THEN p_dept_id ELSE NULL END, 
-                p_facility,
-                CASE v_role 
-                    WHEN 'RL_DOCTOR' THEN UNISTR('B\00E1c s\0129')
-                    WHEN 'RL_COORDINATOR' THEN UNISTR('\0110i\1EC1u ph\1ED1i vi\00EAn')
-                    WHEN 'RL_TECHNICIAN' THEN UNISTR('K\1EF9 thu\1EADt vi\00EAn')
-                END, 
-                v_user, 1);
-    END IF;
-    
-    COMMIT;
-EXCEPTION
-    WHEN OTHERS THEN
-        ROLLBACK;
-        RAISE;
+    BEGIN
+        IF v_role = 'RL_PATIENT' THEN
+            v_id := 'BN' || LPAD(hospital.SEQ_PATIENT_ID.NEXTVAL, 6, '0');
+            INSERT INTO hospital.patient (patient_id, full_name, gender, birthdate, id_card, house_no, street, district, city_province, medical_history, family_medical_history, drug_allergies, username_db, is_active)
+            VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_house_no, p_street, p_district, p_city_province, p_medical_history, p_family_medical_history, p_drug_allergies, v_user, 1);
+        ELSE
+            v_id := 'NV' || LPAD(hospital.SEQ_STAFF_ID.NEXTVAL, 6, '0');
+            INSERT INTO hospital.staff (staff_id, full_name, gender, birthdate, id_card, phone, hometown, dept_id, facility, staff_role, username_db, is_active)
+            VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_phone, p_hometown, 
+                    p_dept_id, -- Used for all staff roles now
+                    p_facility,
+                    CASE v_role 
+                        WHEN 'RL_DOCTOR' THEN UNISTR('B\00E1c s\0129')
+                        WHEN 'RL_COORDINATOR' THEN UNISTR('\0110i\1EC1u ph\1ED1i vi\00EAn')
+                        WHEN 'RL_TECHNICIAN' THEN UNISTR('K\1EF9 thu\1EADt vi\00EAn')
+                    END, 
+                    v_user, 1);
+        END IF;
+        
+        COMMIT;
+    EXCEPTION
+        WHEN OTHERS THEN
+            -- If DML fails (e.g. duplicate id_card), rollback the transaction
+            ROLLBACK;
+            -- Clean up the newly created Oracle user to prevent orphaned DDL
+            EXECUTE IMMEDIATE 'DROP USER ' || v_user || ' CASCADE';
+            RAISE;
+    END;
 END;
 /
 

@@ -355,11 +355,15 @@ namespace QuanLyYTe.Forms.BackupRecovery
 
             try
             {
+                DateTime startTime = DateTime.Now;
                 await System.Threading.Tasks.Task.Run(() => _service.EnableAutoBackup(intervalSel));
                 MessageBox.Show($"Kích hoạt sao lưu tự động thành công! Chu kỳ: {intervalSel}", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
                 UpdateSchedulerStatusUI();
                 LoadBackupHistory();
+
+                // Bắt đầu kiểm tra ngầm để tự động tải lại bảng lịch sử khi tiến trình sao lưu chạy xong
+                StartBackupPolling(startTime);
             }
             catch (Exception ex)
             {
@@ -371,26 +375,91 @@ namespace QuanLyYTe.Forms.BackupRecovery
                 btnEnableAutoBackup.Text = "Bật sao lưu Tự động";
             }
         }
+
+        private async void StartBackupPolling(DateTime startTime)
+        {
+            // Kiểm tra mỗi 3 giây, tối đa 10 lần (30 giây)
+            for (int i = 0; i < 10; i++)
+            {
+                await System.Threading.Tasks.Task.Delay(3000);
+
+                if (this.IsDisposed) return;
+
+                LoadBackupHistory();
+                LoadAuditRecoveryPoints();
+
+                if (HasNewAutoBackup(startTime))
+                {
+                    break;
+                }
+            }
+        }
+
+        private bool HasNewAutoBackup(DateTime startTime)
+        {
+            if (dgvBackupHistory.DataSource is DataTable dt)
+            {
+                foreach (DataRow row in dt.Rows)
+                {
+                    if (row["BACKUP_TYPE"]?.ToString() == "AUTO" && 
+                        row["BACKUP_TIME"] != DBNull.Value)
+                    {
+                        DateTime backupTime = Convert.ToDateTime(row["BACKUP_TIME"]);
+                        if (backupTime >= startTime.AddSeconds(-5))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
         // Tắt sao lưu tự động thông qua Service
         private async void DisableAutoBackup()
         {
             btnDisableAutoBackup.Enabled = false;
             btnDisableAutoBackup.Text = "Đang tắt...";
+            lblSchedulerStatus.Text = "Trạng thái Backup Auto: 🟡 Đang chờ tắt...";
+            lblSchedulerStatus.ForeColor = Color.Orange;
+
             try
             {
-                await System.Threading.Tasks.Task.Run(() => _service.DisableAutoBackup());
+                await System.Threading.Tasks.Task.Run(async () =>
+                {
+                    while (true)
+                    {
+                        if (this.IsDisposed) return;
+                        try
+                        {
+                            _service.DisableAutoBackup();
+                            break; // Success!
+                        }
+                        catch (OracleException ex) when (ex.Number == 27478)
+                        {
+                            // Job is running, wait 2 seconds and retry
+                            await System.Threading.Tasks.Task.Delay(2000);
+                        }
+                    }
+                });
+
+                if (this.IsDisposed) return;
+
                 MessageBox.Show("Đã dừng sao lưu tự động (Job disabled).", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                
                 UpdateSchedulerStatusUI();
             }
             catch (Exception ex)
             {
+                if (this.IsDisposed) return;
                 ShowOperationError("Tat sao luu tu dong", ex);
+                UpdateSchedulerStatusUI();
             }
             finally
             {
-                btnDisableAutoBackup.Enabled = true;
-                btnDisableAutoBackup.Text = "Tắt sao lưu Tự động";
+                if (!this.IsDisposed)
+                {
+                    btnDisableAutoBackup.Enabled = true;
+                    btnDisableAutoBackup.Text = "Tắt sao lưu Tự động";
+                }
             }
         }
 
