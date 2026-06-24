@@ -51,7 +51,7 @@ END;
 /
 
 PROMPT ====================================================================
-PROMPT Tao tai khoan Database thuc te cho Toan bo Benh nhan
+PROMPT Tao tai khoan Database thuc te cho Benh nhan
 PROMPT ====================================================================
 DECLARE
     v_sql VARCHAR2(1000);

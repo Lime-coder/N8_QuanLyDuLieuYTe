@@ -288,46 +288,6 @@ EXCEPTION
 END;
 /
 
--- GET ACTIVE DOCTORS (For new medical records)
-CREATE OR REPLACE PROCEDURE USP_GET_ACTIVE_DOCTORS (
-    p_cursor OUT SYS_REFCURSOR
-) AUTHID CURRENT_USER AS
-BEGIN
-    OPEN p_cursor FOR
-        SELECT s.staff_id, s.full_name, s.dept_id, d.dept_name
-        FROM hospital.staff s
-        LEFT JOIN hospital.department d ON s.dept_id = d.dept_id
-        WHERE s.staff_role = UNISTR('B\00E1c s\0129') AND s.is_active = 1
-        ORDER BY s.full_name;
-END;
-/
-
--- GET ACTIVE PATIENTS
-CREATE OR REPLACE PROCEDURE USP_GET_ACTIVE_PATIENTS (
-    p_cursor OUT SYS_REFCURSOR
-) AUTHID CURRENT_USER AS
-BEGIN
-    OPEN p_cursor FOR
-        SELECT patient_id, full_name, gender, birthdate, id_card
-        FROM hospital.patient
-        WHERE is_active = 1
-        ORDER BY full_name;
-END;
-/
-
--- GET ACTIVE STAFF
-CREATE OR REPLACE PROCEDURE USP_GET_ACTIVE_STAFF (
-    p_cursor OUT SYS_REFCURSOR
-) AUTHID CURRENT_USER AS
-BEGIN
-    OPEN p_cursor FOR
-        SELECT staff_id, full_name, staff_role, dept_id
-        FROM hospital.staff
-        WHERE is_active = 1
-        ORDER BY staff_role, full_name;
-END;
-/
-
 -- GET ALL DEPARTMENTS
 CREATE OR REPLACE PROCEDURE USP_GET_ALL_DEPARTMENTS (
     p_cursor OUT SYS_REFCURSOR
