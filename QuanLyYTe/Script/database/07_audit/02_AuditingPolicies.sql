@@ -136,7 +136,7 @@ CREATE AUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY
     UPDATE ON hospital.service_record, 
     DELETE ON hospital.service_record; 
 
--- Bật Audit để bắt TẤT CẢ hành vi (Thành công + Thất bại)
+-- Bật Audit để bắt hành vi Thất bại
 AUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY WHENEVER NOT SUCCESSFUL;
 -- Thêm yêu cầu ở TC#4: Các thao tác cập nhật trên trường KẾTQUẢ của HSBA_DV đều được ghi vết.
 BEGIN

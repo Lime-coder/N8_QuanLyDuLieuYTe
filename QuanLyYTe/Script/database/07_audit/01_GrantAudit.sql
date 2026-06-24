@@ -1,4 +1,4 @@
--- Run as-- Run as: SYSDBA
+-- Run as: SYSDBA
 -- ============================================================
 -- 1. Kích hoạt kiểm toán hệ thống và cấp quyền cần thiết cho hospital_dba
 -- ============================================================
@@ -14,7 +14,7 @@ ALTER SESSION SET CONTAINER = PDB_QLYT;
 GRANT AUDIT_ADMIN TO HOSPITAL_DBA;   -- Quyền quản trị chính sách
 GRANT AUDIT_VIEWER TO HOSPITAL_DBA;  -- Quyền xem nhật ký (Bao gồm UNIFIED_AUDIT_TRAIL)
 
--- SỬA LỖI ORA-00942: Cấp quyền trên view thuộc AUDSYS
+-- Cấp quyền trên view thuộc AUDSYS
 GRANT SELECT ON AUDSYS.UNIFIED_AUDIT_TRAIL TO HOSPITAL_DBA;
 GRANT SELECT ON SYS.DBA_AUDIT_TRAIL TO HOSPITAL_DBA;
 GRANT SELECT ON SYS.DBA_FGA_AUDIT_TRAIL TO HOSPITAL_DBA;

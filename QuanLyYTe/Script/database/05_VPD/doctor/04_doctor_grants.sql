@@ -1,11 +1,10 @@
 -- ==============================================================================
--- 05_doctor_tests.sql
+-- 04_doctor_grants.sql
 -- Chạy dưới quyền: hospital_dba (for grants), then test as doctor
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 
--- 1. Grants
 GRANT EXECUTE ON hospital.USP_GET_MEDICAL_RECORD TO rl_doctor;
 GRANT EXECUTE ON hospital.USP_UPDATE_MEDICAL_RECORD TO rl_doctor;
 
@@ -21,5 +20,3 @@ GRANT EXECUTE ON hospital.USP_UPDATE_PATIENT TO rl_doctor;
 
 GRANT EXECUTE ON hospital.USP_GET_SELF_INFO TO rl_doctor;
 GRANT EXECUTE ON hospital.USP_UPDATE_SELF_INFO TO rl_doctor;
-
-GRANT UPDATE (hometown, phone) ON hospital.staff TO rl_doctor;

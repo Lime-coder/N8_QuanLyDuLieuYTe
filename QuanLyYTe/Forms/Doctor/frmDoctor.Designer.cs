@@ -17,215 +17,226 @@
 
         private void InitializeComponent()
         {
-            this.pnlSidebar = new System.Windows.Forms.Panel();
-            this.lblLogo = new System.Windows.Forms.Label();
-            this.btnNavHSBA = new System.Windows.Forms.Button();
-            this.btnNavPrescription = new System.Windows.Forms.Button();
-            this.btnNavPatient = new System.Windows.Forms.Button();
-            this.btnNavProfile = new System.Windows.Forms.Button();
-            this.btnNavNotifications = new System.Windows.Forms.Button();
-            this.btnLogout = new System.Windows.Forms.Button();
-            this.pnlTop = new System.Windows.Forms.Panel();
-            this.lblPageTitle = new System.Windows.Forms.Label();
-            this.lblBreadcrumb = new System.Windows.Forms.Label();
-            this.lblUserInfo = new System.Windows.Forms.Label();
-            this.pnlContent = new System.Windows.Forms.Panel();
-            this.pnlSidebar.SuspendLayout();
-            this.pnlTop.SuspendLayout();
-            this.SuspendLayout();
+            pnlSidebar = new Panel();
+            btnLogout = new Button();
+            btnNavNotifications = new Button();
+            btnNavProfile = new Button();
+            btnNavPatient = new Button();
+            btnNavPrescription = new Button();
+            btnNavHSBA = new Button();
+            lblLogo = new Label();
+            pnlTop = new Panel();
+            lblUserInfo = new Label();
+            lblBreadcrumb = new Label();
+            lblPageTitle = new Label();
+            pnlContent = new Panel();
+            pnlSidebar.SuspendLayout();
+            pnlTop.SuspendLayout();
+            SuspendLayout();
             // 
             // pnlSidebar
             // 
-            this.pnlSidebar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(31)))), ((int)(((byte)(31)))), ((int)(((byte)(31)))));
-            this.pnlSidebar.Controls.Add(this.btnLogout);
-            this.pnlSidebar.Controls.Add(this.btnNavNotifications);
-            this.pnlSidebar.Controls.Add(this.btnNavProfile);
-            this.pnlSidebar.Controls.Add(this.btnNavPatient);
-            this.pnlSidebar.Controls.Add(this.btnNavPrescription);
-            this.pnlSidebar.Controls.Add(this.btnNavHSBA);
-            this.pnlSidebar.Controls.Add(this.lblLogo);
-            this.pnlSidebar.Dock = System.Windows.Forms.DockStyle.Left;
-            this.pnlSidebar.Location = new System.Drawing.Point(0, 0);
-            this.pnlSidebar.Name = "pnlSidebar";
-            this.pnlSidebar.Size = new System.Drawing.Size(230, 850);
-            this.pnlSidebar.TabIndex = 0;
-            // 
-            // lblLogo
-            // 
-            this.lblLogo.Dock = System.Windows.Forms.DockStyle.Top;
-            this.lblLogo.Font = new System.Drawing.Font("Segoe UI", 15F, System.Drawing.FontStyle.Bold);
-            this.lblLogo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(140)))), ((int)(((byte)(40)))));
-            this.lblLogo.Location = new System.Drawing.Point(0, 0);
-            this.lblLogo.Name = "lblLogo";
-            this.lblLogo.Size = new System.Drawing.Size(230, 80);
-            this.lblLogo.TabIndex = 0;
-            this.lblLogo.Text = "HOSPITAL DOCTOR";
-            this.lblLogo.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // btnNavHSBA
-            // 
-            this.btnNavHSBA.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnNavHSBA.FlatAppearance.BorderSize = 0;
-            this.btnNavHSBA.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNavHSBA.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(190)))), ((int)(((byte)(190)))), ((int)(((byte)(200)))));
-            this.btnNavHSBA.Location = new System.Drawing.Point(0, 80);
-            this.btnNavHSBA.Name = "btnNavHSBA";
-            this.btnNavHSBA.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
-            this.btnNavHSBA.Size = new System.Drawing.Size(230, 55);
-            this.btnNavHSBA.TabIndex = 1;
-            this.btnNavHSBA.Text = "Quản lý HSBA";
-            this.btnNavHSBA.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnNavHSBA.UseVisualStyleBackColor = true;
-            this.btnNavHSBA.Click += new System.EventHandler(this.btnNavHSBA_Click);
-            // 
-            // btnNavPrescription
-            // 
-            this.btnNavPrescription.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnNavPrescription.FlatAppearance.BorderSize = 0;
-            this.btnNavPrescription.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNavPrescription.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(190)))), ((int)(((byte)(190)))), ((int)(((byte)(200)))));
-            this.btnNavPrescription.Location = new System.Drawing.Point(0, 135);
-            this.btnNavPrescription.Name = "btnNavPrescription";
-            this.btnNavPrescription.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
-            this.btnNavPrescription.Size = new System.Drawing.Size(230, 55);
-            this.btnNavPrescription.TabIndex = 2;
-            this.btnNavPrescription.Text = "Đơn thuốc";
-            this.btnNavPrescription.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnNavPrescription.UseVisualStyleBackColor = true;
-            this.btnNavPrescription.Click += new System.EventHandler(this.btnNavPrescription_Click);
-            // 
-            // btnNavPatient
-            // 
-            this.btnNavPatient.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnNavPatient.FlatAppearance.BorderSize = 0;
-            this.btnNavPatient.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNavPatient.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(190)))), ((int)(((byte)(190)))), ((int)(((byte)(200)))));
-            this.btnNavPatient.Location = new System.Drawing.Point(0, 190);
-            this.btnNavPatient.Name = "btnNavPatient";
-            this.btnNavPatient.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
-            this.btnNavPatient.Size = new System.Drawing.Size(230, 55);
-            this.btnNavPatient.TabIndex = 3;
-            this.btnNavPatient.Text = "Bệnh nhân";
-            this.btnNavPatient.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnNavPatient.UseVisualStyleBackColor = true;
-            this.btnNavPatient.Click += new System.EventHandler(this.btnNavPatient_Click);
-            // 
-            // btnNavProfile
-            // 
-            this.btnNavProfile.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnNavProfile.FlatAppearance.BorderSize = 0;
-            this.btnNavProfile.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNavProfile.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(190)))), ((int)(((byte)(190)))), ((int)(((byte)(200)))));
-            this.btnNavProfile.Location = new System.Drawing.Point(0, 245);
-            this.btnNavProfile.Name = "btnNavProfile";
-            this.btnNavProfile.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
-            this.btnNavProfile.Size = new System.Drawing.Size(230, 55);
-            this.btnNavProfile.TabIndex = 4;
-            this.btnNavProfile.Text = "Hồ sơ cá nhân";
-            this.btnNavProfile.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnNavProfile.UseVisualStyleBackColor = true;
-            this.btnNavProfile.Click += new System.EventHandler(this.btnNavProfile_Click);
-            // 
-            // btnNavNotifications
-            // 
-            this.btnNavNotifications.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnNavNotifications.FlatAppearance.BorderSize = 0;
-            this.btnNavNotifications.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNavNotifications.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(190)))), ((int)(((byte)(190)))), ((int)(((byte)(200)))));
-            this.btnNavNotifications.Location = new System.Drawing.Point(0, 300);
-            this.btnNavNotifications.Name = "btnNavNotifications";
-            this.btnNavNotifications.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
-            this.btnNavNotifications.Size = new System.Drawing.Size(230, 55);
-            this.btnNavNotifications.TabIndex = 5;
-            this.btnNavNotifications.Text = "Thông báo OLS";
-            this.btnNavNotifications.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnNavNotifications.UseVisualStyleBackColor = true;
-            this.btnNavNotifications.Click += new System.EventHandler(this.btnNavNotifications_Click);
+            pnlSidebar.BackColor = Color.FromArgb(31, 31, 31);
+            pnlSidebar.Controls.Add(btnLogout);
+            pnlSidebar.Controls.Add(btnNavNotifications);
+            pnlSidebar.Controls.Add(btnNavProfile);
+            pnlSidebar.Controls.Add(btnNavPatient);
+            pnlSidebar.Controls.Add(btnNavPrescription);
+            pnlSidebar.Controls.Add(btnNavHSBA);
+            pnlSidebar.Controls.Add(lblLogo);
+            pnlSidebar.Dock = DockStyle.Left;
+            pnlSidebar.Location = new Point(0, 0);
+            pnlSidebar.Name = "pnlSidebar";
+            pnlSidebar.Size = new Size(230, 850);
+            pnlSidebar.TabIndex = 0;
             // 
             // btnLogout
             // 
-            this.btnLogout.Dock = System.Windows.Forms.DockStyle.Top;
-            this.btnLogout.FlatAppearance.BorderSize = 0;
-            this.btnLogout.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLogout.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.btnLogout.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(80)))), ((int)(((byte)(80)))));
-            this.btnLogout.Location = new System.Drawing.Point(0, 355);
-            this.btnLogout.Name = "btnLogout";
-            this.btnLogout.Padding = new System.Windows.Forms.Padding(20, 0, 0, 0);
-            this.btnLogout.Size = new System.Drawing.Size(230, 55);
-            this.btnLogout.TabIndex = 6;
-            this.btnLogout.Text = "Đăng xuất";
-            this.btnLogout.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this.btnLogout.UseVisualStyleBackColor = true;
-            this.btnLogout.Click += new System.EventHandler(this.btnLogout_Click);
+            btnLogout.Dock = DockStyle.Top;
+            btnLogout.FlatAppearance.BorderSize = 0;
+            btnLogout.FlatAppearance.MouseOverBackColor = Color.FromArgb(60, 220, 80, 80);
+            btnLogout.FlatStyle = FlatStyle.Flat;
+            btnLogout.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            btnLogout.ForeColor = Color.FromArgb(220, 80, 80);
+            btnLogout.Location = new Point(0, 355);
+            btnLogout.Name = "btnLogout";
+            btnLogout.Padding = new Padding(20, 0, 0, 0);
+            btnLogout.Size = new Size(230, 55);
+            btnLogout.TabIndex = 6;
+            btnLogout.Text = "Đăng xuất";
+            btnLogout.TextAlign = ContentAlignment.MiddleLeft;
+            btnLogout.UseVisualStyleBackColor = true;
+            btnLogout.Click += btnLogout_Click;
+            // 
+            // btnNavNotifications
+            // 
+            btnNavNotifications.Dock = DockStyle.Top;
+            btnNavNotifications.FlatAppearance.BorderSize = 0;
+            btnNavNotifications.FlatAppearance.MouseDownBackColor = Color.FromArgb(50, 50, 58);
+            btnNavNotifications.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 40, 46);
+            btnNavNotifications.FlatStyle = FlatStyle.Flat;
+            btnNavNotifications.ForeColor = Color.FromArgb(190, 190, 200);
+            btnNavNotifications.Location = new Point(0, 300);
+            btnNavNotifications.Name = "btnNavNotifications";
+            btnNavNotifications.Padding = new Padding(20, 0, 0, 0);
+            btnNavNotifications.Size = new Size(230, 55);
+            btnNavNotifications.TabIndex = 5;
+            btnNavNotifications.Text = "Thông báo OLS";
+            btnNavNotifications.TextAlign = ContentAlignment.MiddleLeft;
+            btnNavNotifications.UseVisualStyleBackColor = true;
+            btnNavNotifications.Click += btnNavNotifications_Click;
+            // 
+            // btnNavProfile
+            // 
+            btnNavProfile.Dock = DockStyle.Top;
+            btnNavProfile.FlatAppearance.BorderSize = 0;
+            btnNavProfile.FlatAppearance.MouseDownBackColor = Color.FromArgb(50, 50, 58);
+            btnNavProfile.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 40, 46);
+            btnNavProfile.FlatStyle = FlatStyle.Flat;
+            btnNavProfile.ForeColor = Color.FromArgb(190, 190, 200);
+            btnNavProfile.Location = new Point(0, 245);
+            btnNavProfile.Name = "btnNavProfile";
+            btnNavProfile.Padding = new Padding(20, 0, 0, 0);
+            btnNavProfile.Size = new Size(230, 55);
+            btnNavProfile.TabIndex = 4;
+            btnNavProfile.Text = "Hồ sơ cá nhân";
+            btnNavProfile.TextAlign = ContentAlignment.MiddleLeft;
+            btnNavProfile.UseVisualStyleBackColor = true;
+            btnNavProfile.Click += btnNavProfile_Click;
+            // 
+            // btnNavPatient
+            // 
+            btnNavPatient.Dock = DockStyle.Top;
+            btnNavPatient.FlatAppearance.BorderSize = 0;
+            btnNavPatient.FlatAppearance.MouseDownBackColor = Color.FromArgb(50, 50, 58);
+            btnNavPatient.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 40, 46);
+            btnNavPatient.FlatStyle = FlatStyle.Flat;
+            btnNavPatient.ForeColor = Color.FromArgb(190, 190, 200);
+            btnNavPatient.Location = new Point(0, 190);
+            btnNavPatient.Name = "btnNavPatient";
+            btnNavPatient.Padding = new Padding(20, 0, 0, 0);
+            btnNavPatient.Size = new Size(230, 55);
+            btnNavPatient.TabIndex = 3;
+            btnNavPatient.Text = "Bệnh nhân";
+            btnNavPatient.TextAlign = ContentAlignment.MiddleLeft;
+            btnNavPatient.UseVisualStyleBackColor = true;
+            btnNavPatient.Click += btnNavPatient_Click;
+            // 
+            // btnNavPrescription
+            // 
+            btnNavPrescription.Dock = DockStyle.Top;
+            btnNavPrescription.FlatAppearance.BorderSize = 0;
+            btnNavPrescription.FlatAppearance.MouseDownBackColor = Color.FromArgb(50, 50, 58);
+            btnNavPrescription.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 40, 46);
+            btnNavPrescription.FlatStyle = FlatStyle.Flat;
+            btnNavPrescription.ForeColor = Color.FromArgb(190, 190, 200);
+            btnNavPrescription.Location = new Point(0, 135);
+            btnNavPrescription.Name = "btnNavPrescription";
+            btnNavPrescription.Padding = new Padding(20, 0, 0, 0);
+            btnNavPrescription.Size = new Size(230, 55);
+            btnNavPrescription.TabIndex = 2;
+            btnNavPrescription.Text = "Đơn thuốc";
+            btnNavPrescription.TextAlign = ContentAlignment.MiddleLeft;
+            btnNavPrescription.UseVisualStyleBackColor = true;
+            btnNavPrescription.Click += btnNavPrescription_Click;
+            // 
+            // btnNavHSBA
+            // 
+            btnNavHSBA.Dock = DockStyle.Top;
+            btnNavHSBA.FlatAppearance.BorderSize = 0;
+            btnNavHSBA.FlatAppearance.MouseDownBackColor = Color.FromArgb(50, 50, 58);
+            btnNavHSBA.FlatAppearance.MouseOverBackColor = Color.FromArgb(40, 40, 46);
+            btnNavHSBA.FlatStyle = FlatStyle.Flat;
+            btnNavHSBA.ForeColor = Color.FromArgb(190, 190, 200);
+            btnNavHSBA.Location = new Point(0, 80);
+            btnNavHSBA.Name = "btnNavHSBA";
+            btnNavHSBA.Padding = new Padding(20, 0, 0, 0);
+            btnNavHSBA.Size = new Size(230, 55);
+            btnNavHSBA.TabIndex = 1;
+            btnNavHSBA.Text = "Quản lý HSBA";
+            btnNavHSBA.TextAlign = ContentAlignment.MiddleLeft;
+            btnNavHSBA.UseVisualStyleBackColor = true;
+            btnNavHSBA.Click += btnNavHSBA_Click;
+            // 
+            // lblLogo
+            // 
+            lblLogo.Dock = DockStyle.Top;
+            lblLogo.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+            lblLogo.ForeColor = Color.FromArgb(255, 140, 40);
+            lblLogo.Location = new Point(0, 0);
+            lblLogo.Name = "lblLogo";
+            lblLogo.Size = new Size(230, 80);
+            lblLogo.TabIndex = 0;
+            lblLogo.Text = "HOSPITAL DOCTOR";
+            lblLogo.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // pnlTop
             // 
-            this.pnlTop.BackColor = System.Drawing.Color.White;
-            this.pnlTop.Controls.Add(this.lblUserInfo);
-            this.pnlTop.Controls.Add(this.lblBreadcrumb);
-            this.pnlTop.Controls.Add(this.lblPageTitle);
-            this.pnlTop.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlTop.Location = new System.Drawing.Point(230, 0);
-            this.pnlTop.Name = "pnlTop";
-            this.pnlTop.Size = new System.Drawing.Size(1070, 100);
-            this.pnlTop.TabIndex = 1;
-            this.pnlTop.Resize += new System.EventHandler(this.pnlTop_Resize);
-            // 
-            // lblPageTitle
-            // 
-            this.lblPageTitle.AutoSize = true;
-            this.lblPageTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
-            this.lblPageTitle.Location = new System.Drawing.Point(25, 20);
-            this.lblPageTitle.Name = "lblPageTitle";
-            this.lblPageTitle.Size = new System.Drawing.Size(109, 25);
-            this.lblPageTitle.TabIndex = 0;
-            this.lblPageTitle.Text = "Dashboard";
-            // 
-            // lblBreadcrumb
-            // 
-            this.lblBreadcrumb.AutoSize = true;
-            this.lblBreadcrumb.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(160)))), ((int)(((byte)(160)))), ((int)(((byte)(170)))));
-            this.lblBreadcrumb.Location = new System.Drawing.Point(25, 55);
-            this.lblBreadcrumb.Name = "lblBreadcrumb";
-            this.lblBreadcrumb.Size = new System.Drawing.Size(126, 13);
-            this.lblBreadcrumb.TabIndex = 1;
-            this.lblBreadcrumb.Text = "Dashboard / Trang chủ";
+            pnlTop.BackColor = Color.White;
+            pnlTop.Controls.Add(lblUserInfo);
+            pnlTop.Controls.Add(lblBreadcrumb);
+            pnlTop.Controls.Add(lblPageTitle);
+            pnlTop.Dock = DockStyle.Top;
+            pnlTop.Location = new Point(230, 0);
+            pnlTop.Name = "pnlTop";
+            pnlTop.Size = new Size(1070, 100);
+            pnlTop.TabIndex = 1;
+            pnlTop.Resize += pnlTop_Resize;
             // 
             // lblUserInfo
             // 
-            this.lblUserInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblUserInfo.AutoSize = true;
-            this.lblUserInfo.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this.lblUserInfo.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(140)))), ((int)(((byte)(40)))));
-            this.lblUserInfo.Location = new System.Drawing.Point(882, 35);
-            this.lblUserInfo.Name = "lblUserInfo";
-            this.lblUserInfo.Size = new System.Drawing.Size(163, 19);
-            this.lblUserInfo.TabIndex = 2;
-            this.lblUserInfo.Text = "Bác sĩ: {username}";
+            lblUserInfo.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            lblUserInfo.AutoSize = true;
+            lblUserInfo.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblUserInfo.ForeColor = Color.FromArgb(255, 140, 40);
+            lblUserInfo.Location = new Point(882, 35);
+            lblUserInfo.Name = "lblUserInfo";
+            lblUserInfo.Size = new Size(154, 23);
+            lblUserInfo.TabIndex = 2;
+            lblUserInfo.Text = "Bác sĩ: {username}";
+            // 
+            // lblBreadcrumb
+            // 
+            lblBreadcrumb.AutoSize = true;
+            lblBreadcrumb.ForeColor = Color.FromArgb(160, 160, 170);
+            lblBreadcrumb.Location = new Point(25, 55);
+            lblBreadcrumb.Name = "lblBreadcrumb";
+            lblBreadcrumb.Size = new Size(160, 20);
+            lblBreadcrumb.TabIndex = 1;
+            lblBreadcrumb.Text = "Dashboard / Trang chủ";
+            // 
+            // lblPageTitle
+            // 
+            lblPageTitle.AutoSize = true;
+            lblPageTitle.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            lblPageTitle.Location = new Point(25, 20);
+            lblPageTitle.Name = "lblPageTitle";
+            lblPageTitle.Size = new Size(138, 32);
+            lblPageTitle.TabIndex = 0;
+            lblPageTitle.Text = "Dashboard";
             // 
             // pnlContent
             // 
-            this.pnlContent.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(250)))));
-            this.pnlContent.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlContent.Location = new System.Drawing.Point(230, 100);
-            this.pnlContent.Name = "pnlContent";
-            this.pnlContent.Size = new System.Drawing.Size(1070, 750);
-            this.pnlContent.TabIndex = 2;
+            pnlContent.BackColor = Color.FromArgb(245, 245, 250);
+            pnlContent.Dock = DockStyle.Fill;
+            pnlContent.Location = new Point(230, 100);
+            pnlContent.Name = "pnlContent";
+            pnlContent.Size = new Size(1070, 750);
+            pnlContent.TabIndex = 2;
             // 
             // frmDoctor
             // 
-            this.ClientSize = new System.Drawing.Size(1300, 850);
-            this.Controls.Add(this.pnlContent);
-            this.Controls.Add(this.pnlTop);
-            this.Controls.Add(this.pnlSidebar);
-            this.Name = "frmDoctor";
-            this.Text = "Hospital Management - Doctor";
-            this.Load += new System.EventHandler(this.frmDoctor_Load);
-            this.pnlSidebar.ResumeLayout(false);
-            this.pnlTop.ResumeLayout(false);
-            this.pnlTop.PerformLayout();
-            this.ResumeLayout(false);
+            ClientSize = new Size(1300, 850);
+            Controls.Add(pnlContent);
+            Controls.Add(pnlTop);
+            Controls.Add(pnlSidebar);
+            Name = "frmDoctor";
+            Text = "Hospital Management - Doctor";
+            Load += frmDoctor_Load;
+            pnlSidebar.ResumeLayout(false);
+            pnlTop.ResumeLayout(false);
+            pnlTop.PerformLayout();
+            ResumeLayout(false);
 
         }
 
