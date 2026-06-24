@@ -148,12 +148,12 @@ END;
 /
 
 CREATE TABLE hospital.COORD_ASSIGNMENT_STAFF (
-    username_db VARCHAR2(50) PRIMARY KEY,
-    staff_id    VARCHAR2(10) NOT NULL,
+    staff_id    VARCHAR2(10) PRIMARY KEY,
     full_name   NVARCHAR2(100) NOT NULL,
     staff_role  NVARCHAR2(50)  NOT NULL,
     dept_id     VARCHAR2(10),
-    specialty   NVARCHAR2(100)
+    specialty   NVARCHAR2(100),
+    is_active   NUMBER(1)      DEFAULT 1 NOT NULL
 );
 
 -- ==============================================================================
@@ -161,20 +161,20 @@ CREATE TABLE hospital.COORD_ASSIGNMENT_STAFF (
 -- ==============================================================================
 
 INSERT INTO hospital.COORD_ASSIGNMENT_STAFF (
-    username_db,
     staff_id,
     full_name,
     staff_role,
     dept_id,
-    specialty
+    specialty,
+    is_active
 )
 SELECT
-    s.username_db,
     s.staff_id,
     s.full_name,
     s.staff_role,
     s.dept_id,
-    d.dept_name AS specialty
+    d.dept_name AS specialty,
+    s.is_active
 FROM hospital.staff s
 LEFT JOIN hospital.department d
     ON d.dept_id = s.dept_id
@@ -193,7 +193,6 @@ COMMIT;
 
 CREATE OR REPLACE VIEW hospital.VW_COORD_DOCTORS AS
 SELECT
-    username_db,
     staff_id,
     full_name,
     dept_id,
@@ -203,7 +202,6 @@ WHERE staff_role IN (N'Bác sĩ', N'Bác sĩ/Y sĩ');
 
 CREATE OR REPLACE VIEW hospital.VW_COORD_TECHNICIANS AS
 SELECT
-    username_db,
     staff_id,
     full_name
 FROM hospital.COORD_ASSIGNMENT_STAFF
@@ -235,7 +233,7 @@ DECLARE
     v_tech_active NUMBER(1);
 BEGIN
     IF :NEW.technician_id IS NOT NULL THEN
-        SELECT is_active INTO v_tech_active FROM hospital.staff WHERE staff_id = :NEW.technician_id;
+        SELECT is_active INTO v_tech_active FROM hospital.COORD_ASSIGNMENT_STAFF WHERE staff_id = :NEW.technician_id;
         IF v_tech_active = 0 THEN
             RAISE_APPLICATION_ERROR(-20012, 'Không thể tạo/cập nhật dịch vụ: Kỹ thuật viên này đã bị khóa (Không hoạt động).');
         END IF;
@@ -273,35 +271,36 @@ ALTER SESSION SET CURRENT_SCHEMA = hospital;
 ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 -- Bảng bệnh nhân: Điều phối viên được xem, thêm, sửa
-GRANT SELECT, INSERT, UPDATE ON hospital.patient TO rl_coordinator;
+-- Bảng bệnh nhân: Điều phối viên được xem, thêm, sửa (thừa vì thao tác qua Stored Procedure)
+-- GRANT SELECT, INSERT, UPDATE ON hospital.patient TO rl_coordinator;
 
 -- Hồ sơ bệnh án:
--- Được xem, thêm hồ sơ mới
-GRANT SELECT, INSERT ON hospital.medical_record TO rl_coordinator;
+-- Được xem, thêm hồ sơ mới (thừa vì thao tác qua Stored Procedure)
+-- GRANT SELECT, INSERT ON hospital.medical_record TO rl_coordinator;
 
--- Chỉ được phân công bác sĩ/khoa
-GRANT UPDATE (doctor_id, dept_id) ON hospital.medical_record TO rl_coordinator;
+-- Chỉ được phân công bác sĩ/khoa (thừa vì thao tác qua Stored Procedure)
+-- GRANT UPDATE (doctor_id, dept_id) ON hospital.medical_record TO rl_coordinator;
 
 -- Dịch vụ hỗ trợ chẩn đoán:
--- Được xem danh sách dịch vụ
-GRANT SELECT ON hospital.service_record TO rl_coordinator;
+-- Được xem danh sách dịch vụ (thừa vì thao tác qua Stored Procedure)
+-- GRANT SELECT ON hospital.service_record TO rl_coordinator;
 
--- Chỉ được phân công kỹ thuật viên
-GRANT UPDATE (technician_id) ON hospital.service_record TO rl_coordinator;
+-- Chỉ được phân công kỹ thuật viên (thừa vì thao tác qua Stored Procedure)
+-- GRANT UPDATE (technician_id) ON hospital.service_record TO rl_coordinator;
 
--- Xem danh mục khoa
-GRANT SELECT ON hospital.department TO rl_coordinator;
+-- Xem danh mục khoa (thừa vì thao tác qua Stored Procedure)
+-- GRANT SELECT ON hospital.department TO rl_coordinator;
 
 -- STAFF:
--- Query trực tiếp STAFF sẽ bị VPD lọc chỉ thấy chính mình
-GRANT SELECT ON hospital.staff TO rl_coordinator;
+-- Query trực tiếp STAFF sẽ bị VPD lọc chỉ thấy chính mình (thừa vì thao tác qua Stored Procedure)
+-- GRANT SELECT ON hospital.staff TO rl_coordinator;
 
--- Chỉ được cập nhật thông tin cá nhân hợp lệ
-GRANT UPDATE (phone, hometown) ON hospital.staff TO rl_coordinator;
+-- Chỉ được cập nhật thông tin cá nhân hợp lệ (thừa vì thao tác qua Stored Procedure)
+-- GRANT UPDATE (phone, hometown) ON hospital.staff TO rl_coordinator;
 
--- View phục vụ điều phối bác sĩ/kỹ thuật viên
-GRANT SELECT ON hospital.VW_COORD_DOCTORS TO rl_coordinator;
-GRANT SELECT ON hospital.VW_COORD_TECHNICIANS TO rl_coordinator;
+-- View phục vụ điều phối bác sĩ/kỹ thuật viên (thừa vì thao tác qua Stored Procedure)
+-- GRANT SELECT ON hospital.VW_COORD_DOCTORS TO rl_coordinator;
+-- GRANT SELECT ON hospital.VW_COORD_TECHNICIANS TO rl_coordinator;
 
 
 PROMPT ==============================================================================
@@ -322,7 +321,7 @@ ALTER SESSION SET CURRENT_SCHEMA = hospital;
 CREATE OR REPLACE PROCEDURE SP_COORD_GET_DOCTORS(p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT username_db, staff_id, full_name, specialty, TO_NCHAR(full_name) || N' - ' || TO_NCHAR(specialty) AS display_name 
+    SELECT staff_id, full_name, specialty, TO_NCHAR(full_name) || N' - ' || TO_NCHAR(specialty) AS display_name 
     FROM hospital.VW_COORD_DOCTORS 
     ORDER BY full_name;
 END;
@@ -331,7 +330,7 @@ END;
 CREATE OR REPLACE PROCEDURE SP_COORD_GET_DOC_DEPT(p_dept_id IN VARCHAR2, p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT username_db, staff_id, full_name, specialty, TO_NCHAR(full_name) || N' - ' || TO_NCHAR(specialty) AS display_name 
+    SELECT staff_id, full_name, specialty, TO_NCHAR(full_name) || N' - ' || TO_NCHAR(specialty) AS display_name 
     FROM hospital.VW_COORD_DOCTORS 
     WHERE dept_id = p_dept_id 
     ORDER BY full_name;
@@ -342,7 +341,7 @@ END;
 CREATE OR REPLACE PROCEDURE SP_COORD_GET_TECHS(p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT username_db, staff_id, full_name, TO_NCHAR(full_name) || N' (' || TO_NCHAR(staff_id) || N')' AS display_name 
+    SELECT staff_id, full_name, TO_NCHAR(full_name) || N' (' || TO_NCHAR(staff_id) || N')' AS display_name 
     FROM hospital.VW_COORD_TECHNICIANS 
     ORDER BY full_name;
 END;
@@ -362,15 +361,13 @@ BEGIN
     OPEN p_cursor FOR
     SELECT s.staff_id, s.full_name, s.staff_role, s.phone, s.hometown, d.dept_name AS specialty 
     FROM hospital.staff s 
-    LEFT JOIN hospital.department d ON s.dept_id = d.dept_id 
-    WHERE s.username_db = SYS_CONTEXT('USERENV', 'SESSION_USER');
+    LEFT JOIN hospital.department d ON s.dept_id = d.dept_id;
 END;
 /
 
 CREATE OR REPLACE PROCEDURE SP_COORD_UPD_SELF(p_phone IN VARCHAR2, p_hometown IN NVARCHAR2) AS
 BEGIN
-    UPDATE hospital.staff SET phone = p_phone, hometown = p_hometown WHERE username_db = SYS_CONTEXT('USERENV', 'SESSION_USER');
-    COMMIT;
+    UPDATE hospital.staff SET phone = p_phone, hometown = p_hometown;
 END;
 /
 
@@ -419,6 +416,15 @@ BEGIN
 END;
 /
 
+CREATE OR REPLACE PROCEDURE SP_COORD_GET_MAX_PAT_ID(p_max_id OUT VARCHAR2) AS
+BEGIN
+    SELECT 'BN' || TO_CHAR(NVL(MAX(TO_NUMBER(REGEXP_SUBSTR(patient_id, '\d+'))), 0), 'FM000000') 
+    INTO p_max_id 
+    FROM hospital.patient 
+    WHERE REGEXP_LIKE(patient_id, '^BN\d+$');
+END;
+/
+
 CREATE OR REPLACE PROCEDURE SP_COORD_INS_PAT(
     p_patient_id IN VARCHAR2, p_full_name IN NVARCHAR2, p_gender IN NVARCHAR2, 
     p_birthdate IN DATE, p_id_card IN VARCHAR2, p_house_no IN NVARCHAR2, 
@@ -457,7 +463,7 @@ END;
 CREATE OR REPLACE PROCEDURE SP_COORD_INS_MED(p_record_id IN VARCHAR2, p_patient_id IN VARCHAR2, p_record_date IN DATE, p_doctor_id IN VARCHAR2, p_dept_id IN VARCHAR2) AS
 BEGIN
     INSERT INTO hospital.medical_record (record_id, patient_id, record_date, doctor_id, dept_id, diagnosis, treatment_plan, conclusion) 
-    VALUES (p_record_id, p_patient_id, p_record_date, p_doctor_id, p_dept_id, N'Chưa chẩn đoán', N'Chưa điều trị', N'Chưa kết luận');
+    VALUES (p_record_id, p_patient_id, p_record_date, p_doctor_id, p_dept_id, UNISTR('Ch\01B0a ch\1EA9n \0111o\00E1n'), UNISTR('Ch\01B0a \0111i\1EC1u tr\1ECB'), UNISTR('Ch\01B0a k\1EBFt lu\1EADn'));
     COMMIT;
 END;
 /
@@ -486,7 +492,7 @@ END;
 
 CREATE OR REPLACE PROCEDURE SP_COORD_UPD_TECH(p_record_id IN VARCHAR2, p_service_type IN NVARCHAR2, p_service_date IN DATE, p_technician_id IN VARCHAR2) AS
 BEGIN
-    UPDATE hospital.service_record SET technician_id = p_technician_id WHERE record_id = p_record_id AND service_type = p_service_type AND service_date = p_service_date;
+    UPDATE hospital.service_record SET technician_id = p_technician_id WHERE record_id = p_record_id AND service_type = p_service_type AND TRUNC(service_date) = TRUNC(p_service_date);
     COMMIT;
 END;
 /
@@ -507,6 +513,7 @@ GRANT EXECUTE ON hospital.SP_COORD_SEARCH_PATS TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_CHK_PAT_ID TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_CHK_IDCARD TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_CHK_USER TO rl_coordinator;
+GRANT EXECUTE ON hospital.SP_COORD_GET_MAX_PAT_ID TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_INS_PAT TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_UPD_PAT TO rl_coordinator;
 GRANT EXECUTE ON hospital.SP_COORD_GET_ALL_MED TO rl_coordinator;

@@ -23,13 +23,15 @@ namespace QuanLyYTe.Forms.Coordinator
             string maxId = _coordinatorService.GetMaxPatientId();
             if (maxId.StartsWith("BN") && maxId.Length > 2 && int.TryParse(maxId.Substring(2), out int seq))
             {
-                txtPatientId.Text = "BN" + (seq + 1).ToString("D3");
+                txtPatientId.Text = "BN" + (seq + 1).ToString("D6");
             }
             else
             {
-                txtPatientId.Text = "BN001";
+                txtPatientId.Text = "BN000001";
             }
             txtPatientId.ReadOnly = true;
+            cmbGender.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbGender.SelectedIndex = 0; // Default to 'Nam'
         }
 
         private void btnSave_Click(object sender, EventArgs e)

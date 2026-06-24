@@ -706,6 +706,11 @@ namespace QuanLyYTe.Forms.Coordinator
     			{
     				cmbAssignDept.SelectedValue = text;
     			}
+    			string doctorId = dataGridViewRow.Cells["doctor_id"].Value?.ToString();
+    			if (!string.IsNullOrEmpty(doctorId))
+    			{
+    				cmbAssignDoctor.SelectedValue = doctorId;
+    			}
     		}
     	}
     
