@@ -18,6 +18,3 @@ GRANT EXECUTE ON hospital_dba.USP_GET_PATIENT_PRESCRIPTIONS TO rl_patient;
 GRANT EXECUTE ON hospital_dba.USP_GET_PATIENT_SERVICES TO rl_patient;
 GRANT EXECUTE ON hospital_dba.USP_UPDATE_PATIENT_CONTACT TO rl_patient;
 
-GRANT SELECT ON hospital.staff TO rl_patient;
-GRANT SELECT ON hospital.department TO rl_patient;
-

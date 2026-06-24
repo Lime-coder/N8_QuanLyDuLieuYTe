@@ -13,8 +13,9 @@ Da xoa user: U6
 Da xoa user: U7                                                                 
 Da xoa user: U4                                                                 
 Da xoa user: U2                                                                 
+Da xoa user: HOSPITAL_DBA                                                       
+Da xoa user: NV000121                                                           
 Da xoa user: U5                                                                 
-Da xoa user: BN000001                                                           
 Da xoa user: U3                                                                 
 Da xoa user: U1                                                                 
 Da xoa user: NV000021                                                           

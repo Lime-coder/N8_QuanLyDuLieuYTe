@@ -20,16 +20,14 @@ END USP_GET_PATIENT_PROFILE;
 
 CREATE OR REPLACE PROCEDURE USP_GET_PATIENT_RECORDS (
     p_cursor OUT SYS_REFCURSOR
-) AUTHID CURRENT_USER AS
+) AUTHID DEFINER AS
 BEGIN
     OPEN p_cursor FOR
         SELECT mr.record_id, mr.record_date, mr.diagnosis,
                mr.treatment_plan, mr.conclusion,
-               s.full_name AS doctor_name,
-               d.dept_name
+               mr.doctor_name,
+               mr.dept_name
         FROM hospital_dba.V_MEDICAL_RECORD_PATIENT mr
-        LEFT JOIN hospital.staff s ON mr.doctor_id = s.staff_id
-        LEFT JOIN hospital.department d ON mr.dept_id = d.dept_id
         ORDER BY mr.record_date DESC;
 END USP_GET_PATIENT_RECORDS;
 /
@@ -50,14 +48,13 @@ END USP_GET_PATIENT_PRESCRIPTIONS;
 CREATE OR REPLACE PROCEDURE USP_GET_PATIENT_SERVICES (
     p_record_id IN VARCHAR2,
     p_cursor    OUT SYS_REFCURSOR
-) AUTHID CURRENT_USER AS
+) AUTHID DEFINER AS
 BEGIN
     OPEN p_cursor FOR
         SELECT sr.record_id, sr.service_type, sr.service_date,
                sr.service_result,
-               s.full_name AS technician_name
+               sr.technician_name
         FROM hospital_dba.V_SERVICE_RECORD_PATIENT sr
-        LEFT JOIN hospital.staff s ON sr.technician_id = s.staff_id
         WHERE sr.record_id = p_record_id
         ORDER BY sr.service_date;
 END USP_GET_PATIENT_SERVICES;
