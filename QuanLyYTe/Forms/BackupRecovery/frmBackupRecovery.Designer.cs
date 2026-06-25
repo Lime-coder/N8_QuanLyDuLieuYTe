@@ -186,7 +186,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.btnBackupNow.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.btnBackupNow.Location = new System.Drawing.Point(3, 7);
             this.btnBackupNow.Name = "btnBackupNow";
-            this.btnBackupNow.Size = new System.Drawing.Size(130, 34);
+            this.btnBackupNow.Size = new System.Drawing.Size(180, 34);
             this.btnBackupNow.TabIndex = 0;
             this.btnBackupNow.Text = "Sao lưu ngay";
             this.btnBackupNow.UseVisualStyleBackColor = true;
@@ -221,7 +221,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             this.btnEnableAutoBackup.Location = new System.Drawing.Point(331, 7);
             this.btnEnableAutoBackup.Margin = new System.Windows.Forms.Padding(7, 3, 3, 3);
             this.btnEnableAutoBackup.Name = "btnEnableAutoBackup";
-            this.btnEnableAutoBackup.Size = new System.Drawing.Size(150, 34);
+            this.btnEnableAutoBackup.Size = new System.Drawing.Size(180, 34);
             this.btnEnableAutoBackup.TabIndex = 3;
             this.btnEnableAutoBackup.Text = "Bật tự động";
             this.btnEnableAutoBackup.UseVisualStyleBackColor = true;
@@ -231,7 +231,7 @@ namespace QuanLyYTe.Forms.BackupRecovery
             //
             this.btnDisableAutoBackup.Location = new System.Drawing.Point(487, 7);
             this.btnDisableAutoBackup.Name = "btnDisableAutoBackup";
-            this.btnDisableAutoBackup.Size = new System.Drawing.Size(150, 34);
+            this.btnDisableAutoBackup.Size = new System.Drawing.Size(180, 34);
             this.btnDisableAutoBackup.TabIndex = 4;
             this.btnDisableAutoBackup.Text = "Tắt tự động";
             this.btnDisableAutoBackup.UseVisualStyleBackColor = true;
