@@ -15,13 +15,14 @@ BEGIN
     SELECT medical_history INTO v_history FROM hospital.patient WHERE patient_id = p_patient_id;
     RETURN v_history;
 END;
-/   
+/
+
 GRANT EXECUTE ON hospital_dba.F_EXTRACT_MEDICAL_HISTORY TO rl_doctor, rl_coordinator;
 
 -- Xóa các chính sách cũ
 NOAUDIT INSERT ON hospital.medical_record;
-NOAUDIT UPDATE ON hospital.patient;
-NOAUDIT SELECT ON hospital.VW_COORD_DOCTORS;
+NOAUDIT DELETE ON hospital.service_record;
+NOAUDIT UPDATE ON hospital_dba.V_PATIENT_SELF;
 NOAUDIT EXECUTE ON hospital.USP_MANAGE_PRESCRIPTION;
 NOAUDIT EXECUTE ON hospital_dba.F_EXTRACT_MEDICAL_HISTORY;
 
@@ -30,13 +31,13 @@ NOAUDIT EXECUTE ON hospital_dba.F_EXTRACT_MEDICAL_HISTORY;
 AUDIT INSERT ON hospital.medical_record BY ACCESS WHENEVER SUCCESSFUL;
 AUDIT INSERT ON hospital.medical_record BY ACCESS WHENEVER NOT SUCCESSFUL;
  
--- NC#2: TABLE - Cập nhật thông tin bệnh nhân
-AUDIT UPDATE ON hospital.patient BY ACCESS WHENEVER SUCCESSFUL;
-AUDIT UPDATE ON hospital.patient BY ACCESS WHENEVER NOT SUCCESSFUL;
+-- NC#2: TABLE - Xóa dịch vụ
+AUDIT DELETE ON hospital.service_record BY ACCESS WHENEVER SUCCESSFUL;
+AUDIT DELETE ON hospital.service_record BY ACCESS WHENEVER NOT SUCCESSFUL;
 
--- NC#3: VIEW - Tra cứu danh sách bác sĩ
-AUDIT SELECT ON hospital.VW_COORD_DOCTORS BY ACCESS WHENEVER SUCCESSFUL;
-AUDIT SELECT ON hospital.VW_COORD_DOCTORS BY ACCESS WHENEVER NOT SUCCESSFUL;
+-- NC#3: VIEW - Cập nhật thông tin bệnh nhân
+AUDIT UPDATE ON hospital_dba.V_PATIENT_SELF BY ACCESS WHENEVER SUCCESSFUL;
+AUDIT UPDATE ON hospital_dba.V_PATIENT_SELF BY ACCESS WHENEVER NOT SUCCESSFUL;
 
 -- NC#4: STORED PROCEDURE - Quản lý (Thêm mới, cập nhật, xóa) đơn thuốc 
 AUDIT EXECUTE ON hospital.USP_MANAGE_PRESCRIPTION BY ACCESS WHENEVER SUCCESSFUL;
@@ -71,6 +72,7 @@ BEGIN
     EXCEPTION WHEN OTHERS THEN NULL; END;
 END;
 /
+
 -- 3a: Hành vi cập nhật trên thuộc tính MÃHSBA, NGÀYĐT, TÊNTHUỐC, LIỀUDÙNG của quan hệ ĐƠNTHUỐC
 -- Tạo policy mới
 BEGIN
@@ -84,6 +86,7 @@ BEGIN
     );
 END;
 /  
+
 -- 3b: Hành vi của người dùng  trên các trường CHẨNĐOÁN, ĐIỀUTRỊ, KẾTLUẬN của quan hệ HSBA
 -- Tạo policy mới
 BEGIN
