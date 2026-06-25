@@ -52,10 +52,9 @@ CONNECT NV000121/123@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Kỹ thuật viên cố sửa thông tin của bệnh nhân
-BEGIN
-    EXECUTE IMMEDIATE q'[UPDATE hospital_dba.V_PATIENT_SELF SET drug_allergies = 'Dị ứng hải sản' WHERE patient_id = 'BN000001']';
-EXCEPTION WHEN OTHERS THEN NULL; END;
+UPDATE hospital_dba.V_PATIENT_SELF SET drug_allergies = 'Dị ứng hải sản' WHERE patient_id = 'BN000001';
 /
+
 
 -- ============================================================
 -- NC#4 – STORED PROCEDURE: EXECUTE USP_MANAGE_PRESCRIPTION 
