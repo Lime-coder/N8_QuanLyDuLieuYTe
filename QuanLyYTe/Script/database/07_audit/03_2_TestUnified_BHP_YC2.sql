@@ -28,10 +28,12 @@ WHERE  record_id = 'BA001';
 /
 
 -- 3.3d – UNIFIED: Thao tác BẤT HỢP PHÁP trên SERVICE_RECORD (HSBA_DV)
--- Đăng nhập với user bệnh nhân thêm mới 1 HSBA_DV
-CONNECT BN000001/123@&pdb_url
+-- Đăng nhập với user điều phối viên xóa 1 dịch vụ
+CONNECT NV000001/123@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
-INSERT INTO hospital.service_record (record_id, service_type, service_date, technician_id, service_result)
-VALUES ('BA_Test', N'Xét nghiệm máu', SYSDATE, 'NV000021', N'Không bình thường');
+DELETE FROM hospital.service_record 
+WHERE record_id = 'BA001' 
+  AND service_type = N'Chụp MRI não' 
+  AND TRUNC(service_date) = DATE '2026-06-23'; 
 /

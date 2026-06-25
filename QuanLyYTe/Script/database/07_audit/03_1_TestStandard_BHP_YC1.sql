@@ -28,36 +28,33 @@ VALUES ('BA_TEST', 'BN000001', SYSDATE, 'NV000021', 'PB01', N'Chưa chẩn đoá
 
 
 -- ============================================================
--- NC#2 – TABLE: UPDATE trên bảng PATIENT                 
+-- NC#2 – TABLE: UPDATE trên bảng STAFF              
 -- ============================================================
 
--- *** Chạy với tài khoản: NV000001 (Điều phối viên – có quyền update patient) ***
--- THÀNH CÔNG: Điều phối viên cập nhật dị ứng thuốc
+-- *** Chạy với tài khoản: hospital_dba (hospital_dba – có quyền update staff) ***
+-- THÀNH CÔNG: hospital_dba cập nhật trạng thái hoạt động của nhân viên
 -- Thực hiện trên UI
 
--- *** Chạy với tài khoản: NV000121 (Kỹ thuật viên – không có quyền update patient trực tiếp) ***
+-- *** Chạy với tài khoản: NV000121 (Kỹ thuật viên – không có quyền update staff trực tiếp) ***
 CONNECT NV000121/123@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
--- THẤT BẠI: Kỹ thuật viên cố sửa thông tin tiền sử bệnh nhân
-UPDATE hospital.patient SET drug_allergies = 'Dị ứng hải sản' WHERE patient_id = 'BN000001';
+-- THẤT BẠI: Kỹ thuật viên cố sửa trạng thái hoạt động của nhân viên
+UPDATE hospital.staff SET is_active = 0 WHERE staff_id = 'NV000021';
 /
 
-
 -- ============================================================
--- NC#3 – VIEW: SELECT trên VW_COORD_DOCTORS       
+-- NC#3 – VIEW: UPDATE trên V_PATIENT_SELF      
 -- ============================================================
 
--- *** Chạy với tài khoản: NV000001 (Điều phối viên – có quyền) ***
--- THÀNH CÔNG: Điều phối viên tra cứu danh sách bác sĩ
--- Thực hiện trên UI
-
--- *** Chạy với tài khoản: BN000001 (Bệnh nhân – không được xem view này) ***
-CONNECT BN000001/123@&pdb_url
+-- *** Chạy với tài khoản: NV000121 (Kỹ thuật viên – không được sửa view này) ***
+CONNECT NV000121/123@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
--- THẤT BẠI: Bệnh nhân cố xem danh sách bác sĩ
-SELECT * FROM hospital.VW_COORD_DOCTORS;
+-- THẤT BẠI: Kỹ thuật viên cố sửa thông tin của bệnh nhân
+BEGIN
+    EXECUTE IMMEDIATE q'[UPDATE hospital_dba.V_PATIENT_SELF SET drug_allergies = 'Dị ứng hải sản' WHERE patient_id = 'BN000001']';
+EXCEPTION WHEN OTHERS THEN NULL; END;
 /
 
 -- ============================================================
@@ -97,6 +94,6 @@ SELECT hospital_dba.F_EXTRACT_MEDICAL_HISTORY('BN000001') AS tien_su_benh FROM D
 CONNECT NV000121/123@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
--- THẤT BẠI: Nhân viên kỹ thuật cố gọi function trích xuất bệnh sử của bệnh nhân
+-- THẤT BẠI: Nhân viên kỹ thuật cố gọi function trích xuất tiền sử bệnh của bệnh nhân
 SELECT hospital_dba.F_EXTRACT_MEDICAL_HISTORY('BN000001') FROM DUAL;
 /
