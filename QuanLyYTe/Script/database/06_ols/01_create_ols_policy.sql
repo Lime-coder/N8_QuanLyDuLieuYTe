@@ -4,31 +4,31 @@
 -- Mục đích: Tạo bảng thông báo và khởi tạo Chính sách OLS (OLS Policy)
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 -- Cho phép LBACSYS kế thừa các quyền của SYS để có thể tạo policy trên schema khác
 GRANT INHERIT PRIVILEGES ON USER sys TO lbacsys;
 
 -- 1. Xóa bảng và Sequence cũ
-BEGIN EXECUTE IMMEDIATE 'DROP TABLE hospital.notification CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE hospital_dba.notification CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
 /
-BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE hospital.seq_notification_id'; EXCEPTION WHEN OTHERS THEN NULL; END;
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE hospital_dba.seq_notification_id'; EXCEPTION WHEN OTHERS THEN NULL; END;
 /
 
 -- Tạo bảng notification (Thông báo). Lưu ý bảng này chưa có cột lưu nhãn OLS.
 -- Cột nhãn sẽ được OLS tự động quản lý hoặc ánh xạ khi ta Apply Policy.
-CREATE TABLE hospital.notification (
+CREATE TABLE hospital_dba.notification (
     notification_id VARCHAR2(10) PRIMARY KEY,
     description     NVARCHAR2(1000) NOT NULL,
     posted_date     DATE NOT NULL,
     location        NVARCHAR2(100)
 );
 
-CREATE SEQUENCE hospital.seq_notification_id START WITH 8 INCREMENT BY 1;
+CREATE SEQUENCE hospital_dba.seq_notification_id START WITH 8 INCREMENT BY 1;
 
 -- Cấp quyền cơ bản trên bảng thông báo cho tài khoản admin
-GRANT SELECT, INSERT, UPDATE, DELETE ON hospital.notification TO hospital_dba WITH GRANT OPTION;
-GRANT SELECT ON hospital.seq_notification_id TO hospital_dba WITH GRANT OPTION;
+GRANT SELECT, INSERT, UPDATE, DELETE ON hospital_dba.notification TO hospital_dba WITH GRANT OPTION;
+GRANT SELECT ON hospital_dba.seq_notification_id TO hospital_dba WITH GRANT OPTION;
 
 -- 2. Khởi tạo Chính sách OLS (Policy)
 BEGIN SA_SYSDBA.DROP_POLICY('HOSP_OLS_POL', TRUE); EXCEPTION WHEN OTHERS THEN NULL; END;
@@ -63,3 +63,5 @@ BEGIN
     );
 END;
 /
+
+

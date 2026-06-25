@@ -115,7 +115,7 @@ BEGIN
             tp.GRANTABLE AS CO_THE_CAP_LAI
         FROM DBA_TAB_PRIVS tp
         JOIN DBA_OBJECTS ao ON ao.OWNER = tp.OWNER AND ao.OBJECT_NAME = tp.TABLE_NAME
-        WHERE tp.OWNER IN ('HOSPITAL', 'HOSPITAL_DBA') -- Search both schemas
+        WHERE tp.OWNER IN ('HOSPITAL_DBA', 'HOSPITAL_DBA') -- Search both schemas
           AND UPPER(tp.TABLE_NAME) = UPPER(p_object_name)
           AND NOT EXISTS (
               SELECT 1 FROM DBA_COL_PRIVS cp
@@ -134,7 +134,7 @@ BEGIN
                cp.GRANTEE AS NGUOI_NHAN, 
                cp.GRANTABLE AS CO_THE_CAP_LAI
         FROM DBA_COL_PRIVS cp
-        WHERE cp.OWNER IN ('HOSPITAL', 'HOSPITAL_DBA')
+        WHERE cp.OWNER IN ('HOSPITAL_DBA', 'HOSPITAL_DBA')
           AND UPPER(cp.TABLE_NAME) = UPPER(p_object_name)
 
         UNION ALL
@@ -145,7 +145,7 @@ BEGIN
                tp.GRANTEE AS NGUOI_NHAN, 
                tp.GRANTABLE AS CO_THE_CAP_LAI
         FROM DBA_TAB_PRIVS tp
-        WHERE tp.OWNER IN ('HOSPITAL', 'HOSPITAL_DBA')
+        WHERE tp.OWNER IN ('HOSPITAL_DBA', 'HOSPITAL_DBA')
           -- Dynamically fetch views starting with V_PRIV_ + Object Name
           AND UPPER(tp.TABLE_NAME) LIKE 'V\_PRIV\_' || UPPER(p_object_name) || '\_%' ESCAPE '\'
 
@@ -153,7 +153,7 @@ BEGIN
 END USP_GET_PRIVS_ON_OBJ;
 /
 
--- USP_GET_OBJECTS: objects of a given type owned by the hospital schema
+-- USP_GET_OBJECTS: objects of a given type owned by the hospital_dba schema
 CREATE OR REPLACE PROCEDURE USP_GET_OBJECTS (
     p_object_type   IN  VARCHAR2,
     p_result_cursor OUT SYS_REFCURSOR
@@ -163,12 +163,12 @@ BEGIN
         SELECT UPPER(object_name) AS OBJECT_NAME -- Add alias here
         FROM all_objects
         WHERE object_type = UPPER(p_object_type)
-          AND owner IN ('HOSPITAL', 'HOSPITAL_DBA')
+          AND owner IN ('HOSPITAL_DBA', 'HOSPITAL_DBA')
         ORDER BY object_name;
 END USP_GET_OBJECTS;
 /
 
--- USP_GET_COLUMNS: column names for a given table in the hospital schema
+-- USP_GET_COLUMNS: column names for a given table in the hospital_dba schema
 CREATE OR REPLACE PROCEDURE USP_GET_COLUMNS (
     p_table_name    IN  VARCHAR2,
     p_result_cursor OUT SYS_REFCURSOR
@@ -178,7 +178,7 @@ BEGIN
         SELECT UPPER(column_name) AS COLUMN_NAME 
         FROM DBA_TAB_COLUMNS
         WHERE table_name = UPPER(p_table_name)
-          AND owner = 'HOSPITAL'
+          AND owner = 'HOSPITAL_DBA'
         ORDER BY column_id;
 END USP_GET_COLUMNS;
 /
@@ -315,7 +315,7 @@ BEGIN
 
     -- FIXED 2: Added MIN(OWNER) to fetch the owner into v_owner
     SELECT COUNT(*), MIN(OWNER) INTO v_count, v_owner FROM ALL_OBJECTS
-    WHERE OBJECT_NAME = v_object AND OWNER IN ('HOSPITAL', 'HOSPITAL_DBA');
+    WHERE OBJECT_NAME = v_object AND OWNER IN ('HOSPITAL_DBA', 'HOSPITAL_DBA');
     
     IF v_count = 0 THEN
         RAISE_APPLICATION_ERROR(-20003, 'Object "' || p_object_name || '" not found in allowed schemas.');
@@ -329,13 +329,13 @@ BEGIN
         -- Column-level SELECT is implemented via a restricted view owned by hospital_dba
         v_view_name := 'V_PRIV_' || SUBSTR(v_object, 1, 15) || '_' || SUBSTR(v_grantee, 1, 10);
         
-        EXECUTE IMMEDIATE 'CREATE OR REPLACE VIEW hospital.' || v_view_name ||
-                          ' AS SELECT ' || v_cols || ' FROM hospital.' || v_object;
+        EXECUTE IMMEDIATE 'CREATE OR REPLACE VIEW hospital_dba.' || v_view_name ||
+                          ' AS SELECT ' || v_cols || ' FROM hospital_dba.' || v_object;
                           
-        v_sql := 'GRANT SELECT ON hospital.' || v_view_name || ' TO ' || v_grantee || v_option;
+        v_sql := 'GRANT SELECT ON hospital_dba.' || v_view_name || ' TO ' || v_grantee || v_option;
 
     ELSIF v_priv = 'UPDATE' AND v_cols IS NOT NULL THEN
-        v_sql := 'GRANT UPDATE (' || v_cols || ') ON hospital.' || v_object ||
+        v_sql := 'GRANT UPDATE (' || v_cols || ') ON hospital_dba.' || v_object ||
                  ' TO ' || v_grantee || v_option;
 
     ELSIF v_priv = 'EXECUTE' THEN
@@ -343,7 +343,7 @@ BEGIN
         v_sql := 'GRANT EXECUTE ON ' || v_owner || '.' || v_object || ' TO ' || v_grantee || v_option;
 
     ELSE
-        -- FIXED 3: Changed 'hospital.' to v_owner so standard grants work on both schemas
+        -- FIXED 3: Changed 'hospital_dba.' to v_owner so standard grants work on both schemas
         v_sql := 'GRANT ' || v_priv || ' ON ' || v_owner || '.' || v_object ||
                  ' TO ' || v_grantee || v_option;
     END IF;
@@ -441,13 +441,15 @@ BEGIN
         SELECT object_name 
         FROM ALL_OBJECTS 
         WHERE (
-                -- Tables and Views strictly from HOSPITAL schema
-                (OWNER = 'HOSPITAL' AND object_type IN ('TABLE', 'VIEW'))
+                -- Tables and Views strictly from HOSPITAL_DBA schema
+                (OWNER = 'HOSPITAL_DBA' AND object_type IN ('TABLE', 'VIEW'))
                 OR 
-                -- Procedures and Functions from either HOSPITAL or HOSPITAL_DBA schema
-                (OWNER IN ('HOSPITAL', 'HOSPITAL_DBA') AND object_type IN ('PROCEDURE', 'FUNCTION'))
+                -- Procedures and Functions from either HOSPITAL_DBA or HOSPITAL_DBA schema
+                (OWNER IN ('HOSPITAL_DBA', 'HOSPITAL_DBA') AND object_type IN ('PROCEDURE', 'FUNCTION'))
               )
           AND object_name NOT LIKE 'V\_PRIV\_%' ESCAPE '\'
         ORDER BY object_name;
 END USP_GET_BUSINESS_OBJECTS;
 /
+
+

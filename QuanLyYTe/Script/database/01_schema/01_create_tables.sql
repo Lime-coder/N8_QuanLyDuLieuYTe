@@ -1,11 +1,11 @@
 -- ==============================================================================
 -- 01_create_tables.sql
--- Chạy dưới quyền: hospital_dba (or sysdba, then grant to hospital)
--- It's best to run this as hospital user, or hospital_dba creates tables in hospital schema.
+-- Chạy dưới quyền: hospital_dba (or sysdba, then grant to hospital_dba)
+-- It's best to run this as hospital_dba user, or hospital_dba creates tables in hospital_dba schema.
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 SET SERVEROUTPUT ON;
 
@@ -79,3 +79,4 @@ CREATE TABLE prescription (
     dosage            NVARCHAR2(200) NOT NULL,
     PRIMARY KEY (record_id, prescription_date, medicine_name)
 );
+

@@ -5,7 +5,7 @@
 -- để hệ thống tự động kiểm soát quyền đọc/ghi trên bảng có OLS.
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 SET ROLE ALL;
 
@@ -16,7 +16,7 @@ DECLARE
     v_label VARCHAR2(100);
 BEGIN
     -- Duyệt qua tất cả nhân viên có tài khoản database (username_db IS NOT NULL)
-    FOR r IN (SELECT username_db, staff_role, dept_id, facility FROM hospital.staff WHERE username_db IS NOT NULL) LOOP
+    FOR r IN (SELECT username_db, staff_role, dept_id, facility FROM hospital_dba.staff WHERE username_db IS NOT NULL) LOOP
         
         -- 1. Xét Cấp độ (Level) dựa trên chức vụ (staff_role)
         IF r.staff_role = UNISTR('Gi\00E1m \0111\1ED1c') THEN 
@@ -72,3 +72,5 @@ BEGIN
     END LOOP;
 END;
 /
+
+

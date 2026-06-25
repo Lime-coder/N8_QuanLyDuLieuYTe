@@ -8,40 +8,40 @@ ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 BEGIN
     BEGIN
-        DBMS_RLS.DROP_POLICY('HOSPITAL', 'MEDICAL_RECORD', 'POL_VPD_MEDICAL_RECORD_SELECT');
+        DBMS_RLS.DROP_POLICY('HOSPITAL_DBA', 'MEDICAL_RECORD', 'POL_VPD_MEDICAL_RECORD_SELECT');
     EXCEPTION WHEN OTHERS THEN NULL; END;
 
     BEGIN
-        DBMS_RLS.DROP_POLICY('HOSPITAL', 'MEDICAL_RECORD', 'POL_VPD_MEDICAL_RECORD_UPDATE');
+        DBMS_RLS.DROP_POLICY('HOSPITAL_DBA', 'MEDICAL_RECORD', 'POL_VPD_MEDICAL_RECORD_UPDATE');
     EXCEPTION WHEN OTHERS THEN NULL; END;
 
     BEGIN
-        DBMS_RLS.DROP_POLICY('HOSPITAL', 'PRESCRIPTION', 'POL_VPD_PRESCRIPTION_INSERT_UPDATE');
+        DBMS_RLS.DROP_POLICY('HOSPITAL_DBA', 'PRESCRIPTION', 'POL_VPD_PRESCRIPTION_INSERT_UPDATE');
     EXCEPTION WHEN OTHERS THEN NULL; END;
 
     BEGIN
-        DBMS_RLS.DROP_POLICY('HOSPITAL', 'PRESCRIPTION', 'POL_VPD_PRESCRIPTION_SELECT_DELETE');
+        DBMS_RLS.DROP_POLICY('HOSPITAL_DBA', 'PRESCRIPTION', 'POL_VPD_PRESCRIPTION_SELECT_DELETE');
     EXCEPTION WHEN OTHERS THEN NULL; END;
 
     BEGIN
-        DBMS_RLS.DROP_POLICY('HOSPITAL', 'SERVICE_RECORD', 'POL_VPD_SERVICE_RECORD_INSERT');
+        DBMS_RLS.DROP_POLICY('HOSPITAL_DBA', 'SERVICE_RECORD', 'POL_VPD_SERVICE_RECORD_INSERT');
     EXCEPTION WHEN OTHERS THEN NULL; END;
 
     BEGIN
-        DBMS_RLS.DROP_POLICY('HOSPITAL', 'SERVICE_RECORD', 'POL_VPD_SERVICE_RECORD_SELECT_DELETE');
+        DBMS_RLS.DROP_POLICY('HOSPITAL_DBA', 'SERVICE_RECORD', 'POL_VPD_SERVICE_RECORD_SELECT_DELETE');
     EXCEPTION WHEN OTHERS THEN NULL; END;
 
     BEGIN
-        DBMS_RLS.DROP_POLICY('HOSPITAL', 'PATIENT', 'POL_VPD_PATIENT_SELECT');
+        DBMS_RLS.DROP_POLICY('HOSPITAL_DBA', 'PATIENT', 'POL_VPD_PATIENT_SELECT');
     EXCEPTION WHEN OTHERS THEN NULL; END;
 
     BEGIN
-        DBMS_RLS.DROP_POLICY('HOSPITAL', 'PATIENT', 'POL_VPD_PATIENT_UPDATE');
+        DBMS_RLS.DROP_POLICY('HOSPITAL_DBA', 'PATIENT', 'POL_VPD_PATIENT_UPDATE');
     EXCEPTION WHEN OTHERS THEN NULL; END;
 
     -- MEDICAL_RECORD
     DBMS_RLS.ADD_POLICY(
-        object_schema   => 'HOSPITAL', 
+        object_schema   => 'HOSPITAL_DBA', 
         object_name     => 'medical_record', 
         policy_name     => 'POL_VPD_MEDICAL_RECORD_SELECT', 
         function_schema => 'HOSPITAL_DBA', 
@@ -50,7 +50,7 @@ BEGIN
     );
     
     DBMS_RLS.ADD_POLICY(
-        object_schema       => 'HOSPITAL', 
+        object_schema       => 'HOSPITAL_DBA', 
         object_name         => 'medical_record', 
         policy_name         => 'POL_VPD_MEDICAL_RECORD_UPDATE', 
         function_schema     => 'HOSPITAL_DBA', 
@@ -62,7 +62,7 @@ BEGIN
 
     -- PATIENT
     DBMS_RLS.ADD_POLICY(
-        object_schema   => 'HOSPITAL', 
+        object_schema   => 'HOSPITAL_DBA', 
         object_name     => 'patient', 
         policy_name     => 'POL_VPD_PATIENT_SELECT', 
         function_schema => 'HOSPITAL_DBA', 
@@ -71,7 +71,7 @@ BEGIN
     );
     
     DBMS_RLS.ADD_POLICY(
-        object_schema   => 'HOSPITAL', 
+        object_schema   => 'HOSPITAL_DBA', 
         object_name     => 'patient', 
         policy_name     => 'POL_VPD_PATIENT_UPDATE', 
         function_schema => 'HOSPITAL_DBA', 
@@ -83,7 +83,7 @@ BEGIN
 
     --SERVICE_RECORD
     DBMS_RLS.ADD_POLICY(
-        object_schema   => 'HOSPITAL', 
+        object_schema   => 'HOSPITAL_DBA', 
         object_name     => 'service_record', 
         policy_name     => 'POL_VPD_SERVICE_RECORD_SELECT_DELETE', 
         function_schema => 'HOSPITAL_DBA', 
@@ -92,7 +92,7 @@ BEGIN
     );
     
     DBMS_RLS.ADD_POLICY(
-        object_schema   => 'HOSPITAL', 
+        object_schema   => 'HOSPITAL_DBA', 
         object_name     => 'service_record', 
         policy_name     => 'POL_VPD_SERVICE_RECORD_INSERT', 
         function_schema => 'HOSPITAL_DBA', 
@@ -103,7 +103,7 @@ BEGIN
 
     -- PRESCRIPTION
     DBMS_RLS.ADD_POLICY(
-        object_schema   => 'HOSPITAL', 
+        object_schema   => 'HOSPITAL_DBA', 
         object_name     => 'prescription', 
         policy_name     => 'POL_VPD_PRESCRIPTION_SELECT_DELETE', 
         function_schema => 'HOSPITAL_DBA', 
@@ -112,7 +112,7 @@ BEGIN
     );
     
     DBMS_RLS.ADD_POLICY(
-        object_schema   => 'HOSPITAL', 
+        object_schema   => 'HOSPITAL_DBA', 
         object_name     => 'prescription', 
         policy_name     => 'POL_VPD_PRESCRIPTION_INSERT_UPDATE', 
         function_schema => 'HOSPITAL_DBA', 
@@ -122,3 +122,4 @@ BEGIN
     );
 END;
 /
+

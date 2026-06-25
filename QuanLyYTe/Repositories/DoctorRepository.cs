@@ -9,7 +9,7 @@ namespace QuanLyYTe.Repositories
     {
         public DoctorRepository()
         {
-            _spOwner = "hospital";
+            _spOwner = "hospital_dba";
         }
 
         // Lấy danh sách hồ sơ bệnh án (SP: USP_GET_MEDICAL_RECORD)
@@ -129,4 +129,5 @@ namespace QuanLyYTe.Repositories
         }
     }
 }
+
 

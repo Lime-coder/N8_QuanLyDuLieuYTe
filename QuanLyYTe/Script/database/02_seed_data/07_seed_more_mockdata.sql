@@ -3,7 +3,7 @@
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 -- 1. Create 20 new medical records for doctor NV000021
 -- using patient_ids BN000101 to BN000120
@@ -66,3 +66,4 @@ INSERT INTO service_record (record_id, service_type, service_date, technician_id
 INSERT INTO service_record (record_id, service_type, service_date, technician_id, service_result) VALUES ('BA120', UNISTR('Si\00EAu \00E2m kh\1EDBp g\1ED1i'), SYSDATE - 1, 'NV000121', NULL);
 
 COMMIT;
+

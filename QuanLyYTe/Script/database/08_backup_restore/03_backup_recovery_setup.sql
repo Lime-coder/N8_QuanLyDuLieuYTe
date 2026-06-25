@@ -6,13 +6,13 @@
 -- ==============================================================================
 -- Notes:
 -- 1. This script replaces the previous table-copy backup approach.
--- 2. Backup mechanism: Oracle Data Pump export of schema HOSPITAL.
+-- 2. Backup mechanism: Oracle Data Pump export of schema hospital_dba.
 -- 3. Auto backup: DBMS_SCHEDULER.
 -- 4. Logical recovery: Unified Audit identifies incident timestamp, Flashback Query restores data before incident.
--- 5. Demo recovery is implemented for HOSPITAL.PRESCRIPTION because Requirement 3 audits prescription changes.
+-- 5. Demo recovery is implemented for hospital_dba.PRESCRIPTION because Requirement 3 audits prescription changes.
 -- ==============================================================================
 
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 SET SERVEROUTPUT ON;
 
 -- ==============================================================================
@@ -20,7 +20,7 @@ SET SERVEROUTPUT ON;
 -- ==============================================================================
 BEGIN
     EXECUTE IMMEDIATE '
-        CREATE TABLE hospital.BACKUP_HISTORY (
+        CREATE TABLE hospital_dba.BACKUP_HISTORY (
             BACKUP_ID       NUMBER PRIMARY KEY,
             BACKUP_TIME     TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
             BACKUP_TYPE     VARCHAR2(20) NOT NULL,
@@ -49,7 +49,7 @@ END;
 -- ==============================================================================
 BEGIN
     EXECUTE IMMEDIATE '
-        CREATE TABLE hospital.RECOVERY_HISTORY (
+        CREATE TABLE hospital_dba.RECOVERY_HISTORY (
             RECOVERY_ID          NUMBER PRIMARY KEY,
             RECOVERY_TIME        TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
             TARGET_TABLE         VARCHAR2(128) NOT NULL,
@@ -75,7 +75,7 @@ END;
 -- 3. SEQUENCES
 -- ==============================================================================
 BEGIN
-    EXECUTE IMMEDIATE 'CREATE SEQUENCE hospital.SEQ_BACKUP_ID START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE';
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE hospital_dba.SEQ_BACKUP_ID START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE';
     DBMS_OUTPUT.PUT_LINE('[OK] SEQ_BACKUP_ID created');
 EXCEPTION
     WHEN OTHERS THEN
@@ -88,7 +88,7 @@ END;
 /
 
 BEGIN
-    EXECUTE IMMEDIATE 'CREATE SEQUENCE hospital.SEQ_RECOVERY_ID START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE';
+    EXECUTE IMMEDIATE 'CREATE SEQUENCE hospital_dba.SEQ_RECOVERY_ID START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE';
     DBMS_OUTPUT.PUT_LINE('[OK] SEQ_RECOVERY_ID created');
 EXCEPTION
     WHEN OTHERS THEN
@@ -103,7 +103,7 @@ END;
 -- ==============================================================================
 -- 4. PACKAGE: DATA PUMP BACKUP + FLASHBACK RECOVERY
 -- ==============================================================================
-CREATE OR REPLACE PACKAGE hospital.PKG_BACKUP_RECOVERY AS
+CREATE OR REPLACE PACKAGE hospital_dba.PKG_BACKUP_RECOVERY AS
     PROCEDURE USP_BACKUP_DATAPUMP(
         p_backup_type    IN VARCHAR2 DEFAULT 'MANUAL',
         p_directory_name IN VARCHAR2 DEFAULT 'HOSPITAL_BACKUP_DIR'
@@ -129,9 +129,9 @@ CREATE OR REPLACE PACKAGE hospital.PKG_BACKUP_RECOVERY AS
 END PKG_BACKUP_RECOVERY;
 /
 
-SHOW ERRORS PACKAGE hospital.PKG_BACKUP_RECOVERY;
+SHOW ERRORS PACKAGE hospital_dba.PKG_BACKUP_RECOVERY;
 
-CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
+CREATE OR REPLACE PACKAGE BODY hospital_dba.PKG_BACKUP_RECOVERY AS
 
     PROCEDURE LOG_BACKUP(
         p_backup_id      IN NUMBER,
@@ -146,7 +146,7 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
     ) AS
         PRAGMA AUTONOMOUS_TRANSACTION;
     BEGIN
-        INSERT INTO hospital.BACKUP_HISTORY(
+        INSERT INTO hospital_dba.BACKUP_HISTORY(
             BACKUP_ID, BACKUP_TIME, BACKUP_TYPE, METHOD,
             DIRECTORY_NAME, DUMP_FILE, LOG_FILE, STATUS, NOTE, ERROR_MESSAGE
         ) VALUES (
@@ -168,12 +168,12 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
         PRAGMA AUTONOMOUS_TRANSACTION;
         v_recovery_id NUMBER;
     BEGIN
-        SELECT hospital.SEQ_RECOVERY_ID.NEXTVAL
+        SELECT hospital_dba.SEQ_RECOVERY_ID.NEXTVAL
         INTO v_recovery_id
         FROM dual;
 
         EXECUTE IMMEDIATE '
-            INSERT INTO hospital.RECOVERY_HISTORY(
+            INSERT INTO hospital_dba.RECOVERY_HISTORY(
                 RECOVERY_ID, RECOVERY_TIME, TARGET_TABLE, TARGET_KEY,
                 AUDIT_EVENT_TIME, FLASHBACK_TIME, STATUS, NOTE, ERROR_MESSAGE
             ) VALUES (
@@ -211,7 +211,7 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
         v_log_file    VARCHAR2(255);
     BEGIN
         v_time := SYSTIMESTAMP;
-        SELECT hospital.SEQ_BACKUP_ID.NEXTVAL INTO v_backup_id FROM dual;
+        SELECT hospital_dba.SEQ_BACKUP_ID.NEXTVAL INTO v_backup_id FROM dual;
 
         v_stamp := TO_CHAR(SYSDATE, 'YYYYMMDD_HH24MISS');
         v_dump_file := 'hospital_schema_' || v_backup_id || '_' || v_stamp || '.dmp';
@@ -240,7 +240,7 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
         DBMS_DATAPUMP.METADATA_FILTER(
             handle => v_handle,
             name   => 'SCHEMA_EXPR',
-            value  => '= ''HOSPITAL'''
+            value  => '= ''HOSPITAL_DBA'''
         );
 
         -- Exclude statistics and PL/SQL metadata to make the backup extremely fast
@@ -275,7 +275,7 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
             END;
 
             IF v_backup_id IS NULL THEN
-                SELECT hospital.SEQ_BACKUP_ID.NEXTVAL INTO v_backup_id FROM dual;
+                SELECT hospital_dba.SEQ_BACKUP_ID.NEXTVAL INTO v_backup_id FROM dual;
             END IF;
 
             LOG_BACKUP(
@@ -315,21 +315,21 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
         END IF;
 
         -- If GUI passes a selected audit timestamp, use it.
-        -- Otherwise, use the latest Unified Audit record for UPDATE/DELETE on HOSPITAL tables.
+        -- Otherwise, use the latest Unified Audit record for UPDATE/DELETE on HOSPITAL_DBA tables.
         IF p_audit_event_time IS NOT NULL THEN
             v_audit_time := p_audit_event_time;
         ELSE
             EXECUTE IMMEDIATE '
                 SELECT MAX(event_timestamp)
                 FROM unified_audit_trail
-                WHERE object_schema = ''HOSPITAL''
+                WHERE object_schema = ''HOSPITAL_DBA''
                   AND object_name IN (''PRESCRIPTION'', ''MEDICAL_RECORD'', ''SERVICE_RECORD'', ''PATIENT'')
                   AND action_name IN (''UPDATE'', ''DELETE'')'
             INTO v_audit_time;
         END IF;
 
         IF v_audit_time IS NULL THEN
-            RAISE_APPLICATION_ERROR(-20002, 'No Unified Audit record found for HOSPITAL schemas.');
+            RAISE_APPLICATION_ERROR(-20002, 'No Unified Audit record found for HOSPITAL_DBA schemas.');
         END IF;
 
         v_flashback_time := v_audit_time - NUMTODSINTERVAL(NVL(p_seconds_before, 1), 'SECOND');
@@ -342,12 +342,12 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
                 v_count_past NUMBER;
                 v_count_now NUMBER;
             BEGIN
-                SELECT COUNT(*) INTO v_count_past FROM hospital.PATIENT AS OF TIMESTAMP v_flashback_time WHERE PATIENT_ID = p_record_id;
-                SELECT COUNT(*) INTO v_count_now FROM hospital.PATIENT WHERE PATIENT_ID = p_record_id;
+                SELECT COUNT(*) INTO v_count_past FROM hospital_dba.PATIENT AS OF TIMESTAMP v_flashback_time WHERE PATIENT_ID = p_record_id;
+                SELECT COUNT(*) INTO v_count_now FROM hospital_dba.PATIENT WHERE PATIENT_ID = p_record_id;
 
                 IF v_count_past = 1 AND v_count_now = 1 THEN
-                    FOR rec IN (SELECT * FROM hospital.PATIENT AS OF TIMESTAMP v_flashback_time WHERE PATIENT_ID = p_record_id) LOOP
-                        UPDATE hospital.PATIENT
+                    FOR rec IN (SELECT * FROM hospital_dba.PATIENT AS OF TIMESTAMP v_flashback_time WHERE PATIENT_ID = p_record_id) LOOP
+                        UPDATE hospital_dba.PATIENT
                         SET FULL_NAME = rec.FULL_NAME, GENDER = rec.GENDER, BIRTHDATE = rec.BIRTHDATE, ID_CARD = rec.ID_CARD, 
                             HOUSE_NO = rec.HOUSE_NO, STREET = rec.STREET, DISTRICT = rec.DISTRICT, CITY_PROVINCE = rec.CITY_PROVINCE, 
                             MEDICAL_HISTORY = rec.MEDICAL_HISTORY, FAMILY_MEDICAL_HISTORY = rec.FAMILY_MEDICAL_HISTORY, 
@@ -355,12 +355,12 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
                         WHERE PATIENT_ID = rec.PATIENT_ID;
                     END LOOP;
                 ELSIF v_count_past = 1 AND v_count_now = 0 THEN
-                    FOR rec IN (SELECT * FROM hospital.PATIENT AS OF TIMESTAMP v_flashback_time WHERE PATIENT_ID = p_record_id) LOOP
-                        INSERT INTO hospital.PATIENT(PATIENT_ID, FULL_NAME, GENDER, BIRTHDATE, ID_CARD, HOUSE_NO, STREET, DISTRICT, CITY_PROVINCE, MEDICAL_HISTORY, FAMILY_MEDICAL_HISTORY, DRUG_ALLERGIES, USERNAME_DB, IS_ACTIVE)
+                    FOR rec IN (SELECT * FROM hospital_dba.PATIENT AS OF TIMESTAMP v_flashback_time WHERE PATIENT_ID = p_record_id) LOOP
+                        INSERT INTO hospital_dba.PATIENT(PATIENT_ID, FULL_NAME, GENDER, BIRTHDATE, ID_CARD, HOUSE_NO, STREET, DISTRICT, CITY_PROVINCE, MEDICAL_HISTORY, FAMILY_MEDICAL_HISTORY, DRUG_ALLERGIES, USERNAME_DB, IS_ACTIVE)
                         VALUES(rec.PATIENT_ID, rec.FULL_NAME, rec.GENDER, rec.BIRTHDATE, rec.ID_CARD, rec.HOUSE_NO, rec.STREET, rec.DISTRICT, rec.CITY_PROVINCE, rec.MEDICAL_HISTORY, rec.FAMILY_MEDICAL_HISTORY, rec.DRUG_ALLERGIES, rec.USERNAME_DB, rec.IS_ACTIVE);
                     END LOOP;
                 ELSIF v_count_past = 0 AND v_count_now = 1 THEN
-                    DELETE FROM hospital.PATIENT WHERE PATIENT_ID = p_record_id;
+                    DELETE FROM hospital_dba.PATIENT WHERE PATIENT_ID = p_record_id;
                 END IF;
             END;
 
@@ -391,22 +391,22 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
             v_count_now NUMBER;
             v_identical NUMBER;
         BEGIN
-            SELECT COUNT(*) INTO v_count_past FROM hospital.MEDICAL_RECORD AS OF TIMESTAMP v_flashback_time WHERE RECORD_ID = p_record_id;
-            SELECT COUNT(*) INTO v_count_now FROM hospital.MEDICAL_RECORD WHERE RECORD_ID = p_record_id;
+            SELECT COUNT(*) INTO v_count_past FROM hospital_dba.MEDICAL_RECORD AS OF TIMESTAMP v_flashback_time WHERE RECORD_ID = p_record_id;
+            SELECT COUNT(*) INTO v_count_now FROM hospital_dba.MEDICAL_RECORD WHERE RECORD_ID = p_record_id;
 
             IF v_count_past = 1 AND v_count_now = 1 THEN
                 -- Kiểm tra xem dữ liệu có thực sự khác nhau không
                 SELECT COUNT(*) INTO v_identical
                 FROM (
-                    SELECT RECORD_ID, PATIENT_ID, RECORD_DATE, DIAGNOSIS, NVL(TREATMENT_PLAN,' '), DOCTOR_ID, DEPT_ID, NVL(CONCLUSION,' ') FROM hospital.MEDICAL_RECORD AS OF TIMESTAMP v_flashback_time WHERE RECORD_ID = p_record_id
+                    SELECT RECORD_ID, PATIENT_ID, RECORD_DATE, DIAGNOSIS, NVL(TREATMENT_PLAN,' '), DOCTOR_ID, DEPT_ID, NVL(CONCLUSION,' ') FROM hospital_dba.MEDICAL_RECORD AS OF TIMESTAMP v_flashback_time WHERE RECORD_ID = p_record_id
                     INTERSECT
-                    SELECT RECORD_ID, PATIENT_ID, RECORD_DATE, DIAGNOSIS, NVL(TREATMENT_PLAN,' '), DOCTOR_ID, DEPT_ID, NVL(CONCLUSION,' ') FROM hospital.MEDICAL_RECORD WHERE RECORD_ID = p_record_id
+                    SELECT RECORD_ID, PATIENT_ID, RECORD_DATE, DIAGNOSIS, NVL(TREATMENT_PLAN,' '), DOCTOR_ID, DEPT_ID, NVL(CONCLUSION,' ') FROM hospital_dba.MEDICAL_RECORD WHERE RECORD_ID = p_record_id
                 );
                 
                 IF v_identical = 0 THEN
                     -- Bản ghi bị sửa -> Dùng UPDATE để khôi phục
-                    FOR rec IN (SELECT * FROM hospital.MEDICAL_RECORD AS OF TIMESTAMP v_flashback_time WHERE RECORD_ID = p_record_id) LOOP
-                        UPDATE hospital.MEDICAL_RECORD
+                    FOR rec IN (SELECT * FROM hospital_dba.MEDICAL_RECORD AS OF TIMESTAMP v_flashback_time WHERE RECORD_ID = p_record_id) LOOP
+                        UPDATE hospital_dba.MEDICAL_RECORD
                         SET PATIENT_ID = rec.PATIENT_ID, RECORD_DATE = rec.RECORD_DATE, DIAGNOSIS = rec.DIAGNOSIS, 
                             TREATMENT_PLAN = rec.TREATMENT_PLAN, DOCTOR_ID = rec.DOCTOR_ID, DEPT_ID = rec.DEPT_ID, CONCLUSION = rec.CONCLUSION
                         WHERE RECORD_ID = rec.RECORD_ID;
@@ -414,16 +414,16 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
                 END IF;
             ELSIF v_count_past = 1 AND v_count_now = 0 THEN
                 -- Bản ghi bị xóa -> Dùng INSERT để khôi phục
-                FOR rec IN (SELECT * FROM hospital.MEDICAL_RECORD AS OF TIMESTAMP v_flashback_time WHERE RECORD_ID = p_record_id) LOOP
-                    INSERT INTO hospital.MEDICAL_RECORD(RECORD_ID, PATIENT_ID, RECORD_DATE, DIAGNOSIS, TREATMENT_PLAN, DOCTOR_ID, DEPT_ID, CONCLUSION)
+                FOR rec IN (SELECT * FROM hospital_dba.MEDICAL_RECORD AS OF TIMESTAMP v_flashback_time WHERE RECORD_ID = p_record_id) LOOP
+                    INSERT INTO hospital_dba.MEDICAL_RECORD(RECORD_ID, PATIENT_ID, RECORD_DATE, DIAGNOSIS, TREATMENT_PLAN, DOCTOR_ID, DEPT_ID, CONCLUSION)
                     VALUES(rec.RECORD_ID, rec.PATIENT_ID, rec.RECORD_DATE, rec.DIAGNOSIS, rec.TREATMENT_PLAN, rec.DOCTOR_ID, rec.DEPT_ID, rec.CONCLUSION);
                 END LOOP;
             ELSIF v_count_past = 0 AND v_count_now = 1 THEN
                 -- Bản ghi bị thêm nhầm -> Dùng DELETE để khôi phục
                 -- Lưu ý: Cần xóa bảng con trước để tránh lỗi FK
-                DELETE FROM hospital.PRESCRIPTION WHERE RECORD_ID = p_record_id;
-                DELETE FROM hospital.SERVICE_RECORD WHERE RECORD_ID = p_record_id;
-                DELETE FROM hospital.MEDICAL_RECORD WHERE RECORD_ID = p_record_id;
+                DELETE FROM hospital_dba.PRESCRIPTION WHERE RECORD_ID = p_record_id;
+                DELETE FROM hospital_dba.SERVICE_RECORD WHERE RECORD_ID = p_record_id;
+                DELETE FROM hospital_dba.MEDICAL_RECORD WHERE RECORD_ID = p_record_id;
             END IF;
         END;
 
@@ -435,32 +435,32 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
             v_identical NUMBER;
         BEGIN
             -- 1. Insert hoặc Update các dòng từ quá khứ
-            FOR rec IN (SELECT * FROM hospital.PRESCRIPTION AS OF TIMESTAMP v_flashback_time WHERE RECORD_ID = p_record_id) LOOP
-                SELECT COUNT(*) INTO v_count_now FROM hospital.PRESCRIPTION 
+            FOR rec IN (SELECT * FROM hospital_dba.PRESCRIPTION AS OF TIMESTAMP v_flashback_time WHERE RECORD_ID = p_record_id) LOOP
+                SELECT COUNT(*) INTO v_count_now FROM hospital_dba.PRESCRIPTION 
                 WHERE RECORD_ID = rec.RECORD_ID AND PRESCRIPTION_DATE = rec.PRESCRIPTION_DATE AND MEDICINE_NAME = rec.MEDICINE_NAME;
                
                 IF v_count_now = 1 THEN
                     -- Kiểm tra xem DOSAGE có khác không
-                    SELECT COUNT(*) INTO v_identical FROM hospital.PRESCRIPTION
+                    SELECT COUNT(*) INTO v_identical FROM hospital_dba.PRESCRIPTION
                     WHERE RECORD_ID = rec.RECORD_ID AND PRESCRIPTION_DATE = rec.PRESCRIPTION_DATE AND MEDICINE_NAME = rec.MEDICINE_NAME
                       AND DOSAGE = rec.DOSAGE;
                       
                     IF v_identical = 0 THEN
-                        UPDATE hospital.PRESCRIPTION
+                        UPDATE hospital_dba.PRESCRIPTION
                         SET DOSAGE = rec.DOSAGE
                         WHERE RECORD_ID = rec.RECORD_ID AND PRESCRIPTION_DATE = rec.PRESCRIPTION_DATE AND MEDICINE_NAME = rec.MEDICINE_NAME;
                     END IF;
                 ELSE
-                    INSERT INTO hospital.PRESCRIPTION (RECORD_ID, PRESCRIPTION_DATE, MEDICINE_NAME, DOSAGE)
+                    INSERT INTO hospital_dba.PRESCRIPTION (RECORD_ID, PRESCRIPTION_DATE, MEDICINE_NAME, DOSAGE)
                     VALUES (rec.RECORD_ID, rec.PRESCRIPTION_DATE, rec.MEDICINE_NAME, rec.DOSAGE);
                 END IF;
             END LOOP;
 
             -- 2. Delete các dòng thêm nhầm sau thời điểm flashback
-            DELETE FROM hospital.PRESCRIPTION p_now
+            DELETE FROM hospital_dba.PRESCRIPTION p_now
             WHERE p_now.RECORD_ID = p_record_id
               AND NOT EXISTS (
-                  SELECT 1 FROM hospital.PRESCRIPTION AS OF TIMESTAMP v_flashback_time p_past
+                  SELECT 1 FROM hospital_dba.PRESCRIPTION AS OF TIMESTAMP v_flashback_time p_past
                   WHERE p_past.RECORD_ID = p_now.RECORD_ID
                     AND p_past.PRESCRIPTION_DATE = p_now.PRESCRIPTION_DATE
                     AND p_past.MEDICINE_NAME = p_now.MEDICINE_NAME
@@ -475,33 +475,33 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
             v_identical NUMBER;
         BEGIN
             -- 1. Insert hoặc Update các dòng từ quá khứ
-            FOR rec IN (SELECT * FROM hospital.SERVICE_RECORD AS OF TIMESTAMP v_flashback_time WHERE RECORD_ID = p_record_id) LOOP
-                SELECT COUNT(*) INTO v_count_now FROM hospital.SERVICE_RECORD 
+            FOR rec IN (SELECT * FROM hospital_dba.SERVICE_RECORD AS OF TIMESTAMP v_flashback_time WHERE RECORD_ID = p_record_id) LOOP
+                SELECT COUNT(*) INTO v_count_now FROM hospital_dba.SERVICE_RECORD 
                 WHERE RECORD_ID = rec.RECORD_ID AND SERVICE_TYPE = rec.SERVICE_TYPE AND SERVICE_DATE = rec.SERVICE_DATE;
                
                 IF v_count_now = 1 THEN
                     -- Kiểm tra xem dữ liệu có khác không
-                    SELECT COUNT(*) INTO v_identical FROM hospital.SERVICE_RECORD
+                    SELECT COUNT(*) INTO v_identical FROM hospital_dba.SERVICE_RECORD
                     WHERE RECORD_ID = rec.RECORD_ID AND SERVICE_TYPE = rec.SERVICE_TYPE AND SERVICE_DATE = rec.SERVICE_DATE
                       AND NVL(TECHNICIAN_ID, ' ') = NVL(rec.TECHNICIAN_ID, ' ') 
                       AND NVL(SERVICE_RESULT, ' ') = NVL(rec.SERVICE_RESULT, ' ');
 
                     IF v_identical = 0 THEN
-                        UPDATE hospital.SERVICE_RECORD
+                        UPDATE hospital_dba.SERVICE_RECORD
                         SET TECHNICIAN_ID = rec.TECHNICIAN_ID, SERVICE_RESULT = rec.SERVICE_RESULT
                         WHERE RECORD_ID = rec.RECORD_ID AND SERVICE_TYPE = rec.SERVICE_TYPE AND SERVICE_DATE = rec.SERVICE_DATE;
                     END IF;
                 ELSE
-                    INSERT INTO hospital.SERVICE_RECORD (RECORD_ID, SERVICE_TYPE, SERVICE_DATE, TECHNICIAN_ID, SERVICE_RESULT)
+                    INSERT INTO hospital_dba.SERVICE_RECORD (RECORD_ID, SERVICE_TYPE, SERVICE_DATE, TECHNICIAN_ID, SERVICE_RESULT)
                     VALUES (rec.RECORD_ID, rec.SERVICE_TYPE, rec.SERVICE_DATE, rec.TECHNICIAN_ID, rec.SERVICE_RESULT);
                 END IF;
             END LOOP;
 
             -- 2. Delete các dòng thêm nhầm sau thời điểm flashback
-            DELETE FROM hospital.SERVICE_RECORD s_now
+            DELETE FROM hospital_dba.SERVICE_RECORD s_now
             WHERE s_now.RECORD_ID = p_record_id
               AND NOT EXISTS (
-                  SELECT 1 FROM hospital.SERVICE_RECORD AS OF TIMESTAMP v_flashback_time s_past
+                  SELECT 1 FROM hospital_dba.SERVICE_RECORD AS OF TIMESTAMP v_flashback_time s_past
                   WHERE s_past.RECORD_ID = s_now.RECORD_ID
                     AND s_past.SERVICE_TYPE = s_now.SERVICE_TYPE
                     AND s_past.SERVICE_DATE = s_now.SERVICE_DATE
@@ -567,12 +567,12 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
         BEGIN v_flashback_time := SCN_TO_TIMESTAMP(v_flashback_scn); EXCEPTION WHEN OTHERS THEN v_flashback_time := NULL; END;
 
         IF v_table_name = 'PATIENT' THEN
-            SELECT COUNT(*) INTO v_past_count FROM hospital.PATIENT AS OF SCN v_flashback_scn WHERE PATIENT_ID = p_key1;
-            SELECT COUNT(*) INTO v_now_count FROM hospital.PATIENT WHERE PATIENT_ID = p_key1;
+            SELECT COUNT(*) INTO v_past_count FROM hospital_dba.PATIENT AS OF SCN v_flashback_scn WHERE PATIENT_ID = p_key1;
+            SELECT COUNT(*) INTO v_now_count FROM hospital_dba.PATIENT WHERE PATIENT_ID = p_key1;
 
             IF v_past_count = 1 AND v_now_count = 1 THEN
-                FOR rec IN (SELECT * FROM hospital.PATIENT AS OF SCN v_flashback_scn WHERE PATIENT_ID = p_key1) LOOP
-                    UPDATE hospital.PATIENT
+                FOR rec IN (SELECT * FROM hospital_dba.PATIENT AS OF SCN v_flashback_scn WHERE PATIENT_ID = p_key1) LOOP
+                    UPDATE hospital_dba.PATIENT
                     SET FULL_NAME = rec.FULL_NAME,
                         GENDER = rec.GENDER,
                         BIRTHDATE = rec.BIRTHDATE,
@@ -589,8 +589,8 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
                     WHERE PATIENT_ID = rec.PATIENT_ID;
                 END LOOP;
             ELSIF v_past_count = 1 AND v_now_count = 0 THEN
-                FOR rec IN (SELECT * FROM hospital.PATIENT AS OF SCN v_flashback_scn WHERE PATIENT_ID = p_key1) LOOP
-                    INSERT INTO hospital.PATIENT(
+                FOR rec IN (SELECT * FROM hospital_dba.PATIENT AS OF SCN v_flashback_scn WHERE PATIENT_ID = p_key1) LOOP
+                    INSERT INTO hospital_dba.PATIENT(
                         PATIENT_ID, FULL_NAME, GENDER, BIRTHDATE, ID_CARD,
                         HOUSE_NO, STREET, DISTRICT, CITY_PROVINCE,
                         MEDICAL_HISTORY, FAMILY_MEDICAL_HISTORY, DRUG_ALLERGIES,
@@ -603,18 +603,18 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
                     );
                 END LOOP;
             ELSIF v_past_count = 0 AND v_now_count = 1 THEN
-                DELETE FROM hospital.PATIENT WHERE PATIENT_ID = p_key1;
+                DELETE FROM hospital_dba.PATIENT WHERE PATIENT_ID = p_key1;
             ELSE
                 RAISE_APPLICATION_ERROR(-20003, 'No current or flashback row found for PATIENT key ' || p_key1);
             END IF;
 
         ELSIF v_table_name = 'MEDICAL_RECORD' THEN
-            SELECT COUNT(*) INTO v_past_count FROM hospital.MEDICAL_RECORD AS OF SCN v_flashback_scn WHERE RECORD_ID = p_key1;
-            SELECT COUNT(*) INTO v_now_count FROM hospital.MEDICAL_RECORD WHERE RECORD_ID = p_key1;
+            SELECT COUNT(*) INTO v_past_count FROM hospital_dba.MEDICAL_RECORD AS OF SCN v_flashback_scn WHERE RECORD_ID = p_key1;
+            SELECT COUNT(*) INTO v_now_count FROM hospital_dba.MEDICAL_RECORD WHERE RECORD_ID = p_key1;
 
             IF v_past_count = 1 AND v_now_count = 1 THEN
-                FOR rec IN (SELECT * FROM hospital.MEDICAL_RECORD AS OF SCN v_flashback_scn WHERE RECORD_ID = p_key1) LOOP
-                    UPDATE hospital.MEDICAL_RECORD
+                FOR rec IN (SELECT * FROM hospital_dba.MEDICAL_RECORD AS OF SCN v_flashback_scn WHERE RECORD_ID = p_key1) LOOP
+                    UPDATE hospital_dba.MEDICAL_RECORD
                     SET PATIENT_ID = rec.PATIENT_ID,
                         RECORD_DATE = rec.RECORD_DATE,
                         DIAGNOSIS = rec.DIAGNOSIS,
@@ -625,8 +625,8 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
                     WHERE RECORD_ID = rec.RECORD_ID;
                 END LOOP;
             ELSIF v_past_count = 1 AND v_now_count = 0 THEN
-                FOR rec IN (SELECT * FROM hospital.MEDICAL_RECORD AS OF SCN v_flashback_scn WHERE RECORD_ID = p_key1) LOOP
-                    INSERT INTO hospital.MEDICAL_RECORD(
+                FOR rec IN (SELECT * FROM hospital_dba.MEDICAL_RECORD AS OF SCN v_flashback_scn WHERE RECORD_ID = p_key1) LOOP
+                    INSERT INTO hospital_dba.MEDICAL_RECORD(
                         RECORD_ID, PATIENT_ID, RECORD_DATE, DIAGNOSIS,
                         TREATMENT_PLAN, DOCTOR_ID, DEPT_ID, CONCLUSION
                     ) VALUES (
@@ -635,7 +635,7 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
                     );
                 END LOOP;
             ELSIF v_past_count = 0 AND v_now_count = 1 THEN
-                DELETE FROM hospital.MEDICAL_RECORD WHERE RECORD_ID = p_key1;
+                DELETE FROM hospital_dba.MEDICAL_RECORD WHERE RECORD_ID = p_key1;
             ELSE
                 RAISE_APPLICATION_ERROR(-20003, 'No current or flashback row found for MEDICAL_RECORD key ' || p_key1);
             END IF;
@@ -647,19 +647,19 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
 
             v_key_date := PARSE_DATE_KEY(p_key2);
             SELECT COUNT(*) INTO v_past_count
-            FROM hospital.PRESCRIPTION AS OF SCN v_flashback_scn
+            FROM hospital_dba.PRESCRIPTION AS OF SCN v_flashback_scn
             WHERE RECORD_ID = p_key1 AND PRESCRIPTION_DATE = v_key_date AND MEDICINE_NAME = p_key3;
 
             SELECT COUNT(*) INTO v_now_count
-            FROM hospital.PRESCRIPTION
+            FROM hospital_dba.PRESCRIPTION
             WHERE RECORD_ID = p_key1 AND PRESCRIPTION_DATE = v_key_date AND MEDICINE_NAME = p_key3;
 
             IF v_past_count = 1 AND v_now_count = 1 THEN
                 FOR rec IN (
-                    SELECT * FROM hospital.PRESCRIPTION AS OF SCN v_flashback_scn
+                    SELECT * FROM hospital_dba.PRESCRIPTION AS OF SCN v_flashback_scn
                     WHERE RECORD_ID = p_key1 AND PRESCRIPTION_DATE = v_key_date AND MEDICINE_NAME = p_key3
                 ) LOOP
-                    UPDATE hospital.PRESCRIPTION
+                    UPDATE hospital_dba.PRESCRIPTION
                     SET DOSAGE = rec.DOSAGE
                     WHERE RECORD_ID = rec.RECORD_ID
                       AND PRESCRIPTION_DATE = rec.PRESCRIPTION_DATE
@@ -667,14 +667,14 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
                 END LOOP;
             ELSIF v_past_count = 1 AND v_now_count = 0 THEN
                 FOR rec IN (
-                    SELECT * FROM hospital.PRESCRIPTION AS OF SCN v_flashback_scn
+                    SELECT * FROM hospital_dba.PRESCRIPTION AS OF SCN v_flashback_scn
                     WHERE RECORD_ID = p_key1 AND PRESCRIPTION_DATE = v_key_date AND MEDICINE_NAME = p_key3
                 ) LOOP
-                    INSERT INTO hospital.PRESCRIPTION(RECORD_ID, PRESCRIPTION_DATE, MEDICINE_NAME, DOSAGE)
+                    INSERT INTO hospital_dba.PRESCRIPTION(RECORD_ID, PRESCRIPTION_DATE, MEDICINE_NAME, DOSAGE)
                     VALUES(rec.RECORD_ID, rec.PRESCRIPTION_DATE, rec.MEDICINE_NAME, rec.DOSAGE);
                 END LOOP;
             ELSIF v_past_count = 0 AND v_now_count = 1 THEN
-                DELETE FROM hospital.PRESCRIPTION
+                DELETE FROM hospital_dba.PRESCRIPTION
                 WHERE RECORD_ID = p_key1 AND PRESCRIPTION_DATE = v_key_date AND MEDICINE_NAME = p_key3;
             ELSE
                 RAISE_APPLICATION_ERROR(-20003, 'No current or flashback row found for PRESCRIPTION key ' || v_target_key);
@@ -687,19 +687,19 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
 
             v_key_date := PARSE_DATE_KEY(p_key3);
             SELECT COUNT(*) INTO v_past_count
-            FROM hospital.SERVICE_RECORD AS OF SCN v_flashback_scn
+            FROM hospital_dba.SERVICE_RECORD AS OF SCN v_flashback_scn
             WHERE RECORD_ID = p_key1 AND SERVICE_TYPE = p_key2 AND SERVICE_DATE = v_key_date;
 
             SELECT COUNT(*) INTO v_now_count
-            FROM hospital.SERVICE_RECORD
+            FROM hospital_dba.SERVICE_RECORD
             WHERE RECORD_ID = p_key1 AND SERVICE_TYPE = p_key2 AND SERVICE_DATE = v_key_date;
 
             IF v_past_count = 1 AND v_now_count = 1 THEN
                 FOR rec IN (
-                    SELECT * FROM hospital.SERVICE_RECORD AS OF SCN v_flashback_scn
+                    SELECT * FROM hospital_dba.SERVICE_RECORD AS OF SCN v_flashback_scn
                     WHERE RECORD_ID = p_key1 AND SERVICE_TYPE = p_key2 AND SERVICE_DATE = v_key_date
                 ) LOOP
-                    UPDATE hospital.SERVICE_RECORD
+                    UPDATE hospital_dba.SERVICE_RECORD
                     SET TECHNICIAN_ID = rec.TECHNICIAN_ID,
                         SERVICE_RESULT = rec.SERVICE_RESULT
                     WHERE RECORD_ID = rec.RECORD_ID
@@ -708,14 +708,14 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
                 END LOOP;
             ELSIF v_past_count = 1 AND v_now_count = 0 THEN
                 FOR rec IN (
-                    SELECT * FROM hospital.SERVICE_RECORD AS OF SCN v_flashback_scn
+                    SELECT * FROM hospital_dba.SERVICE_RECORD AS OF SCN v_flashback_scn
                     WHERE RECORD_ID = p_key1 AND SERVICE_TYPE = p_key2 AND SERVICE_DATE = v_key_date
                 ) LOOP
-                    INSERT INTO hospital.SERVICE_RECORD(RECORD_ID, SERVICE_TYPE, SERVICE_DATE, TECHNICIAN_ID, SERVICE_RESULT)
+                    INSERT INTO hospital_dba.SERVICE_RECORD(RECORD_ID, SERVICE_TYPE, SERVICE_DATE, TECHNICIAN_ID, SERVICE_RESULT)
                     VALUES(rec.RECORD_ID, rec.SERVICE_TYPE, rec.SERVICE_DATE, rec.TECHNICIAN_ID, rec.SERVICE_RESULT);
                 END LOOP;
             ELSIF v_past_count = 0 AND v_now_count = 1 THEN
-                DELETE FROM hospital.SERVICE_RECORD
+                DELETE FROM hospital_dba.SERVICE_RECORD
                 WHERE RECORD_ID = p_key1 AND SERVICE_TYPE = p_key2 AND SERVICE_DATE = v_key_date;
             ELSE
                 RAISE_APPLICATION_ERROR(-20003, 'No current or flashback row found for SERVICE_RECORD key ' || v_target_key);
@@ -754,7 +754,7 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
 END PKG_BACKUP_RECOVERY;
 /
 
-SHOW ERRORS PACKAGE BODY hospital.PKG_BACKUP_RECOVERY;
+SHOW ERRORS PACKAGE BODY hospital_dba.PKG_BACKUP_RECOVERY;
 
 
 -- ==============================================================================
@@ -832,7 +832,7 @@ BEGIN
     DBMS_DATAPUMP.METADATA_REMAP(
         handle    => v_handle,
         name      => 'REMAP_SCHEMA',
-        old_value => 'HOSPITAL',
+        old_value => 'HOSPITAL_DBA',
         value     => 'HOSPITAL_RESTORE'
     );
 
@@ -888,7 +888,7 @@ SHOW ERRORS PROCEDURE hospital_dba.USP_IMPORT_DATAPUMP_TO_RESTORE;
 -- ==============================================================================
 BEGIN
     DBMS_SCHEDULER.DROP_JOB(
-        job_name => 'HOSPITAL.AUTO_BACKUP_JOB',
+        job_name => 'hospital_dba.AUTO_BACKUP_JOB',
         force    => TRUE
     );
 EXCEPTION
@@ -898,13 +898,13 @@ END;
 
 BEGIN
     DBMS_SCHEDULER.CREATE_JOB(
-        job_name        => 'HOSPITAL.AUTO_BACKUP_JOB',
+        job_name        => 'hospital_dba.AUTO_BACKUP_JOB',
         job_type        => 'STORED_PROCEDURE',
-        job_action      => 'hospital.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP',
+        job_action      => 'hospital_dba.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP',
         start_date      => SYSTIMESTAMP,
         repeat_interval => 'FREQ=DAILY;BYHOUR=2;BYMINUTE=0;BYSECOND=0',
         enabled         => FALSE,
-        comments        => 'Automatic Data Pump schema backup for HOSPITAL. Enable when demo environment is ready.'
+        comments        => 'Automatic Data Pump schema backup for hospital_dba. Enable when demo environment is ready.'
     );
 
     DBMS_OUTPUT.PUT_LINE('[OK] AUTO_BACKUP_JOB created. Default status: DISABLED.');
@@ -915,8 +915,10 @@ END;
 /
 
 -- For demo only, enable manually when needed:
--- BEGIN DBMS_SCHEDULER.ENABLE('HOSPITAL.AUTO_BACKUP_JOB'); END;
+-- BEGIN DBMS_SCHEDULER.ENABLE('hospital_dba.AUTO_BACKUP_JOB'); END;
 -- /
--- BEGIN DBMS_SCHEDULER.RUN_JOB('HOSPITAL.AUTO_BACKUP_JOB'); END;
+-- BEGIN DBMS_SCHEDULER.RUN_JOB('hospital_dba.AUTO_BACKUP_JOB'); END;
 -- /
+
+
 

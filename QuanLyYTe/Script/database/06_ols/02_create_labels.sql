@@ -5,7 +5,7 @@
 -- và tạo tổ hợp các nhãn OLS.
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 -- Kích hoạt Role quản trị OLS (HOSP_OLS_POL_DBA) vừa được cấp trong phiên hiện tại
 SET ROLE ALL;
@@ -71,11 +71,12 @@ END;
 
 -- 4. Áp dụng Policy lên bảng
 BEGIN
-    -- Gắn Policy 'HOSP_OLS_POL' vào bảng 'NOTIFICATION' trong schema 'HOSPITAL'
+    -- Gắn Policy 'HOSP_OLS_POL' vào bảng 'NOTIFICATION' trong schema 'HOSPITAL_DBA'
     -- Từ lúc này, Oracle sẽ tự động thêm 1 cột tên OLS_LABEL (đã định nghĩa ở script 1) vào bảng này.
-    SA_POLICY_ADMIN.APPLY_TABLE_POLICY('HOSP_OLS_POL', 'HOSPITAL', 'NOTIFICATION', 'READ_CONTROL, WRITE_CONTROL, CHECK_CONTROL');
+    SA_POLICY_ADMIN.APPLY_TABLE_POLICY('HOSP_OLS_POL', 'HOSPITAL_DBA', 'NOTIFICATION', 'READ_CONTROL, WRITE_CONTROL, CHECK_CONTROL');
     
     -- Đảm bảo HOSPITAL_DBA có quyền FULL bypass policy
     SA_USER_ADMIN.SET_USER_PRIVS('HOSP_OLS_POL', 'HOSPITAL_DBA', 'FULL');
 END;
 /
+

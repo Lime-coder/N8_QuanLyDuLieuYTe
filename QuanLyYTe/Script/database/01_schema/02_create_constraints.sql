@@ -1,10 +1,10 @@
 -- ==============================================================================
 -- 02_create_constraints.sql
--- Chạy dưới quyền: hospital (or sysdba with CURRENT_SCHEMA=hospital)
+-- Chạy dưới quyền: hospital_dba (or sysdba with CURRENT_SCHEMA=hospital_dba)
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 -- Foreign Keys for staff
 ALTER TABLE staff ADD CONSTRAINT fk_staff_dept FOREIGN KEY (dept_id) REFERENCES department(dept_id);
@@ -38,3 +38,4 @@ ALTER TABLE service_record ADD CONSTRAINT fk_sr_staff FOREIGN KEY (technician_id
 
 -- Foreign Keys for prescription
 ALTER TABLE prescription ADD CONSTRAINT fk_presc_record FOREIGN KEY (record_id) REFERENCES medical_record(record_id);
+

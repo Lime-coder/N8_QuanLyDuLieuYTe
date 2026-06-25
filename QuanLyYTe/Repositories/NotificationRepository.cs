@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 using QuanLyYTe.DataProvider;
@@ -17,7 +17,7 @@ namespace QuanLyYTe.Repositories
             
             try 
             {
-                return _dbProvider.ExecuteQuerySP("hospital.USP_GET_NOTIFICATIONS", parameters);
+                return _dbProvider.ExecuteQuerySP("hospital_dba.USP_GET_NOTIFICATIONS", parameters);
             }
             catch (OracleException ex)
             {
@@ -40,7 +40,7 @@ namespace QuanLyYTe.Repositories
 
             try 
             {
-                _dbProvider.ExecuteNonQuerySP("hospital.USP_ADD_NOTIFICATION", parameters);
+                _dbProvider.ExecuteNonQuerySP("hospital_dba.USP_ADD_NOTIFICATION", parameters);
             }
             catch (OracleException ex)
             {
@@ -53,4 +53,5 @@ namespace QuanLyYTe.Repositories
         }
     }
 }
+
 

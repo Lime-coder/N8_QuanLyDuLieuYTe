@@ -100,8 +100,8 @@ BEGIN
     
     -- Sync with app tables
     BEGIN
-        EXECUTE IMMEDIATE 'UPDATE hospital.staff SET is_active = 0 WHERE username_db = :u' USING v_user;
-        EXECUTE IMMEDIATE 'UPDATE hospital.patient SET is_active = 0 WHERE username_db = :u' USING v_user;
+        EXECUTE IMMEDIATE 'UPDATE hospital_dba.staff SET is_active = 0 WHERE username_db = :u' USING v_user;
+        EXECUTE IMMEDIATE 'UPDATE hospital_dba.patient SET is_active = 0 WHERE username_db = :u' USING v_user;
         COMMIT;
     EXCEPTION WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('WARNING: is_active sync failed for ' || v_user || ': ' || SQLERRM);
@@ -133,8 +133,8 @@ BEGIN
     
     -- Sync with app tables
     BEGIN
-        EXECUTE IMMEDIATE 'UPDATE hospital.staff SET is_active = 1 WHERE username_db = :u' USING v_user;
-        EXECUTE IMMEDIATE 'UPDATE hospital.patient SET is_active = 1 WHERE username_db = :u' USING v_user;
+        EXECUTE IMMEDIATE 'UPDATE hospital_dba.staff SET is_active = 1 WHERE username_db = :u' USING v_user;
+        EXECUTE IMMEDIATE 'UPDATE hospital_dba.patient SET is_active = 1 WHERE username_db = :u' USING v_user;
         COMMIT;
     EXCEPTION WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('WARNING: is_active sync failed for ' || v_user || ': ' || SQLERRM);
@@ -279,5 +279,6 @@ BEGIN
     END IF;
 END;
 /
+
 
 

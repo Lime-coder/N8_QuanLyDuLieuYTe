@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Drawing;
 using System.Linq;
@@ -107,7 +107,7 @@ namespace QuanLyYTe.Forms
             try
             {
                 Cursor = Cursors.WaitCursor;
-                _dtPrivileges = _service.GetPrivsOnObject("HOSPITAL", objName);
+                _dtPrivileges = _service.GetPrivsOnObject("HOSPITAL_DBA", objName);
                 BindGrid(_dtPrivileges);
                 RenameColumns_ByObject();
                 UpdateSummaryLabel(objName, true);
@@ -263,7 +263,7 @@ namespace QuanLyYTe.Forms
             }
             else
             {
-                lblSummary.Text = $"Đối tượng [HOSPITAL.{targetName}]: Có tổng cộng {total} quyền được cấp phát.";
+                lblSummary.Text = $"Đối tượng [HOSPITAL_DBA.{targetName}]: Có tổng cộng {total} quyền được cấp phát.";
             }
         }
 
@@ -389,3 +389,4 @@ namespace QuanLyYTe.Forms
         }
     }
 }
+

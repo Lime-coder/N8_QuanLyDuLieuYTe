@@ -20,7 +20,7 @@ ALTER SESSION SET CONTAINER = PDB_QLYT;
 CONNECT NV000121/123@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
-UPDATE hospital.medical_record
+UPDATE hospital_dba.medical_record
 SET    diagnosis      = N'Viêm gan',
        treatment_plan = N'Uống thuốc đều đặn',
        conclusion     = N'Theo dõi định kỳ'
@@ -32,7 +32,7 @@ WHERE  record_id = 'BA001';
 CONNECT NV000001/123@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
-DELETE FROM hospital.service_record 
+DELETE FROM hospital_dba.service_record 
 WHERE record_id = 'BA001' 
   AND service_type = N'Chụp MRI não' 
   AND TRUNC(service_date) = DATE '2026-06-23'; 

@@ -12,7 +12,7 @@ PROMPT ====================================================================
 DECLARE
     v_sql VARCHAR2(1000);
 BEGIN
-    FOR r IN (SELECT username_db, staff_role FROM hospital.staff WHERE username_db IN ('NV000001', 'NV000021', 'NV000121', 'U1', 'U2', 'U3', 'U4', 'U5', 'U6', 'U7', 'U8')) LOOP
+    FOR r IN (SELECT username_db, staff_role FROM hospital_dba.staff WHERE username_db IN ('NV000001', 'NV000021', 'NV000121', 'U1', 'U2', 'U3', 'U4', 'U5', 'U6', 'U7', 'U8')) LOOP
         BEGIN
             v_sql := 'CREATE USER ' || r.username_db || ' IDENTIFIED BY "123"';
             EXECUTE IMMEDIATE v_sql;
@@ -56,7 +56,7 @@ PROMPT ====================================================================
 DECLARE
     v_sql VARCHAR2(1000);
 BEGIN
-    FOR r IN (SELECT username_db FROM hospital.patient WHERE username_db = 'BN000001') LOOP
+    FOR r IN (SELECT username_db FROM hospital_dba.patient WHERE username_db = 'BN000001') LOOP
         BEGIN
             v_sql := 'CREATE USER ' || r.username_db || ' IDENTIFIED BY "123"';
             EXECUTE IMMEDIATE v_sql;
@@ -93,9 +93,10 @@ DECLARE
 BEGIN
     FOR i IN 1..8 LOOP
         BEGIN
-            EXECUTE IMMEDIATE 'GRANT EXECUTE ON hospital.USP_GET_NOTIFICATIONS TO U' || i;
+            EXECUTE IMMEDIATE 'GRANT EXECUTE ON hospital_dba.USP_GET_NOTIFICATIONS TO U' || i;
         EXCEPTION WHEN OTHERS THEN NULL;
         END;
     END LOOP;
 END;
 /
+

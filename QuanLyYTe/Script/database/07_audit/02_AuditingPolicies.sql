@@ -12,35 +12,35 @@ CREATE OR REPLACE FUNCTION hospital_dba.F_EXTRACT_MEDICAL_HISTORY(p_patient_id I
 RETURN NCLOB AS
     v_history NCLOB;
 BEGIN
-    SELECT medical_history INTO v_history FROM hospital.patient WHERE patient_id = p_patient_id;
+    SELECT medical_history INTO v_history FROM hospital_dba.patient WHERE patient_id = p_patient_id;
     RETURN v_history;
 END;
 /   
 GRANT EXECUTE ON hospital_dba.F_EXTRACT_MEDICAL_HISTORY TO rl_doctor, rl_coordinator;
 
 -- Xóa các chính sách cũ
-NOAUDIT INSERT ON hospital.medical_record;
-NOAUDIT UPDATE ON hospital.staff;
+NOAUDIT INSERT ON hospital_dba.medical_record;
+NOAUDIT UPDATE ON hospital_dba.staff;
 NOAUDIT UPDATE ON hospital_dba.V_PATIENT_SELF;
-NOAUDIT EXECUTE ON hospital.USP_MANAGE_PRESCRIPTION;
+NOAUDIT EXECUTE ON hospital_dba.USP_MANAGE_PRESCRIPTION;
 NOAUDIT EXECUTE ON hospital_dba.F_EXTRACT_MEDICAL_HISTORY;
 
 -- 2.2. 5 ngữ cảnh (có cả SUCCESSFUL và NOT SUCCESSFUL theo yêu cầu đề bài)
 -- NC#1: TABLE - Thêm mới HSBA
-AUDIT INSERT ON hospital.medical_record BY ACCESS WHENEVER SUCCESSFUL;
-AUDIT INSERT ON hospital.medical_record BY ACCESS WHENEVER NOT SUCCESSFUL;
+AUDIT INSERT ON hospital_dba.medical_record BY ACCESS WHENEVER SUCCESSFUL;
+AUDIT INSERT ON hospital_dba.medical_record BY ACCESS WHENEVER NOT SUCCESSFUL;
  
 -- NC#2: TABLE - Cập nhật trạng thái hoạt động của nhân viên
-AUDIT UPDATE ON hospital.staff BY ACCESS WHENEVER SUCCESSFUL;
-AUDIT UPDATE ON hospital.staff BY ACCESS WHENEVER NOT SUCCESSFUL;
+AUDIT UPDATE ON hospital_dba.staff BY ACCESS WHENEVER SUCCESSFUL;
+AUDIT UPDATE ON hospital_dba.staff BY ACCESS WHENEVER NOT SUCCESSFUL;
 
 -- NC#3: VIEW - Cập nhật thông tin bệnh nhân
 AUDIT UPDATE ON hospital_dba.V_PATIENT_SELF BY ACCESS WHENEVER SUCCESSFUL;
 AUDIT UPDATE ON hospital_dba.V_PATIENT_SELF BY ACCESS WHENEVER NOT SUCCESSFUL;
 
 -- NC#4: STORED PROCEDURE - Quản lý (Thêm mới, cập nhật, xóa) đơn thuốc 
-AUDIT EXECUTE ON hospital.USP_MANAGE_PRESCRIPTION BY ACCESS WHENEVER SUCCESSFUL;
-AUDIT EXECUTE ON hospital.USP_MANAGE_PRESCRIPTION BY ACCESS WHENEVER NOT SUCCESSFUL;
+AUDIT EXECUTE ON hospital_dba.USP_MANAGE_PRESCRIPTION BY ACCESS WHENEVER SUCCESSFUL;
+AUDIT EXECUTE ON hospital_dba.USP_MANAGE_PRESCRIPTION BY ACCESS WHENEVER NOT SUCCESSFUL;
 
 -- NC#5: FUNCTION - Trích xuất tiền sử bệnh án
 AUDIT EXECUTE ON hospital_dba.F_EXTRACT_MEDICAL_HISTORY BY ACCESS WHENEVER SUCCESSFUL;
@@ -55,7 +55,7 @@ BEGIN
     -- 1. Xóa Policy cũ trên bảng PRESCRIPTION
     BEGIN
         DBMS_FGA.DROP_POLICY(
-            object_schema => 'HOSPITAL', 
+            object_schema => 'HOSPITAL_DBA', 
             object_name   => 'PRESCRIPTION', 
             policy_name   => 'FGA_PRESCRIPTION_COLS'
         );
@@ -64,7 +64,7 @@ BEGIN
     -- 2. Xóa Policy cũ trên bảng MEDICAL_RECORD
     BEGIN
         DBMS_FGA.DROP_POLICY(
-            object_schema => 'HOSPITAL', 
+            object_schema => 'HOSPITAL_DBA', 
             object_name   => 'MEDICAL_RECORD', 
             policy_name   => 'FGA_MEDICAL_RECORD_COLS'
         );
@@ -75,7 +75,7 @@ END;
 -- Tạo policy mới
 BEGIN
     DBMS_FGA.ADD_POLICY(
-        object_schema   => 'HOSPITAL',
+        object_schema   => 'HOSPITAL_DBA',
         object_name     => 'PRESCRIPTION', 
         policy_name     => 'FGA_PRESCRIPTION_COLS',
         audit_column    => 'RECORD_ID, PRESCRIPTION_DATE, MEDICINE_NAME, DOSAGE',
@@ -88,7 +88,7 @@ END;
 -- Tạo policy mới
 BEGIN
     DBMS_FGA.ADD_POLICY(
-        object_schema   => 'HOSPITAL',
+        object_schema   => 'HOSPITAL_DBA',
         object_name     => 'MEDICAL_RECORD',
         policy_name     => 'FGA_MEDICAL_RECORD_COLS',
         audit_column    => 'DIAGNOSIS, TREATMENT_PLAN, CONCLUSION',
@@ -122,7 +122,7 @@ END;
 -- Tạo audit policy mới
 CREATE AUDIT POLICY AUD_ILLEGAL_MEDICAL_RECORD_POLICY
   ACTIONS 
-    UPDATE ON hospital.medical_record;
+    UPDATE ON hospital_dba.medical_record;
 
 -- Bắt hành vi Failed (Sai quyền/Bất hợp pháp)
 AUDIT POLICY AUD_ILLEGAL_MEDICAL_RECORD_POLICY WHENEVER NOT SUCCESSFUL;
@@ -132,16 +132,16 @@ AUDIT POLICY AUD_ILLEGAL_MEDICAL_RECORD_POLICY WHENEVER NOT SUCCESSFUL;
 -- Tạo audit policy mới
 CREATE AUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY
   ACTIONS 
-    INSERT ON hospital.service_record, 
-    UPDATE ON hospital.service_record, 
-    DELETE ON hospital.service_record; 
+    INSERT ON hospital_dba.service_record, 
+    UPDATE ON hospital_dba.service_record, 
+    DELETE ON hospital_dba.service_record; 
 
 -- Bật Audit để bắt TẤT CẢ hành vi (Thành công + Thất bại)
 AUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY WHENEVER NOT SUCCESSFUL;
 -- Thêm yêu cầu ở TC#4: Các thao tác cập nhật trên trường KẾTQUẢ của HSBA_DV đều được ghi vết.
 BEGIN
     DBMS_FGA.ADD_POLICY(
-        object_schema   => 'HOSPITAL',
+        object_schema   => 'HOSPITAL_DBA',
         object_name     => 'SERVICE_RECORD',
         policy_name     => 'FGA_SERVICE_RECORD_COLS',
         audit_column    => 'SERVICE_RESULT',
@@ -165,7 +165,7 @@ BEGIN
            TO_CHAR(RETURNCODE) AS RETURNCODE, 
            DBMS_LOB.SUBSTR(SQL_TEXT, 4000, 1) as SQL_TEXT
     FROM DBA_AUDIT_TRAIL 
-    WHERE OWNER IN ('HOSPITAL', 'HOSPITAL_DBA')
+    WHERE OWNER IN ('HOSPITAL_DBA', 'HOSPITAL_DBA')
     ORDER BY TIMESTAMP DESC;
 END;
 /
@@ -230,3 +230,4 @@ BEGIN
     ORDER BY TIMESTAMP DESC;
 END;
 /
+

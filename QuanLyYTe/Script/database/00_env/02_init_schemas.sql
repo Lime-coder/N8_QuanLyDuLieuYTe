@@ -1,15 +1,13 @@
 -- ==============================================================================
 -- 00_init_schemas.sql (Bổ sung từ Part 1)
 -- Chạy dưới quyền: SYS AS SYSDBA
--- Khởi tạo các user nền tảng (hospital, hospital_dba) và role quản trị cơ bản
+-- Khởi tạo các user nền tảng (hospital_dba, hospital_dba) và role quản trị cơ bản
 -- ==============================================================================
 ALTER SESSION SET CONTAINER = PDB_QLYT;
 
--- 1. Tạo Schema chính của hệ thống (bị khóa, không cho phép login trực tiếp)
-CREATE USER hospital IDENTIFIED BY Hospital#Schema2026 ACCOUNT LOCK;
-GRANT UNLIMITED TABLESPACE TO hospital;
 
--- 2. Tạo role quản trị (rl_dba) với các quyền tối thiểu để quản lý schema hospital
+
+-- 2. Tạo role quản trị (rl_dba) với các quyền tối thiểu để quản lý schema hospital_dba
 CREATE ROLE rl_dba;
 GRANT CREATE SESSION TO rl_dba;
 GRANT CREATE ROLE TO rl_dba;
@@ -45,6 +43,7 @@ GRANT DELETE ANY TABLE TO rl_dba;
 CREATE USER hospital_dba IDENTIFIED BY "&&dba_password";
 GRANT rl_dba TO hospital_dba;
 ALTER USER hospital_dba DEFAULT ROLE rl_dba;
+GRANT UNLIMITED TABLESPACE TO hospital_dba;
 
 -- Các quyền cấp hệ thống bắt buộc cho hospital_dba để thực thi logic phân quyền và OLS/VPD sau này
 GRANT SELECT ON SYS.DBA_USERS TO hospital_dba;
@@ -66,6 +65,7 @@ GRANT SELECT ON DBA_SA_USERS TO hospital_dba;
 GRANT EXECUTE ON SA_USER_ADMIN TO hospital_dba;
 
 -- 4. Tạo các sequence cấp tự động cho ID (do script 01_create_tables thiếu)
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 CREATE SEQUENCE SEQ_STAFF_ID START WITH 100001 INCREMENT BY 1;
 CREATE SEQUENCE SEQ_PATIENT_ID START WITH 100001 INCREMENT BY 1;
+

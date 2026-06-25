@@ -9,7 +9,7 @@ PROMPT ====================================================================
 PROMPT = QLYT DATABASE SETUP SCRIPT (AIO)                                 =
 PROMPT ====================================================================
 PROMPT Vui long nhap mat khau cho cac tai khoan sau:
-PROMPT (Tai khoan HOSPITAL hien dang duoc LOCK nen se su dung SYSDBA de thao tac bang schema cua no)
+PROMPT (Tai khoan HOSPITAL_DBA hien dang duoc LOCK nen se su dung SYSDBA de thao tac bang schema cua no)
 
 ACCEPT sys_password CHAR PROMPT 'Enter SYS password: ' HIDE
 ACCEPT dba_password CHAR PROMPT 'Enter HOSPITAL_DBA password: ' HIDE
@@ -47,14 +47,9 @@ SET DEFINE OFF
 @@../01_SCHEMA/02_create_constraints.sql
 @@../01_SCHEMA/03_create_indexes.sql
 
-SET DEFINE ON
-CONNECT sys/"&sys_password"@localhost:1521/PDB_QLYT AS SYSDBA
-SET DEFINE OFF
-@@../01_SCHEMA/04_post_schema_grants.sql
-
 PROMPT 
 PROMPT ====================================================================
-PROMPT = 02. DU LIEU MAU (HOSPITAL_DBA thao tac cho HOSPITAL)             =
+PROMPT = 02. DU LIEU MAU (HOSPITAL_DBA thao tac cho HOSPITAL_DBA)             =
 PROMPT ====================================================================
 SET DEFINE ON
 CONNECT hospital_dba/"&dba_password"@localhost:1521/PDB_QLYT
@@ -91,7 +86,7 @@ SET DEFINE OFF
 
 PROMPT 
 PROMPT ====================================================================
-PROMPT = 04. RBAC (HOSPITAL_DBA thao tac cho HOSPITAL)                    =
+PROMPT = 04. RBAC (HOSPITAL_DBA thao tac cho HOSPITAL_DBA)                    =
 PROMPT ====================================================================
 SET DEFINE ON
 CONNECT hospital_dba/"&dba_password"@localhost:1521/PDB_QLYT
@@ -193,3 +188,4 @@ PROMPT = Chu y: Ban can khoi dong lai CSDL de Audit va OLS co hieu luc.   =
 PROMPT ====================================================================
 SPOOL OFF
 EXIT;
+

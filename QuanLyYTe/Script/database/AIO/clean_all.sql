@@ -52,21 +52,22 @@ END;
 /
 
 PROMPT ====================================================================
-PROMPT = 3. XOA SCHEMA HOSPITAL_DBA VA HOSPITAL                           =
+PROMPT = 3. XOA SCHEMA HOSPITAL VA HOSPITAL_DBA                           =
 PROMPT ====================================================================
-BEGIN 
-    EXECUTE IMMEDIATE 'DROP USER hospital_dba CASCADE'; 
-    DBMS_OUTPUT.PUT_LINE('Da xoa user hospital_dba');
-EXCEPTION 
-    WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('User hospital_dba chua ton tai.'); 
-END;
-/
 
 BEGIN 
     EXECUTE IMMEDIATE 'DROP USER hospital CASCADE'; 
     DBMS_OUTPUT.PUT_LINE('Da xoa user hospital');
 EXCEPTION 
     WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('User hospital chua ton tai.'); 
+END;
+/
+
+BEGIN 
+    EXECUTE IMMEDIATE 'DROP USER hospital_dba CASCADE'; 
+    DBMS_OUTPUT.PUT_LINE('Da xoa user hospital_dba');
+EXCEPTION 
+    WHEN OTHERS THEN DBMS_OUTPUT.PUT_LINE('User hospital_dba chua ton tai.'); 
 END;
 /
 
@@ -93,3 +94,4 @@ PROMPT = Kiem tra log tai AIO_clean_log.txt                               =
 PROMPT ====================================================================
 SPOOL OFF
 EXIT;
+

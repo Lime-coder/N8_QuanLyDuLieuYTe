@@ -17,14 +17,14 @@ CREATE OR REPLACE FUNCTION FN_VPD_MEDICAL_RECORD_DOCTOR (
 BEGIN
     v_user := SYS_CONTEXT('USERENV', 'SESSION_USER');
     
-    IF v_user IN ('HOSPITAL_DBA', 'HOSPITAL') THEN RETURN '1=1'; END IF;
+    IF v_user IN ('HOSPITAL_DBA', 'HOSPITAL_DBA') THEN RETURN '1=1'; END IF;
     
     BEGIN
         SELECT staff_id, staff_role INTO v_staff_id, v_role 
-        FROM hospital.staff 
+        FROM hospital_dba.staff 
         WHERE UPPER(username_db) = v_user;
     EXCEPTION WHEN NO_DATA_FOUND THEN
-        RETURN 'patient_id IN (SELECT patient_id FROM hospital.patient WHERE UPPER(username_db) = ''' || v_user || ''')';
+        RETURN 'patient_id IN (SELECT patient_id FROM hospital_dba.patient WHERE UPPER(username_db) = ''' || v_user || ''')';
     END;
     
     IF v_role NOT IN (UNISTR('B\00E1c s\0129'), UNISTR('B\00E1c s\0129/Y s\0129')) THEN
@@ -46,11 +46,11 @@ CREATE OR REPLACE FUNCTION FN_VPD_PATIENT_DOCTOR (
 BEGIN
     v_user := SYS_CONTEXT('USERENV', 'SESSION_USER');
     
-    IF v_user IN ('HOSPITAL_DBA', 'HOSPITAL') THEN RETURN '1=1'; END IF;
+    IF v_user IN ('HOSPITAL_DBA', 'HOSPITAL_DBA') THEN RETURN '1=1'; END IF;
     
     BEGIN
         SELECT staff_id, staff_role INTO v_staff_id, v_role 
-        FROM hospital.staff 
+        FROM hospital_dba.staff 
         WHERE UPPER(username_db) = v_user;
     EXCEPTION WHEN NO_DATA_FOUND THEN 
         RETURN 'UPPER(username_db) = ''' || v_user || '''';
@@ -60,7 +60,7 @@ BEGIN
         RETURN '1=1';
     END IF;
     
-    RETURN 'patient_id IN (SELECT m.patient_id FROM hospital.medical_record m WHERE m.doctor_id = ''' || v_staff_id || ''')';
+    RETURN 'patient_id IN (SELECT m.patient_id FROM hospital_dba.medical_record m WHERE m.doctor_id = ''' || v_staff_id || ''')';
 END;
 /
 
@@ -75,21 +75,21 @@ CREATE OR REPLACE FUNCTION FN_VPD_RECORD_DETAIL_DOCTOR (
 BEGIN
     v_user := SYS_CONTEXT('USERENV', 'SESSION_USER');
     
-    IF v_user IN ('HOSPITAL_DBA', 'HOSPITAL') THEN RETURN '1=1'; END IF;
+    IF v_user IN ('HOSPITAL_DBA', 'HOSPITAL_DBA') THEN RETURN '1=1'; END IF;
     
     BEGIN
         SELECT staff_id, staff_role INTO v_staff_id, v_role 
-        FROM hospital.staff 
+        FROM hospital_dba.staff 
         WHERE UPPER(username_db) = v_user;
     EXCEPTION WHEN NO_DATA_FOUND THEN 
-        RETURN 'record_id IN (SELECT mr.record_id FROM hospital.medical_record mr JOIN hospital.patient p ON mr.patient_id = p.patient_id WHERE UPPER(p.username_db) = ''' || v_user || ''')';
+        RETURN 'record_id IN (SELECT mr.record_id FROM hospital_dba.medical_record mr JOIN hospital_dba.patient p ON mr.patient_id = p.patient_id WHERE UPPER(p.username_db) = ''' || v_user || ''')';
     END;
     
     IF v_role NOT IN (UNISTR('B\00E1c s\0129'), UNISTR('B\00E1c s\0129/Y s\0129')) THEN
         RETURN '1=1';
     END IF;
     
-    RETURN 'record_id IN (SELECT m.record_id FROM hospital.medical_record m WHERE m.doctor_id = ''' || v_staff_id || ''')';
+    RETURN 'record_id IN (SELECT m.record_id FROM hospital_dba.medical_record m WHERE m.doctor_id = ''' || v_staff_id || ''')';
 END;
 /
 
@@ -101,8 +101,9 @@ END;
 --BEGIN
 --    v_user := SYS_CONTEXT('USERENV', 'SESSION_USER');
 --
---    IF v_user IN ('HOSPITAL', 'HOSPITAL_DBA') THEN RETURN '1=1'; END IF;
+--    IF v_user IN ('HOSPITAL_DBA', 'HOSPITAL_DBA') THEN RETURN '1=1'; END IF;
 --
 --    RETURN 'UPPER(username_db) = ''' || v_user || '''';
 --END;
 --/
+

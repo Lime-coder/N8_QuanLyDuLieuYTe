@@ -22,7 +22,7 @@ CONNECT NV000121/123@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Kỹ thuật viên cố tình tự tạo hồ sơ bệnh án
-INSERT INTO hospital.medical_record (record_id, patient_id, record_date, doctor_id, dept_id, diagnosis, treatment_plan, conclusion)
+INSERT INTO hospital_dba.medical_record (record_id, patient_id, record_date, doctor_id, dept_id, diagnosis, treatment_plan, conclusion)
 VALUES ('BA_TEST', 'BN000001', SYSDATE, 'NV000021', 'PB01', N'Chưa chẩn đoán', N'Chưa điều trị', N'Chưa kết luận');
 /
 
@@ -40,7 +40,7 @@ CONNECT NV000121/123@&pdb_url
 SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Kỹ thuật viên cố sửa trạng thái hoạt động của nhân viên
-UPDATE hospital.staff SET is_active = 0 WHERE staff_id = 'NV000021';
+UPDATE hospital_dba.staff SET is_active = 0 WHERE staff_id = 'NV000021';
 /
 
 -- ============================================================
@@ -69,7 +69,7 @@ SHOW USER;
 SHOW CON_NAME;
 -- THẤT BẠI: Kỹ thuật viên lén gọi SP kê đơn thuốc
 BEGIN
-    hospital.USP_MANAGE_PRESCRIPTION(
+    hospital_dba.USP_MANAGE_PRESCRIPTION(
         p_action => 'INSERT',
         p_record_id => 'BA_TEST',
         p_med_name => N'Thuốc ngủ',
@@ -96,3 +96,4 @@ SHOW CON_NAME;
 -- THẤT BẠI: Nhân viên kỹ thuật cố gọi function trích xuất tiền sử bệnh của bệnh nhân
 SELECT hospital_dba.F_EXTRACT_MEDICAL_HISTORY('BN000001') FROM DUAL;
 /
+

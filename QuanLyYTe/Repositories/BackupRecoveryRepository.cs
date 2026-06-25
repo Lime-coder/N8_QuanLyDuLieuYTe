@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Globalization;
 using Oracle.ManagedDataAccess.Client;
@@ -19,7 +19,7 @@ namespace QuanLyYTe.Repositories
                     CAST(ACTION_NAME AS VARCHAR2(128)) as ACTION, 
                     TO_CHAR(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') as TIMESTAMP
                 FROM DBA_AUDIT_TRAIL 
-                WHERE OWNER IN ('HOSPITAL', 'HOSPITAL_DBA')
+                WHERE OWNER IN ('HOSPITAL_DBA', 'HOSPITAL_DBA')
                   AND RETURNCODE = 0
                 ORDER BY TO_DATE(TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') DESC";
             return _dbProvider.ExecuteQuery(sql);
@@ -36,7 +36,7 @@ namespace QuanLyYTe.Repositories
                     DUMP_FILE,
                     STATUS,
                     ERROR_MESSAGE
-                FROM hospital.BACKUP_HISTORY
+                FROM hospital_dba.BACKUP_HISTORY
                 ORDER BY BACKUP_TIME DESC";
             return _dbProvider.ExecuteQuery(sql);
         }
@@ -65,7 +65,7 @@ namespace QuanLyYTe.Repositories
                         'UNIFIED' AS SOURCE,
                         CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
                     FROM UNIFIED_AUDIT_TRAIL
-                    WHERE OBJECT_SCHEMA = 'HOSPITAL'
+                    WHERE OBJECT_SCHEMA = 'HOSPITAL_DBA'
                       AND OBJECT_NAME IN ('PRESCRIPTION', 'MEDICAL_RECORD', 'SERVICE_RECORD', 'PATIENT')
                       AND ACTION_NAME IN ('INSERT', 'UPDATE', 'DELETE')
                       AND RETURN_CODE = 0
@@ -79,7 +79,7 @@ namespace QuanLyYTe.Repositories
                         'FGA' AS SOURCE,
                         CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
                     FROM DBA_FGA_AUDIT_TRAIL
-                    WHERE OBJECT_SCHEMA = 'HOSPITAL'
+                    WHERE OBJECT_SCHEMA = 'HOSPITAL_DBA'
                       AND OBJECT_NAME IN ('PRESCRIPTION', 'MEDICAL_RECORD', 'SERVICE_RECORD', 'PATIENT')
                       AND STATEMENT_TYPE IN ('INSERT', 'UPDATE', 'DELETE')
                 )
@@ -112,7 +112,7 @@ namespace QuanLyYTe.Repositories
                         'UNIFIED' AS SOURCE,
                         CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
                     FROM UNIFIED_AUDIT_TRAIL
-                    WHERE OBJECT_SCHEMA = 'HOSPITAL'
+                    WHERE OBJECT_SCHEMA = 'HOSPITAL_DBA'
                       AND OBJECT_NAME = '{safeTable}'
                       AND ACTION_NAME IN ('INSERT', 'UPDATE', 'DELETE')
                       AND RETURN_CODE = 0
@@ -126,7 +126,7 @@ namespace QuanLyYTe.Repositories
                         'FGA' AS SOURCE,
                         CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
                     FROM DBA_FGA_AUDIT_TRAIL
-                    WHERE OBJECT_SCHEMA = 'HOSPITAL'
+                    WHERE OBJECT_SCHEMA = 'HOSPITAL_DBA'
                       AND OBJECT_NAME = '{safeTable}'
                       AND STATEMENT_TYPE IN ('INSERT', 'UPDATE', 'DELETE')
                 )
@@ -162,17 +162,17 @@ namespace QuanLyYTe.Repositories
                 switch (safeTable)
                 {
                     case "PATIENT":
-                        sql = $"SELECT PATIENT_ID, FULL_NAME, GENDER, BIRTHDATE, ID_CARD FROM hospital.PATIENT{flashbackClause} WHERE PATIENT_ID = :key1";
+                        sql = $"SELECT PATIENT_ID, FULL_NAME, GENDER, BIRTHDATE, ID_CARD FROM hospital_dba.PATIENT{flashbackClause} WHERE PATIENT_ID = :key1";
                         cmd.Parameters.Add("key1", OracleDbType.Varchar2).Value = key1;
                         break;
 
                     case "MEDICAL_RECORD":
-                        sql = $"SELECT * FROM hospital.MEDICAL_RECORD{flashbackClause} WHERE RECORD_ID = :key1";
+                        sql = $"SELECT * FROM hospital_dba.MEDICAL_RECORD{flashbackClause} WHERE RECORD_ID = :key1";
                         cmd.Parameters.Add("key1", OracleDbType.Varchar2).Value = key1;
                         break;
 
                     case "PRESCRIPTION":
-                        sql = $"SELECT * FROM hospital.PRESCRIPTION{flashbackClause} " +
+                        sql = $"SELECT * FROM hospital_dba.PRESCRIPTION{flashbackClause} " +
                               "WHERE RECORD_ID = :key1 AND TRUNC(PRESCRIPTION_DATE) = TRUNC(:key2) AND MEDICINE_NAME = :key3";
                         cmd.Parameters.Add("key1", OracleDbType.Varchar2).Value = key1;
                         cmd.Parameters.Add("key2", OracleDbType.Date).Value = ParseDateKey(key2);
@@ -180,7 +180,7 @@ namespace QuanLyYTe.Repositories
                         break;
 
                     case "SERVICE_RECORD":
-                        sql = $"SELECT * FROM hospital.SERVICE_RECORD{flashbackClause} " +
+                        sql = $"SELECT * FROM hospital_dba.SERVICE_RECORD{flashbackClause} " +
                               "WHERE RECORD_ID = :key1 AND SERVICE_TYPE = :key2 AND TRUNC(SERVICE_DATE) = TRUNC(:key3)";
                         cmd.Parameters.Add("key1", OracleDbType.Varchar2).Value = key1;
                         cmd.Parameters.Add("key2", OracleDbType.NVarchar2).Value = key2;
@@ -241,7 +241,7 @@ namespace QuanLyYTe.Repositories
         // Kiểm tra trạng thái của AUTO_BACKUP_JOB
         public DataTable GetJobState()
         {
-            string sql = "SELECT STATE, ENABLED, REPEAT_INTERVAL FROM ALL_SCHEDULER_JOBS WHERE OWNER = 'HOSPITAL' AND JOB_NAME = 'AUTO_BACKUP_JOB'";
+            string sql = "SELECT STATE, ENABLED, REPEAT_INTERVAL FROM ALL_SCHEDULER_JOBS WHERE OWNER = 'HOSPITAL_DBA' AND JOB_NAME = 'AUTO_BACKUP_JOB'";
             return _dbProvider.ExecuteQuery(sql);
         }
 
@@ -250,7 +250,7 @@ namespace QuanLyYTe.Repositories
         {
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
             {
-                using (OracleCommand cmd = new OracleCommand("hospital.PKG_BACKUP_RECOVERY.USP_MANUAL_BACKUP", conn))
+                using (OracleCommand cmd = new OracleCommand("hospital_dba.PKG_BACKUP_RECOVERY.USP_MANUAL_BACKUP", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     conn.Open();
@@ -297,29 +297,29 @@ namespace QuanLyYTe.Repositories
             DECLARE
                 v_count NUMBER;
             BEGIN
-                SELECT COUNT(*) INTO v_count FROM ALL_SCHEDULER_JOBS WHERE JOB_NAME = 'AUTO_BACKUP_JOB' AND OWNER = 'HOSPITAL';
+                SELECT COUNT(*) INTO v_count FROM ALL_SCHEDULER_JOBS WHERE JOB_NAME = 'AUTO_BACKUP_JOB' AND OWNER = 'HOSPITAL_DBA';
                 IF v_count = 0 THEN
                     DBMS_SCHEDULER.CREATE_JOB (
-                        job_name        => 'hospital.AUTO_BACKUP_JOB',
+                        job_name        => 'hospital_dba.AUTO_BACKUP_JOB',
                         job_type        => 'STORED_PROCEDURE',
-                        job_action      => 'hospital.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP',
+                        job_action      => 'hospital_dba.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP',
                         start_date      => SYSTIMESTAMP,
                         repeat_interval => '{repeatInterval}',
                         enabled         => TRUE,
                         comments        => 'Automatic backup job for PRESCRIPTION table'
                     );
                 ELSE
-                    DBMS_SCHEDULER.DISABLE('hospital.AUTO_BACKUP_JOB', force => FALSE);
-                    DBMS_SCHEDULER.SET_ATTRIBUTE('hospital.AUTO_BACKUP_JOB', 'job_type', 'STORED_PROCEDURE');
-                    DBMS_SCHEDULER.SET_ATTRIBUTE('hospital.AUTO_BACKUP_JOB', 'job_action', 'hospital.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP');
-                    DBMS_SCHEDULER.SET_ATTRIBUTE('hospital.AUTO_BACKUP_JOB', 'repeat_interval', '{repeatInterval}');
-                    DBMS_SCHEDULER.SET_ATTRIBUTE('hospital.AUTO_BACKUP_JOB', 'start_date', SYSTIMESTAMP);
-                    DBMS_SCHEDULER.SET_ATTRIBUTE_NULL('hospital.AUTO_BACKUP_JOB', 'end_date');
-                    DBMS_SCHEDULER.ENABLE('hospital.AUTO_BACKUP_JOB');
+                    DBMS_SCHEDULER.DISABLE('hospital_dba.AUTO_BACKUP_JOB', force => FALSE);
+                    DBMS_SCHEDULER.SET_ATTRIBUTE('hospital_dba.AUTO_BACKUP_JOB', 'job_type', 'STORED_PROCEDURE');
+                    DBMS_SCHEDULER.SET_ATTRIBUTE('hospital_dba.AUTO_BACKUP_JOB', 'job_action', 'hospital_dba.PKG_BACKUP_RECOVERY.USP_AUTO_BACKUP');
+                    DBMS_SCHEDULER.SET_ATTRIBUTE('hospital_dba.AUTO_BACKUP_JOB', 'repeat_interval', '{repeatInterval}');
+                    DBMS_SCHEDULER.SET_ATTRIBUTE('hospital_dba.AUTO_BACKUP_JOB', 'start_date', SYSTIMESTAMP);
+                    DBMS_SCHEDULER.SET_ATTRIBUTE_NULL('hospital_dba.AUTO_BACKUP_JOB', 'end_date');
+                    DBMS_SCHEDULER.ENABLE('hospital_dba.AUTO_BACKUP_JOB');
                 END IF;
 
                 BEGIN
-                    DBMS_SCHEDULER.RUN_JOB('hospital.AUTO_BACKUP_JOB', use_current_session => FALSE);
+                    DBMS_SCHEDULER.RUN_JOB('hospital_dba.AUTO_BACKUP_JOB', use_current_session => FALSE);
                 EXCEPTION WHEN OTHERS THEN
                     NULL;
                 END;
@@ -342,11 +342,11 @@ namespace QuanLyYTe.Repositories
             BEGIN
                 -- Stop any currently running instance first
                 BEGIN
-                    DBMS_SCHEDULER.STOP_JOB('hospital.AUTO_BACKUP_JOB', force => TRUE);
+                    DBMS_SCHEDULER.STOP_JOB('hospital_dba.AUTO_BACKUP_JOB', force => TRUE);
                 EXCEPTION WHEN OTHERS THEN NULL; -- OK if not running
                 END;
                 -- Then disable to prevent rescheduling
-                DBMS_SCHEDULER.DISABLE('hospital.AUTO_BACKUP_JOB', force => TRUE);
+                DBMS_SCHEDULER.DISABLE('hospital_dba.AUTO_BACKUP_JOB', force => TRUE);
             END;";
 
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
@@ -364,7 +364,7 @@ namespace QuanLyYTe.Repositories
         {
             using (OracleConnection conn = new OracleConnection(OracleConnectionFactory.GetConnectionString()))
             {
-                using (OracleCommand cmd = new OracleCommand("hospital.PKG_BACKUP_RECOVERY.USP_RESTORE_AUDITED_ROW_BY_SCN", conn))
+                using (OracleCommand cmd = new OracleCommand("hospital_dba.PKG_BACKUP_RECOVERY.USP_RESTORE_AUDITED_ROW_BY_SCN", conn))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.BindByName = true;
@@ -381,22 +381,23 @@ namespace QuanLyYTe.Repositories
 
         public DataTable GetPrescriptions()
         {
-            return _dbProvider.ExecuteQuery("SELECT * FROM hospital.PRESCRIPTION");
+            return _dbProvider.ExecuteQuery("SELECT * FROM hospital_dba.PRESCRIPTION");
         }
 
         public DataTable GetPatients()
         {
-            return _dbProvider.ExecuteQuery("SELECT PATIENT_ID, FULL_NAME, GENDER, BIRTHDATE, ID_CARD FROM hospital.PATIENT");
+            return _dbProvider.ExecuteQuery("SELECT PATIENT_ID, FULL_NAME, GENDER, BIRTHDATE, ID_CARD FROM hospital_dba.PATIENT");
         }
 
         public DataTable GetMedicalRecords()
         {
-            return _dbProvider.ExecuteQuery("SELECT * FROM hospital.MEDICAL_RECORD");
+            return _dbProvider.ExecuteQuery("SELECT * FROM hospital_dba.MEDICAL_RECORD");
         }
 
         public DataTable GetServiceRecords()
         {
-            return _dbProvider.ExecuteQuery("SELECT * FROM hospital.SERVICE_RECORD");
+            return _dbProvider.ExecuteQuery("SELECT * FROM hospital_dba.SERVICE_RECORD");
         }
     }
 }
+

@@ -1,10 +1,10 @@
 -- ==============================================================================
 -- 02_seed_staff.sql
--- Chạy dưới quyền: hospital (or sysdba with CURRENT_SCHEMA=hospital)
+-- Chạy dưới quyền: hospital_dba (or sysdba with CURRENT_SCHEMA=hospital_dba)
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 -- ==============================================================================
 -- PART 1: 20 ĐIỀU PHỐI VIÊN (COORDINATORS) - ID: NV000001 to NV000020
@@ -192,3 +192,4 @@ INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, ph
 INSERT INTO staff (staff_id, full_name, gender, birthdate, id_card, hometown, phone, dept_id, staff_role, username_db, facility) VALUES ('NV000170', UNISTR('Tr\1EA7n H\1ED3ng Huy'), UNISTR('N\1EEF'), TO_DATE('2004-06-05','YYYY-MM-DD'), '001659035658', UNISTR('B\00E0 R\1ECBa - V\0169ng T\00E0u'), '0991495258', 'PB03', UNISTR('K\1EF9 thu\1EADt vi\00EAn'), 'KTV_170', UNISTR('H\1ED3 Ch\00ED Minh'));
 
 COMMIT;
+

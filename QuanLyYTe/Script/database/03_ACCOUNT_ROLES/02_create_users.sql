@@ -41,10 +41,10 @@ CREATE OR REPLACE PROCEDURE USP_GET_USER_ID (
 BEGIN
     IF UPPER(p_role) = 'RL_PATIENT' THEN
         OPEN p_cursor FOR
-            SELECT patient_id AS ID FROM hospital.patient WHERE username_db = UPPER(TRIM(p_username));
+            SELECT patient_id AS ID FROM hospital_dba.patient WHERE username_db = UPPER(TRIM(p_username));
     ELSE
         OPEN p_cursor FOR
-            SELECT staff_id AS ID FROM hospital.staff WHERE username_db = UPPER(TRIM(p_username));
+            SELECT staff_id AS ID FROM hospital_dba.staff WHERE username_db = UPPER(TRIM(p_username));
     END IF;
 END USP_GET_USER_ID;
 /
@@ -101,12 +101,12 @@ BEGIN
     -- 2. Insert into App Tables (is_active is 1 by default)
     BEGIN
         IF v_role = 'RL_PATIENT' THEN
-            v_id := 'BN' || LPAD(hospital.SEQ_PATIENT_ID.NEXTVAL, 6, '0');
-            INSERT INTO hospital.patient (patient_id, full_name, gender, birthdate, id_card, house_no, street, district, city_province, medical_history, family_medical_history, drug_allergies, username_db, is_active)
+            v_id := 'BN' || LPAD(hospital_dba.SEQ_PATIENT_ID.NEXTVAL, 6, '0');
+            INSERT INTO hospital_dba.patient (patient_id, full_name, gender, birthdate, id_card, house_no, street, district, city_province, medical_history, family_medical_history, drug_allergies, username_db, is_active)
             VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_house_no, p_street, p_district, p_city_province, p_medical_history, p_family_medical_history, p_drug_allergies, v_user, 1);
         ELSE
-            v_id := 'NV' || LPAD(hospital.SEQ_STAFF_ID.NEXTVAL, 6, '0');
-            INSERT INTO hospital.staff (staff_id, full_name, gender, birthdate, id_card, phone, hometown, dept_id, facility, staff_role, username_db, is_active)
+            v_id := 'NV' || LPAD(hospital_dba.SEQ_STAFF_ID.NEXTVAL, 6, '0');
+            INSERT INTO hospital_dba.staff (staff_id, full_name, gender, birthdate, id_card, phone, hometown, dept_id, facility, staff_role, username_db, is_active)
             VALUES (v_id, p_full_name, p_gender, p_birthdate, p_id_card, p_phone, p_hometown, 
                     p_dept_id, -- Used for all staff roles now
                     p_facility,
@@ -189,7 +189,7 @@ BEGIN
             EXECUTE IMMEDIATE 'GRANT ' || v_new_role || ' TO ' || v_user;
         END;
         
-        UPDATE hospital.staff
+        UPDATE hospital_dba.staff
         SET full_name = p_full_name,
             gender = p_gender,
             birthdate = p_birthdate,
@@ -205,7 +205,7 @@ BEGIN
                          END
         WHERE username_db = v_user;
     ELSE
-        UPDATE hospital.patient
+        UPDATE hospital_dba.patient
         SET full_name = p_full_name,
             gender = p_gender,
             birthdate = p_birthdate,
@@ -236,8 +236,8 @@ CREATE OR REPLACE PROCEDURE USP_DROP_USER_LINKED (
 BEGIN
     v_user := DBMS_ASSERT.SIMPLE_SQL_NAME(UPPER(TRIM(p_username)));
     
-    UPDATE hospital.staff SET is_active = 0 WHERE username_db = v_user;
-    UPDATE hospital.patient SET is_active = 0 WHERE username_db = v_user;
+    UPDATE hospital_dba.staff SET is_active = 0 WHERE username_db = v_user;
+    UPDATE hospital_dba.patient SET is_active = 0 WHERE username_db = v_user;
     
     EXECUTE IMMEDIATE 'ALTER USER ' || v_user || ' ACCOUNT LOCK';
     
@@ -271,7 +271,7 @@ BEGIN
                    NULL as phone, NULL as hometown, NULL as DEPT_ID, NULL as FACILITY,
                    house_no, street, district, city_province, medical_history, family_medical_history, drug_allergies,
                    is_active
-            FROM hospital.patient
+            FROM hospital_dba.patient
             WHERE username_db = v_user;
     ELSE
         OPEN p_cursor FOR
@@ -279,7 +279,7 @@ BEGIN
                    phone, hometown, dept_id, facility as FACILITY,
                    NULL as house_no, NULL as street, NULL as district, NULL as city_province, NULL as medical_history, NULL as family_medical_history, NULL as drug_allergies,
                    is_active
-            FROM hospital.staff
+            FROM hospital_dba.staff
             WHERE username_db = v_user;
     END IF;
 EXCEPTION
@@ -294,6 +294,7 @@ CREATE OR REPLACE PROCEDURE USP_GET_ALL_DEPARTMENTS (
 ) AUTHID CURRENT_USER AS
 BEGIN
     OPEN p_cursor FOR
-        SELECT dept_id, dept_name FROM hospital.department ORDER BY dept_id;
+        SELECT dept_id, dept_name FROM hospital_dba.department ORDER BY dept_id;
 END;
 /
+

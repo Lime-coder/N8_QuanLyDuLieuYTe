@@ -4,7 +4,7 @@
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
-ALTER SESSION SET CURRENT_SCHEMA = hospital;
+ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 SET SQLBLANKLINES ON;
 
 -- ============================================================
@@ -116,3 +116,4 @@ CONNECT BY LEVEL <= 100000;
 
 COMMIT;
 SET SQLBLANKLINES OFF;
+

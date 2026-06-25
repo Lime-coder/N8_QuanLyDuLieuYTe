@@ -1,6 +1,6 @@
 -- ==============================================================================
 -- 02_patient_procedures.sql
--- Chạy dưới quyền: hospital
+-- Chạy dưới quyền: hospital_dba
 -- ==============================================================================
 
 ALTER SESSION SET CONTAINER = PDB_QLYT;
@@ -85,5 +85,6 @@ EXCEPTION
         RAISE;
 END USP_UPDATE_PATIENT_CONTACT;
 /
+
 
 

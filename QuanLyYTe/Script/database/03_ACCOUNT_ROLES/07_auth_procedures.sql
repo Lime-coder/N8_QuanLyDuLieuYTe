@@ -41,10 +41,11 @@ CREATE OR REPLACE PROCEDURE USP_GET_USER_ID (
 BEGIN
     IF UPPER(p_role) = 'RL_PATIENT' THEN
         OPEN p_cursor FOR
-            SELECT patient_id AS ID FROM hospital.patient WHERE username_db = UPPER(TRIM(p_username));
+            SELECT patient_id AS ID FROM hospital_dba.patient WHERE username_db = UPPER(TRIM(p_username));
     ELSE
         OPEN p_cursor FOR
-            SELECT staff_id AS ID FROM hospital.staff WHERE username_db = UPPER(TRIM(p_username));
+            SELECT staff_id AS ID FROM hospital_dba.staff WHERE username_db = UPPER(TRIM(p_username));
     END IF;
 END USP_GET_USER_ID;
 /
+

@@ -1,4 +1,4 @@
-﻿namespace QuanLyYTe.Forms.Doctor
+namespace QuanLyYTe.Forms.Doctor
 {
     partial class frmDoctor
     {
@@ -167,7 +167,7 @@
             lblLogo.Name = "lblLogo";
             lblLogo.Size = new Size(230, 80);
             lblLogo.TabIndex = 0;
-            lblLogo.Text = "HOSPITAL DOCTOR";
+            lblLogo.Text = "HOSPITAL_DBA DOCTOR";
             lblLogo.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // pnlTop
@@ -257,3 +257,4 @@
         private System.Windows.Forms.Panel pnlContent;
     }
 }
+

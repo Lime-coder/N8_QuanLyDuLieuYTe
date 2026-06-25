@@ -44,7 +44,7 @@ namespace QuanLyYTe.Repositories
             var parameters = new OracleParameter[] {
                 new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return ExecuteAssignmentSP("hospital.SP_COORD_GET_DOCTORS", parameters);
+            return ExecuteAssignmentSP("hospital_dba.SP_COORD_GET_DOCTORS", parameters);
         }
 
         // Lấy danh sách bác sĩ theo khoa (SP: SP_COORD_GET_DOC_DEPT)
@@ -54,7 +54,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_dept_id", OracleDbType.Varchar2) { Value = deptId },
                 new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return ExecuteAssignmentSP("hospital.SP_COORD_GET_DOC_DEPT", parameters);
+            return ExecuteAssignmentSP("hospital_dba.SP_COORD_GET_DOC_DEPT", parameters);
         }
 
         // Lấy danh sách kỹ thuật viên để phân công (SP: SP_COORD_GET_TECHS)
@@ -63,7 +63,7 @@ namespace QuanLyYTe.Repositories
             var parameters = new OracleParameter[] {
                 new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return ExecuteAssignmentSP("hospital.SP_COORD_GET_TECHS", parameters);
+            return ExecuteAssignmentSP("hospital_dba.SP_COORD_GET_TECHS", parameters);
         }
 
         // Lấy danh sách các khoa (SP: SP_COORD_GET_DEPTS)
@@ -72,7 +72,7 @@ namespace QuanLyYTe.Repositories
             var parameters = new OracleParameter[] {
                 new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_DEPTS", parameters);
+            return _dbProvider.ExecuteQuerySP("hospital_dba.SP_COORD_GET_DEPTS", parameters);
         }
 
         // Cập nhật phân công hồ sơ bệnh án (SP: SP_COORD_UPD_MED_REC)
@@ -83,7 +83,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_doctor_id", OracleDbType.Varchar2) { Value = doctorId },
                 new OracleParameter("p_dept_id", OracleDbType.Varchar2) { Value = deptId }
             };
-            _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_UPD_MED_REC", parameters);
+            _dbProvider.ExecuteNonQuerySP("hospital_dba.SP_COORD_UPD_MED_REC", parameters);
         }
 
         // Cập nhật phân công dịch vụ (SP: SP_COORD_UPD_SRV_REC)
@@ -93,7 +93,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_record_id", OracleDbType.Varchar2) { Value = recordId },
                 new OracleParameter("p_technician_id", OracleDbType.Varchar2) { Value = technicianId }
             };
-            _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_UPD_SRV_REC", parameters);
+            _dbProvider.ExecuteNonQuerySP("hospital_dba.SP_COORD_UPD_SRV_REC", parameters);
         }
 
         // Lấy thông tin cá nhân của nhân viên điều phối (SP: SP_COORD_GET_SELF)
@@ -102,7 +102,7 @@ namespace QuanLyYTe.Repositories
             var parameters = new OracleParameter[] {
                 new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_SELF", parameters);
+            return _dbProvider.ExecuteQuerySP("hospital_dba.SP_COORD_GET_SELF", parameters);
         }
 
         // Cập nhật thông tin cá nhân (SP: SP_COORD_UPD_SELF)
@@ -112,7 +112,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_phone", OracleDbType.Varchar2) { Value = phone },
                 new OracleParameter("p_hometown", OracleDbType.NVarchar2) { Value = hometown }
             };
-            _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_UPD_SELF", parameters);
+            _dbProvider.ExecuteNonQuerySP("hospital_dba.SP_COORD_UPD_SELF", parameters);
         }
 
         // --- PatientRepository methods ---
@@ -125,7 +125,7 @@ namespace QuanLyYTe.Repositories
                 var parameters = new OracleParameter[] {
                     new OracleParameter("p_max_id", OracleDbType.Varchar2, 50) { Direction = ParameterDirection.Output }
                 };
-                _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_GET_MAX_PAT_ID", parameters);
+                _dbProvider.ExecuteNonQuerySP("hospital_dba.SP_COORD_GET_MAX_PAT_ID", parameters);
                 if (parameters[0].Value != null && parameters[0].Value != DBNull.Value)
                 {
                     maxId = parameters[0].Value.ToString();
@@ -143,7 +143,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_page_size", OracleDbType.Decimal) { Value = pageSize },
                 new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_PATS_PAGED", parameters);
+            return _dbProvider.ExecuteQuerySP("hospital_dba.SP_COORD_GET_PATS_PAGED", parameters);
         }
 
         private bool PatientIdExists(string patientId)
@@ -152,7 +152,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_patient_id", OracleDbType.Varchar2) { Value = patientId },
                 new OracleParameter("p_count", OracleDbType.Decimal) { Direction = ParameterDirection.Output }
             };
-            _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_CHK_PAT_ID", parameters);
+            _dbProvider.ExecuteNonQuerySP("hospital_dba.SP_COORD_CHK_PAT_ID", parameters);
             return Convert.ToInt32(parameters[1].Value.ToString()) > 0;
         }
 
@@ -163,7 +163,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_exclude_id", OracleDbType.Varchar2) { Value = (object)excludePatientId ?? DBNull.Value },
                 new OracleParameter("p_count", OracleDbType.Decimal) { Direction = ParameterDirection.Output }
             };
-            _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_CHK_IDCARD", parameters);
+            _dbProvider.ExecuteNonQuerySP("hospital_dba.SP_COORD_CHK_IDCARD", parameters);
             return Convert.ToInt32(parameters[2].Value.ToString()) > 0;
         }
 
@@ -175,7 +175,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_exclude_id", OracleDbType.Varchar2) { Value = (object)excludePatientId ?? DBNull.Value },
                 new OracleParameter("p_count", OracleDbType.Decimal) { Direction = ParameterDirection.Output }
             };
-            _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_CHK_USER", parameters);
+            _dbProvider.ExecuteNonQuerySP("hospital_dba.SP_COORD_CHK_USER", parameters);
             return Convert.ToInt32(parameters[2].Value.ToString()) > 0;
         }
 
@@ -201,7 +201,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_drug_allergies", OracleDbType.NClob) { Value = string.IsNullOrEmpty(drugAllergies) ? DBNull.Value : drugAllergies },
                 new OracleParameter("p_username_db", OracleDbType.Varchar2) { Value = usernameDb }
             };
-            _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_INS_PAT", parameters);
+            _dbProvider.ExecuteNonQuerySP("hospital_dba.SP_COORD_INS_PAT", parameters);
         }
 
         // Cập nhật thông tin bệnh nhân (SP: SP_COORD_UPD_PAT)
@@ -226,7 +226,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_drug_allergies", OracleDbType.NClob) { Value = string.IsNullOrEmpty(drugAllergies) ? DBNull.Value : drugAllergies },
                 new OracleParameter("p_username_db", OracleDbType.Varchar2) { Value = usernameDb }
             };
-            _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_UPD_PAT", parameters);
+            _dbProvider.ExecuteNonQuerySP("hospital_dba.SP_COORD_UPD_PAT", parameters);
         }
 
         // --- MedicalRecordRepository methods ---
@@ -238,7 +238,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_page_size", OracleDbType.Decimal) { Value = pageSize },
                 new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_ALL_MED_PAGED", parameters);
+            return _dbProvider.ExecuteQuerySP("hospital_dba.SP_COORD_GET_ALL_MED_PAGED", parameters);
         }
 
         // Thêm mới hồ sơ bệnh án (SP: SP_COORD_INS_MED)
@@ -251,7 +251,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_doctor_id", OracleDbType.Varchar2) { Value = doctorId },
                 new OracleParameter("p_dept_id", OracleDbType.Varchar2) { Value = deptId }
             };
-            _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_INS_MED", parameters);
+            _dbProvider.ExecuteNonQuerySP("hospital_dba.SP_COORD_INS_MED", parameters);
         }
 
         // Cập nhật phân công bác sĩ cho HSBA (SP: SP_COORD_UPD_MED_REC)
@@ -262,7 +262,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_doctor_id", OracleDbType.Varchar2) { Value = doctorId },
                 new OracleParameter("p_dept_id", OracleDbType.Varchar2) { Value = deptId }
             };
-            _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_UPD_MED_REC", parameters);
+            _dbProvider.ExecuteNonQuerySP("hospital_dba.SP_COORD_UPD_MED_REC", parameters);
         }
 
         // --- ServiceAssignmentRepository methods ---
@@ -274,7 +274,7 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_page_size", OracleDbType.Decimal) { Value = pageSize },
                 new OracleParameter("p_cursor", OracleDbType.RefCursor) { Direction = ParameterDirection.Output }
             };
-            return _dbProvider.ExecuteQuerySP("hospital.SP_COORD_GET_SRV_ASS_PAGED", parameters);
+            return _dbProvider.ExecuteQuerySP("hospital_dba.SP_COORD_GET_SRV_ASS_PAGED", parameters);
         }
 
         // Phân công kỹ thuật viên cho dịch vụ (SP: SP_COORD_UPD_TECH)
@@ -286,9 +286,10 @@ namespace QuanLyYTe.Repositories
                 new OracleParameter("p_service_date", OracleDbType.Date) { Value = serviceDate },
                 new OracleParameter("p_technician_id", OracleDbType.Varchar2) { Value = technicianId }
             };
-            _dbProvider.ExecuteNonQuerySP("hospital.SP_COORD_UPD_TECH", parameters);
+            _dbProvider.ExecuteNonQuerySP("hospital_dba.SP_COORD_UPD_TECH", parameters);
         }
     }
 }
+
 
 
