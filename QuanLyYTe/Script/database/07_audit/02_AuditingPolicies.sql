@@ -15,13 +15,12 @@ BEGIN
     SELECT medical_history INTO v_history FROM hospital.patient WHERE patient_id = p_patient_id;
     RETURN v_history;
 END;
-/
-
+/   
 GRANT EXECUTE ON hospital_dba.F_EXTRACT_MEDICAL_HISTORY TO rl_doctor, rl_coordinator;
 
 -- Xóa các chính sách cũ
 NOAUDIT INSERT ON hospital.medical_record;
-NOAUDIT DELETE ON hospital.service_record;
+NOAUDIT UPDATE ON hospital.staff;
 NOAUDIT UPDATE ON hospital_dba.V_PATIENT_SELF;
 NOAUDIT EXECUTE ON hospital.USP_MANAGE_PRESCRIPTION;
 NOAUDIT EXECUTE ON hospital_dba.F_EXTRACT_MEDICAL_HISTORY;
@@ -31,9 +30,9 @@ NOAUDIT EXECUTE ON hospital_dba.F_EXTRACT_MEDICAL_HISTORY;
 AUDIT INSERT ON hospital.medical_record BY ACCESS WHENEVER SUCCESSFUL;
 AUDIT INSERT ON hospital.medical_record BY ACCESS WHENEVER NOT SUCCESSFUL;
  
--- NC#2: TABLE - Xóa dịch vụ
-AUDIT DELETE ON hospital.service_record BY ACCESS WHENEVER SUCCESSFUL;
-AUDIT DELETE ON hospital.service_record BY ACCESS WHENEVER NOT SUCCESSFUL;
+-- NC#2: TABLE - Cập nhật trạng thái hoạt động của nhân viên
+AUDIT UPDATE ON hospital.staff BY ACCESS WHENEVER SUCCESSFUL;
+AUDIT UPDATE ON hospital.staff BY ACCESS WHENEVER NOT SUCCESSFUL;
 
 -- NC#3: VIEW - Cập nhật thông tin bệnh nhân
 AUDIT UPDATE ON hospital_dba.V_PATIENT_SELF BY ACCESS WHENEVER SUCCESSFUL;
@@ -72,7 +71,6 @@ BEGIN
     EXCEPTION WHEN OTHERS THEN NULL; END;
 END;
 /
-
 -- 3a: Hành vi cập nhật trên thuộc tính MÃHSBA, NGÀYĐT, TÊNTHUỐC, LIỀUDÙNG của quan hệ ĐƠNTHUỐC
 -- Tạo policy mới
 BEGIN
@@ -86,7 +84,6 @@ BEGIN
     );
 END;
 /  
-
 -- 3b: Hành vi của người dùng  trên các trường CHẨNĐOÁN, ĐIỀUTRỊ, KẾTLUẬN của quan hệ HSBA
 -- Tạo policy mới
 BEGIN
@@ -139,7 +136,7 @@ CREATE AUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY
     UPDATE ON hospital.service_record, 
     DELETE ON hospital.service_record; 
 
--- Bật Audit để bắt hành vi Thất bại
+-- Bật Audit để bắt TẤT CẢ hành vi (Thành công + Thất bại)
 AUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY WHENEVER NOT SUCCESSFUL;
 -- Thêm yêu cầu ở TC#4: Các thao tác cập nhật trên trường KẾTQUẢ của HSBA_DV đều được ghi vết.
 BEGIN
