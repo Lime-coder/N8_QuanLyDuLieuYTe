@@ -8,60 +8,7 @@ ALTER SESSION SET CURRENT_SCHEMA = hospital;
 
 
 
-BEGIN
-    EXECUTE IMMEDIATE 'DROP VIEW hospital.VW_COORD_DOCTORS';
-EXCEPTION WHEN OTHERS THEN NULL;
-END;
-/
 
-BEGIN
-    EXECUTE IMMEDIATE 'DROP VIEW hospital.VW_COORD_TECHNICIANS';
-EXCEPTION WHEN OTHERS THEN NULL;
-END;
-/
-
-BEGIN
-    EXECUTE IMMEDIATE 'DROP TABLE hospital.COORD_ASSIGNMENT_STAFF PURGE';
-EXCEPTION WHEN OTHERS THEN NULL;
-END;
-/
-
-CREATE TABLE COORD_ASSIGNMENT_STAFF (
-    staff_id    VARCHAR2(10) PRIMARY KEY,
-    full_name   NVARCHAR2(100) NOT NULL,
-    staff_role  NVARCHAR2(50)  NOT NULL,
-    dept_id     VARCHAR2(10),
-    specialty   NVARCHAR2(100),
-    is_active   NUMBER(1)      DEFAULT 1 NOT NULL
-);
-
--- Đổ dữ liệu vào bảng phụ
-INSERT INTO hospital.COORD_ASSIGNMENT_STAFF (
-    staff_id, full_name, staff_role, dept_id, specialty, is_active
-)
-SELECT
-    s.staff_id, s.full_name, s.staff_role, s.dept_id, d.dept_name AS specialty, s.is_active
-FROM hospital.STAFF s
-LEFT JOIN hospital.DEPARTMENT d ON s.dept_id = d.dept_id
-WHERE s.staff_role IN (UNISTR('B\00E1c s\0129'), UNISTR('K\1EF9 thu\1EADt vi\00EAn'));
-
-COMMIT;
-
-CREATE OR REPLACE VIEW hospital.VW_COORD_DOCTORS AS
-SELECT
-    staff_id,
-    full_name,
-    dept_id,
-    specialty
-FROM hospital.COORD_ASSIGNMENT_STAFF
-WHERE staff_role = UNISTR('B\00E1c s\0129');
-
-CREATE OR REPLACE VIEW hospital.VW_COORD_TECHNICIANS AS
-SELECT
-    staff_id,
-    full_name
-FROM hospital.COORD_ASSIGNMENT_STAFF
-WHERE staff_role = UNISTR('K\1EF9 thu\1EADt vi\00EAn');
 
 CREATE OR REPLACE TRIGGER TRG_VALIDATE_SERVICE_RECORD
 BEFORE INSERT OR UPDATE ON hospital.service_record
@@ -70,7 +17,7 @@ DECLARE
     v_tech_active NUMBER(1);
 BEGIN
     IF :NEW.technician_id IS NOT NULL THEN
-        SELECT is_active INTO v_tech_active FROM hospital.COORD_ASSIGNMENT_STAFF WHERE staff_id = :NEW.technician_id;
+        SELECT is_active INTO v_tech_active FROM hospital.staff WHERE staff_id = :NEW.technician_id;
         IF v_tech_active = 0 THEN
             RAISE_APPLICATION_ERROR(-20012, N'Không thể tạo/cập nhật dịch vụ: Kỹ thuật viên này đã bị khóa (Không hoạt động).');
         END IF;
@@ -78,31 +25,35 @@ BEGIN
 END;
 /
 
-CREATE OR REPLACE PROCEDURE SP_COORD_GET_DOCTORS(p_cursor OUT SYS_REFCURSOR) AS
+CREATE OR REPLACE PROCEDURE SP_COORD_GET_DOCTORS(p_cursor OUT SYS_REFCURSOR) AUTHID DEFINER AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT staff_id, full_name, specialty, TO_NCHAR(full_name) || N' - ' || TO_NCHAR(staff_id) AS display_name 
-    FROM hospital.VW_COORD_DOCTORS 
-    ORDER BY full_name;
+    SELECT s.staff_id, s.full_name, d.dept_name AS specialty, TO_NCHAR(s.full_name) || N' - ' || TO_NCHAR(s.staff_id) AS display_name 
+    FROM hospital.STAFF s
+    LEFT JOIN hospital.DEPARTMENT d ON s.dept_id = d.dept_id
+    WHERE s.staff_role = UNISTR('B\00E1c s\0129')
+    ORDER BY s.full_name;
 END;
 /
 
-CREATE OR REPLACE PROCEDURE SP_COORD_GET_DOC_DEPT(p_dept_id IN VARCHAR2, p_cursor OUT SYS_REFCURSOR) AS
+CREATE OR REPLACE PROCEDURE SP_COORD_GET_DOC_DEPT(p_dept_id IN VARCHAR2, p_cursor OUT SYS_REFCURSOR) AUTHID DEFINER AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT staff_id, full_name, specialty, TO_NCHAR(full_name) || N' - ' || TO_NCHAR(staff_id) AS display_name 
-    FROM hospital.VW_COORD_DOCTORS 
-    WHERE dept_id = p_dept_id 
-    ORDER BY full_name;
+    SELECT s.staff_id, s.full_name, d.dept_name AS specialty, TO_NCHAR(s.full_name) || N' - ' || TO_NCHAR(s.staff_id) AS display_name 
+    FROM hospital.STAFF s
+    LEFT JOIN hospital.DEPARTMENT d ON s.dept_id = d.dept_id
+    WHERE s.staff_role = UNISTR('B\00E1c s\0129') AND s.dept_id = p_dept_id 
+    ORDER BY s.full_name;
 END;
 /
 
-CREATE OR REPLACE PROCEDURE SP_COORD_GET_TECHS(p_cursor OUT SYS_REFCURSOR) AS
+CREATE OR REPLACE PROCEDURE SP_COORD_GET_TECHS(p_cursor OUT SYS_REFCURSOR) AUTHID DEFINER AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT staff_id, full_name, TO_NCHAR(full_name) || N' - ' || TO_NCHAR(staff_id) AS display_name 
-    FROM hospital.VW_COORD_TECHNICIANS 
-    ORDER BY full_name;
+    SELECT s.staff_id, s.full_name, TO_NCHAR(s.full_name) || N' - ' || TO_NCHAR(s.staff_id) AS display_name 
+    FROM hospital.STAFF s
+    WHERE s.staff_role = UNISTR('K\1EF9 thu\1EADt vi\00EAn')
+    ORDER BY s.full_name;
 END;
 /
 
