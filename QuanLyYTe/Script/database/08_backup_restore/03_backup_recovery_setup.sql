@@ -43,34 +43,6 @@ EXCEPTION
 END;
 /
 
-DECLARE
-    PROCEDURE ADD_COLUMN_IF_MISSING(
-        p_column_name IN VARCHAR2,
-        p_column_def  IN VARCHAR2
-    ) AS
-        v_count NUMBER;
-    BEGIN
-        SELECT COUNT(*)
-        INTO v_count
-        FROM ALL_TAB_COLUMNS
-        WHERE OWNER = 'HOSPITAL'
-          AND TABLE_NAME = 'BACKUP_HISTORY'
-          AND COLUMN_NAME = UPPER(p_column_name);
-
-        IF v_count = 0 THEN
-            EXECUTE IMMEDIATE 'ALTER TABLE hospital.BACKUP_HISTORY ADD (' || p_column_def || ')';
-            DBMS_OUTPUT.PUT_LINE('[OK] Added BACKUP_HISTORY.' || p_column_name);
-        END IF;
-    END;
-BEGIN
-    ADD_COLUMN_IF_MISSING('METHOD', 'METHOD VARCHAR2(30) DEFAULT ''DATA_PUMP'' NOT NULL');
-    ADD_COLUMN_IF_MISSING('DIRECTORY_NAME', 'DIRECTORY_NAME VARCHAR2(128)');
-    ADD_COLUMN_IF_MISSING('DUMP_FILE', 'DUMP_FILE VARCHAR2(255)');
-    ADD_COLUMN_IF_MISSING('LOG_FILE', 'LOG_FILE VARCHAR2(255)');
-    ADD_COLUMN_IF_MISSING('NOTE', 'NOTE VARCHAR2(1000)');
-    ADD_COLUMN_IF_MISSING('ERROR_MESSAGE', 'ERROR_MESSAGE VARCHAR2(4000)');
-END;
-/
 
 -- ==============================================================================
 -- 2. RECOVERY HISTORY TABLE
@@ -337,7 +309,6 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
     ) AS
         v_audit_time      TIMESTAMP;
         v_flashback_time  TIMESTAMP;
-        v_old_count       NUMBER;
     BEGIN
         IF p_record_id IS NULL THEN
             RAISE_APPLICATION_ERROR(-20001, 'p_record_id must not be null.');
@@ -410,20 +381,6 @@ CREATE OR REPLACE PACKAGE BODY hospital.PKG_BACKUP_RECOVERY AS
         -- ====================================================================
         IF p_record_id NOT LIKE 'BA%' THEN
             RAISE_APPLICATION_ERROR(-20005, 'ID không hợp lệ. Phải bắt đầu bằng BN (Bệnh nhân) hoặc BA (Bệnh án).');
-        END IF;
-
-        -- Verify if parent record exists in flashback
-        SELECT COUNT(*)
-        INTO v_old_count
-        FROM hospital.MEDICAL_RECORD AS OF TIMESTAMP v_flashback_time
-        WHERE RECORD_ID = p_record_id;
-
-        IF v_old_count = 0 THEN
-            RAISE_APPLICATION_ERROR(
-                -20003,
-                'No flashback data found for RECORD_ID = ' || p_record_id ||
-                ' at ' || TO_CHAR(v_flashback_time, 'YYYY-MM-DD HH24:MI:SS')
-            );
         END IF;
 
         -- ====================================================================
