@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -544,12 +544,12 @@ namespace QuanLyYTe.Forms.Patient
             this.tlpAddress.Controls.Add(this.pnlStreet, 1, 0);
             this.tlpAddress.Controls.Add(this.pnlDistrict, 0, 1);
             this.tlpAddress.Controls.Add(this.pnlCityProvince, 1, 1);
-            this.tlpAddress.Location = new System.Drawing.Point(24, 470);
+            this.tlpAddress.Location = new System.Drawing.Point(24, 465);
             this.tlpAddress.Name = "tlpAddress";
             this.tlpAddress.RowCount = 2;
             this.tlpAddress.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tlpAddress.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tlpAddress.Size = new System.Drawing.Size(764, 140);
+            this.tlpAddress.Size = new System.Drawing.Size(764, 100);
             this.tlpAddress.TabIndex = 17;
             // 
             // pnlHouseNo
@@ -680,7 +680,7 @@ namespace QuanLyYTe.Forms.Patient
             this.btnSaveContact.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSaveContact.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnSaveContact.ForeColor = System.Drawing.Color.White;
-            this.btnSaveContact.Location = new System.Drawing.Point(24, 620);
+            this.btnSaveContact.Location = new System.Drawing.Point(24, 575);
             this.btnSaveContact.Name = "btnSaveContact";
             this.btnSaveContact.Size = new System.Drawing.Size(160, 36);
             this.btnSaveContact.TabIndex = 18;
