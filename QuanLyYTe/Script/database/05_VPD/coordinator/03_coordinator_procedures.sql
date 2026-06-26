@@ -63,15 +63,23 @@ END;
 CREATE OR REPLACE PROCEDURE SP_COORD_GET_SELF(p_cursor OUT SYS_REFCURSOR) AS
 BEGIN
     OPEN p_cursor FOR
-    SELECT s.staff_id, s.full_name, s.staff_role, s.phone, s.hometown, d.dept_name AS specialty 
+    SELECT s.staff_id, s.full_name, s.staff_role, s.phone, s.hometown,
+           d.dept_name AS specialty, s.gender, s.birthdate, s.id_card, s.facility
     FROM hospital.staff s 
-    LEFT JOIN hospital.department d ON s.dept_id = d.dept_id;
+    LEFT JOIN hospital.department d ON s.dept_id = d.dept_id
+    WHERE UPPER(s.username_db) = SYS_CONTEXT('USERENV', 'SESSION_USER')
+      AND s.staff_role = UNISTR('\0110i\1EC1u ph\1ED1i vi\00EAn')
+      AND s.is_active = 1;
 END;
 /
 
 CREATE OR REPLACE PROCEDURE SP_COORD_UPD_SELF(p_phone IN VARCHAR2, p_hometown IN NVARCHAR2) AS
 BEGIN
-    UPDATE hospital.staff SET phone = p_phone, hometown = p_hometown;
+    UPDATE hospital.staff
+    SET phone = p_phone, hometown = p_hometown
+    WHERE UPPER(username_db) = SYS_CONTEXT('USERENV', 'SESSION_USER')
+      AND staff_role = UNISTR('\0110i\1EC1u ph\1ED1i vi\00EAn')
+      AND is_active = 1;
     COMMIT;
 END;
 /
