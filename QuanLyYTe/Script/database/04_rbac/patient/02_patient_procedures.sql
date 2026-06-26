@@ -8,7 +8,7 @@ ALTER SESSION SET CURRENT_SCHEMA = hospital_dba;
 
 CREATE OR REPLACE PROCEDURE USP_GET_PATIENT_PROFILE (
     p_cursor OUT SYS_REFCURSOR
-) AUTHID CURRENT_USER AS
+) AUTHID DEFINER AS
 BEGIN
     OPEN p_cursor FOR
         SELECT patient_id, full_name, gender, birthdate, id_card,
@@ -35,7 +35,7 @@ END USP_GET_PATIENT_RECORDS;
 CREATE OR REPLACE PROCEDURE USP_GET_PATIENT_PRESCRIPTIONS (
     p_record_id IN VARCHAR2,
     p_cursor    OUT SYS_REFCURSOR
-) AUTHID CURRENT_USER AS
+) AUTHID DEFINER AS
 BEGIN
     OPEN p_cursor FOR
         SELECT record_id, prescription_date, medicine_name, dosage
@@ -68,7 +68,7 @@ CREATE OR REPLACE PROCEDURE USP_UPDATE_PATIENT_CONTACT (
     p_medical_history        IN NVARCHAR2,
     p_family_medical_history IN NVARCHAR2,
     p_drug_allergies         IN NVARCHAR2
-) AUTHID CURRENT_USER AS
+) AUTHID DEFINER AS
 BEGIN
     UPDATE hospital_dba.V_PATIENT_SELF
     SET house_no               = p_house_no,

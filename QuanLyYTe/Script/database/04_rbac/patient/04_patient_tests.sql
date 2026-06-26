@@ -4,10 +4,8 @@
 -- ==============================================================================
 
 -- Connect as a patient (e.g., BN000001)
--- Check their own profile
--- SELECT * FROM hospital.V_PATIENT_SELF;
-
--- Run procedure
+-- Patient users should access data through definer-rights procedures,
+-- not by selecting hospital_dba views directly.
 -- VAR cur REFCURSOR;
--- EXEC hospital.USP_GET_PATIENT_PROFILE(:cur);
+-- EXEC hospital_dba.USP_GET_PATIENT_PROFILE(:cur);
 -- PRINT cur;
