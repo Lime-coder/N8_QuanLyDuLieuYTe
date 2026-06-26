@@ -48,43 +48,20 @@ namespace QuanLyYTe.Repositories
 
             string sql = @"
                 SELECT
-                    USERNAME,
+                    DBUSERNAME AS USERNAME,
                     OBJECT_NAME AS OBJECT,
                     ACTION_NAME AS ACTION,
-                    TO_CHAR(AUDIT_TIME, 'DD/MM/YYYY HH24:MI:SS') AS TIMESTAMP,
+                    TO_CHAR(EVENT_TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') AS TIMESTAMP,
                     SCN,
-                    SOURCE,
-                    SQL_TEXT
-                FROM (
-                    SELECT
-                        DBUSERNAME AS USERNAME,
-                        OBJECT_NAME,
-                        ACTION_NAME,
-                        EVENT_TIMESTAMP AS AUDIT_TIME,
-                        SCN,
-                        'UNIFIED' AS SOURCE,
-                        CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
-                    FROM UNIFIED_AUDIT_TRAIL
-                    WHERE OBJECT_SCHEMA = 'HOSPITAL'
-                      AND OBJECT_NAME IN ('PRESCRIPTION', 'MEDICAL_RECORD', 'SERVICE_RECORD', 'PATIENT')
-                      AND ACTION_NAME IN ('INSERT', 'UPDATE', 'DELETE')
-                      AND RETURN_CODE = 0
-                    UNION ALL
-                    SELECT
-                        DB_USER AS USERNAME,
-                        OBJECT_NAME,
-                        STATEMENT_TYPE AS ACTION_NAME,
-                        TIMESTAMP AS AUDIT_TIME,
-                        SCN,
-                        'FGA' AS SOURCE,
-                        CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
-                    FROM DBA_FGA_AUDIT_TRAIL
-                    WHERE OBJECT_SCHEMA = 'HOSPITAL'
-                      AND OBJECT_NAME IN ('PRESCRIPTION', 'MEDICAL_RECORD', 'SERVICE_RECORD', 'PATIENT')
-                      AND STATEMENT_TYPE IN ('INSERT', 'UPDATE', 'DELETE')
-                )
-                WHERE SCN IS NOT NULL
-                ORDER BY AUDIT_TIME DESC";
+                    'UNIFIED' AS SOURCE,
+                    CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
+                FROM UNIFIED_AUDIT_TRAIL
+                WHERE OBJECT_SCHEMA = 'HOSPITAL'
+                  AND OBJECT_NAME IN ('MEDICAL_RECORD', 'PATIENT')
+                  AND ACTION_NAME IN ('INSERT', 'UPDATE', 'DELETE')
+                  AND RETURN_CODE = 0
+                  AND SCN IS NOT NULL
+                ORDER BY EVENT_TIMESTAMP DESC";
             return _dbProvider.ExecuteQuery(sql);
         }
 
@@ -95,43 +72,20 @@ namespace QuanLyYTe.Repositories
 
             string sql = $@"
                 SELECT
-                    TO_CHAR(AUDIT_TIME, 'DD/MM/YYYY HH24:MI:SS') AS TIMESTAMP,
+                    TO_CHAR(EVENT_TIMESTAMP, 'DD/MM/YYYY HH24:MI:SS') AS TIMESTAMP,
                     SCN,
-                    USERNAME,
+                    DBUSERNAME AS USERNAME,
                     ACTION_NAME AS ACTION,
                     OBJECT_NAME AS OBJECT,
-                    SOURCE,
-                    SQL_TEXT
-                FROM (
-                    SELECT
-                        EVENT_TIMESTAMP AS AUDIT_TIME,
-                        SCN,
-                        DBUSERNAME AS USERNAME,
-                        ACTION_NAME,
-                        OBJECT_NAME,
-                        'UNIFIED' AS SOURCE,
-                        CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
-                    FROM UNIFIED_AUDIT_TRAIL
-                    WHERE OBJECT_SCHEMA = 'HOSPITAL'
-                      AND OBJECT_NAME = '{safeTable}'
-                      AND ACTION_NAME IN ('INSERT', 'UPDATE', 'DELETE')
-                      AND RETURN_CODE = 0
-                    UNION ALL
-                    SELECT
-                        TIMESTAMP AS AUDIT_TIME,
-                        SCN,
-                        DB_USER AS USERNAME,
-                        STATEMENT_TYPE AS ACTION_NAME,
-                        OBJECT_NAME,
-                        'FGA' AS SOURCE,
-                        CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
-                    FROM DBA_FGA_AUDIT_TRAIL
-                    WHERE OBJECT_SCHEMA = 'HOSPITAL'
-                      AND OBJECT_NAME = '{safeTable}'
-                      AND STATEMENT_TYPE IN ('INSERT', 'UPDATE', 'DELETE')
-                )
-                WHERE SCN IS NOT NULL
-                ORDER BY AUDIT_TIME DESC";
+                    'UNIFIED' AS SOURCE,
+                    CAST(SQL_TEXT AS VARCHAR2(4000)) AS SQL_TEXT
+                FROM UNIFIED_AUDIT_TRAIL
+                WHERE OBJECT_SCHEMA = 'HOSPITAL'
+                  AND OBJECT_NAME = '{safeTable}'
+                  AND ACTION_NAME IN ('INSERT', 'UPDATE', 'DELETE')
+                  AND RETURN_CODE = 0
+                  AND SCN IS NOT NULL
+                ORDER BY EVENT_TIMESTAMP DESC";
             return _dbProvider.ExecuteQuery(sql);
         }
 
@@ -171,22 +125,6 @@ namespace QuanLyYTe.Repositories
                         cmd.Parameters.Add("key1", OracleDbType.Varchar2).Value = key1;
                         break;
 
-                    case "PRESCRIPTION":
-                        sql = $"SELECT * FROM hospital.PRESCRIPTION{flashbackClause} " +
-                              "WHERE RECORD_ID = :key1 AND TRUNC(PRESCRIPTION_DATE) = TRUNC(:key2) AND MEDICINE_NAME = :key3";
-                        cmd.Parameters.Add("key1", OracleDbType.Varchar2).Value = key1;
-                        cmd.Parameters.Add("key2", OracleDbType.Date).Value = ParseDateKey(key2);
-                        cmd.Parameters.Add("key3", OracleDbType.NVarchar2).Value = key3;
-                        break;
-
-                    case "SERVICE_RECORD":
-                        sql = $"SELECT * FROM hospital.SERVICE_RECORD{flashbackClause} " +
-                              "WHERE RECORD_ID = :key1 AND SERVICE_TYPE = :key2 AND TRUNC(SERVICE_DATE) = TRUNC(:key3)";
-                        cmd.Parameters.Add("key1", OracleDbType.Varchar2).Value = key1;
-                        cmd.Parameters.Add("key2", OracleDbType.NVarchar2).Value = key2;
-                        cmd.Parameters.Add("key3", OracleDbType.Date).Value = ParseDateKey(key3);
-                        break;
-
                     default:
                         throw new ArgumentException("Bang khong duoc ho tro Flashback.");
                 }
@@ -209,33 +147,10 @@ namespace QuanLyYTe.Repositories
             {
                 case "PATIENT":
                 case "MEDICAL_RECORD":
-                case "PRESCRIPTION":
-                case "SERVICE_RECORD":
                     return safeTable;
                 default:
                     throw new ArgumentException("Bang khong duoc ho tro Flashback.");
             }
-        }
-
-        private static DateTime ParseDateKey(string value)
-        {
-            string[] formats =
-            {
-                "yyyy-MM-dd HH:mm:ss",
-                "yyyy-MM-dd",
-                "dd/MM/yyyy HH:mm:ss",
-                "dd/MM/yyyy",
-                "MM/dd/yyyy HH:mm:ss",
-                "MM/dd/yyyy"
-            };
-
-            if (DateTime.TryParseExact(value?.Trim(), formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime exact))
-                return exact;
-
-            if (DateTime.TryParse(value, out DateTime parsed))
-                return parsed;
-
-            throw new ArgumentException("Gia tri ngay khong hop le: " + value);
         }
 
         // Kiểm tra trạng thái của AUTO_BACKUP_JOB
