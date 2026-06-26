@@ -24,7 +24,7 @@ END;
 INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
 VALUES ('T1', UNISTR('Th\00F4ng b\00E1o chung to\00E0n vi\1EC7n'), SYSDATE, UNISTR('To\00E0n qu\1ED1c'), CHAR_TO_LABEL('HOSP_OLS_POL', 'NV'));
 
--- Thông báo tuyệt mật cho Ban Giám Đốc (Yêu cầu Level BGD)
+-- Thông báo cho Ban Giám Đốc (Yêu cầu Level BGD)
 INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
 VALUES ('T2', UNISTR('H\1ECDp chi\1EBFn l\01B0\1EE3c Qu\00FD 3'), SYSDATE, UNISTR('Ph\00F2ng h\1ECDp VIP'), CHAR_TO_LABEL('HOSP_OLS_POL', 'BGD'));
 
@@ -32,7 +32,7 @@ VALUES ('T2', UNISTR('H\1ECDp chi\1EBFn l\01B0\1EE3c Qu\00FD 3'), SYSDATE, UNIST
 INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
 VALUES ('T3', UNISTR('\0110\00E1nh gi\00E1 ng\00E2n s\00E1ch c\00E1c khoa'), SYSDATE, UNISTR('H\1ED9i tr\01B0\1EDDng A'), CHAR_TO_LABEL('HOSP_OLS_POL', 'LDK'));
 
--- Thông báo chỉ dành cho lãnh đạo khoa Tiêu Hóa (LDK + TH)
+-- Thông báo chỉ dành cho lãnh đạo khoa Tiêu Hóa (LDK + TH) 
 INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
 VALUES ('T4', UNISTR('B\00E1o c\00E1o thi\1EBFt b\1ECB n\1ED9i soi'), SYSDATE, UNISTR('Ph\00F2ng Gi\00E1m \0111\1ED1c'), CHAR_TO_LABEL('HOSP_OLS_POL', 'LDK:TH'));
 
@@ -45,7 +45,6 @@ INSERT INTO hospital.notification (notification_id, description, posted_date, lo
 VALUES ('T6', UNISTR('T\1EADp hu\1EA5n an to\00E0n v\1EC7 sinh'), SYSDATE, UNISTR('Khoa TH - HN'), CHAR_TO_LABEL('HOSP_OLS_POL', 'NV:TH:HN'));
 
 -- Thông báo cho lãnh đạo các khoa Tiêu Hóa VÀ Thần Kinh ở Hải Phòng
--- Ở đây dùng dấu phẩy (,) để kết hợp nhiều Compartment (TH, TK).
 INSERT INTO hospital.notification (notification_id, description, posted_date, location, ols_label) 
 VALUES ('T7', UNISTR('H\1ECDp li\00EAn khoa TH & TK'), SYSDATE, UNISTR('Chi nh\00E1nh H\1EA3i Ph\00F2ng'), CHAR_TO_LABEL('HOSP_OLS_POL', 'LDK:TH,TK:HP'));
 

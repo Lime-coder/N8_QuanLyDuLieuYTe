@@ -49,13 +49,13 @@ CREATE OR REPLACE FUNCTION hospital.FN_VPD_STAFF_SELF (
 RETURN VARCHAR2
 AS
 BEGIN    
-    -- Bypass cho schema owner, DBA app
-    IF SYS_CONTEXT('USERENV', 'CURRENT_USER') IN ('HOSPITAL', 'HOSPITAL_DBA') THEN
+    -- Bypass only for the real login account, not the definer-rights owner.
+    IF SYS_CONTEXT('USERENV', 'SESSION_USER') IN ('HOSPITAL', 'HOSPITAL_DBA') THEN
         RETURN '1=1';
     END IF;
 
     -- Nhân viên chỉ thấy / sửa dòng của chính mình
-    RETURN 'username_db = SYS_CONTEXT(''USERENV'', ''SESSION_USER'')';
+    RETURN 'UPPER(username_db) = SYS_CONTEXT(''USERENV'', ''SESSION_USER'')';
 
 EXCEPTION
     WHEN OTHERS THEN
