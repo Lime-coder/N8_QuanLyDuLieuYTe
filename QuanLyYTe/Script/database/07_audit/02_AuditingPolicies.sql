@@ -69,9 +69,40 @@ BEGIN
             policy_name   => 'FGA_MEDICAL_RECORD_COLS'
         );
     EXCEPTION WHEN OTHERS THEN NULL; END;
+    
+    -- 3. Xóa Policy cũ trên bảng SERVICE_RECORD (TC#4)
+    BEGIN
+        DBMS_FGA.DROP_POLICY(
+            object_schema => 'HOSPITAL', 
+            object_name   => 'SERVICE_RECORD', 
+            policy_name   => 'FGA_SERVICE_RECORD_COLS'
+        );
+    EXCEPTION WHEN OTHERS THEN NULL; END;
 END;
 /
--- 3a: Hành vi cập nhật trên thuộc tính MÃHSBA, NGÀYĐT, TÊNTHUỐC, LIỀUDÙNG của quan hệ ĐƠNTHUỐC
+-- ============================================================
+-- CÁC HÀM HỖ TRỢ KIỂM TRA QUYỀN CHO FGA
+-- ============================================================
+-- 1. Hàm kiểm tra Bác sĩ dùng cho FGA (3a, 3b)
+CREATE OR REPLACE FUNCTION hospital_dba.F_CHK_IS_DOCTOR RETURN NUMBER AS
+    v_role NVARCHAR2(50);
+BEGIN
+    SELECT staff_role INTO v_role 
+    FROM hospital.staff 
+    WHERE UPPER(username_db) = SYS_CONTEXT('USERENV', 'SESSION_USER');
+    
+    IF v_role = UNISTR('B\00E1c s\0129') THEN
+        RETURN 1;   
+    END IF;
+    RETURN 0;
+EXCEPTION WHEN OTHERS THEN
+    RETURN 0;
+END;
+/
+GRANT EXECUTE ON hospital_dba.F_CHK_IS_DOCTOR TO PUBLIC;
+
+-- 3a: Hành vi cập nhật của Bác sĩ 
+-- trên thuộc tính MÃHSBA, NGÀYĐT, TÊNTHUỐC, LIỀUDÙNG của quan hệ ĐƠNTHUỐC
 -- Tạo policy mới
 BEGIN
     DBMS_FGA.ADD_POLICY(
@@ -79,12 +110,14 @@ BEGIN
         object_name     => 'PRESCRIPTION', 
         policy_name     => 'FGA_PRESCRIPTION_COLS',
         audit_column    => 'RECORD_ID, PRESCRIPTION_DATE, MEDICINE_NAME, DOSAGE',
+        audit_condition => 'hospital_dba.F_CHK_IS_DOCTOR() = 1',
         statement_types => 'UPDATE',
         audit_trail     => DBMS_FGA.DB + DBMS_FGA.EXTENDED
     );
 END;
 /  
--- 3b: Hành vi của người dùng  trên các trường CHẨNĐOÁN, ĐIỀUTRỊ, KẾTLUẬN của quan hệ HSBA
+-- 3b: Hành vi của bác sĩ cập nhật thành công
+-- trên các trường CHẨNĐOÁN, ĐIỀUTRỊ, KẾTLUẬN của quan hệ HSBA
 -- Tạo policy mới
 BEGIN
     DBMS_FGA.ADD_POLICY(
@@ -92,6 +125,7 @@ BEGIN
         object_name     => 'MEDICAL_RECORD',
         policy_name     => 'FGA_MEDICAL_RECORD_COLS',
         audit_column    => 'DIAGNOSIS, TREATMENT_PLAN, CONCLUSION',
+        audit_condition => 'hospital_dba.F_CHK_IS_DOCTOR() = 1',
         statement_types => 'UPDATE',
         audit_trail     => DBMS_FGA.DB + DBMS_FGA.EXTENDED
     );
@@ -136,8 +170,10 @@ CREATE AUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY
     UPDATE ON hospital.service_record, 
     DELETE ON hospital.service_record; 
 
--- Bật Audit để bắt TẤT CẢ hành vi (Thành công + Thất bại)
+-- Bật Audit để bắt hành vi thất bại
 AUDIT POLICY AUD_ILLEGAL_SERVICE_RECORD_POLICY WHENEVER NOT SUCCESSFUL;
+
+
 -- Thêm yêu cầu ở TC#4: Các thao tác cập nhật trên trường KẾTQUẢ của HSBA_DV đều được ghi vết.
 BEGIN
     DBMS_FGA.ADD_POLICY(
