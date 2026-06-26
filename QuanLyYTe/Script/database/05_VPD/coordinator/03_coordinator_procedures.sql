@@ -1,5 +1,5 @@
 -- ==============================================================================
--- 04_coordinator_procedures.sql
+-- 03_coordinator_procedures.sql
 -- Chạy dưới quyền: hospital
 -- ==============================================================================
 
@@ -68,7 +68,7 @@ BEGIN
     FROM hospital.staff s 
     LEFT JOIN hospital.department d ON s.dept_id = d.dept_id
     WHERE s.staff_role = UNISTR('\0110i\1EC1u ph\1ED1i vi\00EAn')
-      AND s.is_active = 1;
+      AND s.is_active = 1 AND UPPER(s.username_db) = SYS_CONTEXT('USERENV', 'SESSION_USER');
 END;
 /
 
@@ -77,7 +77,7 @@ BEGIN
     UPDATE hospital.staff
     SET phone = p_phone, hometown = p_hometown
     WHERE staff_role = UNISTR('\0110i\1EC1u ph\1ED1i vi\00EAn')
-      AND is_active = 1;
+      AND is_active = 1 AND UPPER(username_db) = SYS_CONTEXT('USERENV', 'SESSION_USER');
     COMMIT;
 END;
 /
