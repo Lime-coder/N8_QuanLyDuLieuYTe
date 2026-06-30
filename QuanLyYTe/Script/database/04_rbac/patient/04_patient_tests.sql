@@ -1,0 +1,11 @@
+-- ==============================================================================
+-- 04_patient_tests.sql
+-- Chạy dưới quyền: a patient user
+-- ==============================================================================
+
+-- Connect as a patient (e.g., BN000001)
+-- Patient users should access data through definer-rights procedures,
+-- not by selecting hospital_dba views directly.
+-- VAR cur REFCURSOR;
+-- EXEC hospital_dba.USP_GET_PATIENT_PROFILE(:cur);
+-- PRINT cur;

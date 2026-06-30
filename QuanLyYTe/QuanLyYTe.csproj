@@ -1,23 +1,31 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
+    <NoWarn>8632</NoWarn>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Data\**" />
+    <Compile Remove="Models\**" />
     <Compile Remove="Script\Auth\**" />
     <EmbeddedResource Remove="Data\**" />
+    <EmbeddedResource Remove="Models\**" />
     <EmbeddedResource Remove="Script\Auth\**" />
     <None Remove="Data\**" />
+    <None Remove="Models\**" />
     <None Remove="Script\Auth\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.100" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.200" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DTOs\" />
   </ItemGroup>
 
 </Project>

@@ -16,6 +16,7 @@
             tpObject = new TabPage();
             tpRole = new TabPage();
             tpSystem = new TabPage();
+            tpOlsLabel = new TabPage();
 
             tcMain.SuspendLayout();
             SuspendLayout();
@@ -24,6 +25,7 @@
             tcMain.Controls.Add(tpObject);
             tcMain.Controls.Add(tpRole);
             tcMain.Controls.Add(tpSystem);
+            tcMain.Controls.Add(tpOlsLabel);
             tcMain.Dock = DockStyle.Fill;
             tcMain.Location = new Point(0, 0);
             tcMain.Name = "tcMain";
@@ -31,12 +33,6 @@
             tcMain.Size = new Size(850, 600);
             tcMain.TabIndex = 0;
 
-            tcMain.Dock = DockStyle.Fill;
-            tcMain.Location = new Point(0, 0);
-            tcMain.Name = "tcMain";
-            tcMain.SelectedIndex = 0;
-            tcMain.Size = new Size(850, 600);
-            tcMain.TabIndex = 0;
             // 
             // tpObject
             // 
@@ -64,6 +60,15 @@
             tpSystem.Size = new Size(842, 567);
             tpSystem.TabIndex = 2;
             tpSystem.Text = "Quyền hệ thống";
+            // 
+            // tpOlsLabel
+            // 
+            tpOlsLabel.BackColor = Color.WhiteSmoke;
+            tpOlsLabel.Location = new Point(4, 29);
+            tpOlsLabel.Name = "tpOlsLabel";
+            tpOlsLabel.Size = new Size(842, 567);
+            tpOlsLabel.TabIndex = 3;
+            tpOlsLabel.Text = "Cấp nhãn OLS";
 
             // GrantPermissionForm
             this.ClientSize = new Size(850, 600);
@@ -224,6 +229,7 @@
             SetupTabObjectPrivileges();
             SetupTabRoleGrant();
             SetupTabSystemPrivileges();
+            SetupTabOlsLabel();
 
             tcMain.ResumeLayout(false);
             ResumeLayout(false);
@@ -453,6 +459,75 @@
             pnlOuter.Controls.Add(tlpSys);
             this.tpSystem.Controls.Add(pnlOuter);
         }
+        private void SetupTabOlsLabel()
+        {
+            // Panel Left: User List
+            Panel pnlLeft = new Panel
+            {
+                Size = new Size(200, 510),
+                Location = new Point(20, 15),
+                BorderStyle = BorderStyle.FixedSingle,
+                BackColor = Color.FromArgb(248, 249, 250),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left
+            };
+            pnlLeft.Controls.Add(CreateLabel("Danh sách User:", 10, 10, true));
+            txtOlsSearch = new TextBox { Location = new Point(10, 40), Width = 180, PlaceholderText = "Tìm kiếm..." };
+            lbOlsUsers = new ListBox { Location = new Point(10, 70), Width = 180, Height = 420, Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left };
+            pnlLeft.Controls.Add(txtOlsSearch);
+            pnlLeft.Controls.Add(lbOlsUsers);
+
+            // Panel Right: Configurations
+            Panel pnlRight = new Panel
+            {
+                Size = new Size(580, 510),
+                Location = new Point(230, 15),
+                BorderStyle = BorderStyle.FixedSingle,
+                BackColor = Color.FromArgb(248, 249, 250),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
+            };
+
+            // Group 1: Level
+            GroupBox grpLevel = new GroupBox { Text = "Cấp bậc nhận (Level)", Location = new Point(20, 10), Size = new Size(540, 60), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right };
+            radBGD = new RadioButton { Text = "Ban Giám đốc (BGD)", Location = new Point(20, 25), AutoSize = true };
+            radLDK = new RadioButton { Text = "Lãnh đạo Khoa (LDK)", Location = new Point(200, 25), AutoSize = true };
+            radNV = new RadioButton { Text = "Toàn bộ Nhân viên (NV)", Location = new Point(380, 25), AutoSize = true, Checked = true };
+            grpLevel.Controls.AddRange(new Control[] { radBGD, radLDK, radNV });
+
+            // Group 2: Compartment
+            GroupBox grpComp = new GroupBox { Text = "Phạm vi Khoa (Compartments)", Location = new Point(20, 80), Size = new Size(540, 60), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right };
+            chkTH = new CheckBox { Text = "Khoa Tiêu hóa (TH)", Location = new Point(20, 25), AutoSize = true };
+            chkTK = new CheckBox { Text = "Khoa Thần kinh (TK)", Location = new Point(200, 25), AutoSize = true };
+            chkTM = new CheckBox { Text = "Khoa Tim mạch (TM)", Location = new Point(380, 25), AutoSize = true };
+            grpComp.Controls.AddRange(new Control[] { chkTH, chkTK, chkTM });
+
+            // Group 3: Groups
+            GroupBox grpGroup = new GroupBox { Text = "Phạm vi Cơ sở (Groups)", Location = new Point(20, 150), Size = new Size(540, 60), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right };
+            chkHCM = new CheckBox { Text = "Hồ Chí Minh (HCM)", Location = new Point(20, 25), AutoSize = true };
+            chkHN = new CheckBox { Text = "Hà Nội (HN)", Location = new Point(200, 25), AutoSize = true };
+            chkHP = new CheckBox { Text = "Hải Phòng (HP)", Location = new Point(380, 25), AutoSize = true };
+            grpGroup.Controls.AddRange(new Control[] { chkHCM, chkHN, chkHP });
+
+            // Preview & Button
+            pnlRight.Controls.Add(CreateLabel("Preview Chuỗi Nhãn OLS:", 20, 230, true));
+            rtbOlsPreview = new RichTextBox 
+            { 
+                Location = new Point(20, 260), Size = new Size(540, 160), 
+                ReadOnly = true, Font = new Font("Segoe UI", 12),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right 
+            };
+            btnSaveOlsLabel = new Button 
+            { 
+                Text = "Lưu Nhãn OLS", Location = new Point(20, 435), Size = new Size(540, 60),
+                BackColor = Color.FromArgb(255, 140, 40), ForeColor = Color.White, FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold), Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right
+            };
+
+            pnlRight.Controls.AddRange(new Control[] { grpLevel, grpComp, grpGroup, rtbOlsPreview, btnSaveOlsLabel });
+
+            tpOlsLabel.Controls.Add(pnlLeft);
+            tpOlsLabel.Controls.Add(pnlRight);
+        }
+
         public Label CreateLabel(string text, int x, int y, bool isBold = false)
         {
             Label lbl = new Label();
@@ -478,7 +553,7 @@
         private CheckBox CreateCheckBox(string text, int x, int y, int w = 100, Color? color = null) => new CheckBox { Text = text, Location = new Point(x, y), Width = w, ForeColor = color ?? Color.Black };
 
         private TabControl tcMain;
-        private TabPage tpObject, tpRole, tpSystem;
+        private TabPage tpObject, tpRole, tpSystem, tpOlsLabel;
         // Tab 1 UI
         private ComboBox cbObjectType, cbGranteeType, cbGranteeName, lbObjects;
         private CheckedListBox clbColumns;
@@ -492,5 +567,13 @@
         private ComboBox cbSysGranteeType, cbSysGranteeName, cbSysPrivilege;
         private CheckBox chkWithAdminOptionSys;
         private Button btnGrantSystem;
+        // Tab OLS Label UI
+        private ListBox lbOlsUsers;
+        private TextBox txtOlsSearch;
+        private RadioButton radBGD, radLDK, radNV;
+        private CheckBox chkTH, chkTK, chkTM;
+        private CheckBox chkHCM, chkHN, chkHP;
+        private RichTextBox rtbOlsPreview;
+        private Button btnSaveOlsLabel;
     }
 }
